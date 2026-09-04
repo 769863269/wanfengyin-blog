@@ -65,17 +65,23 @@ const posts = files
 
 const shell = readFileSync(shellPath, 'utf8')
 
-function seoTags(title, description, path) {
+function seoTags(title, description, path, image) {
+  const imageTag = image
+    ? `\n    <meta property="og:image" content="${siteDomain}${image}" />`
+    : ''
   return [
     `    <link rel="canonical" href="${siteDomain}${path}" />`,
     `    <meta property="og:title" content="${escapeHtml(title)}" />`,
     `    <meta property="og:type" content="article" />`,
     `    <meta property="og:description" content="${escapeHtml(description)}" />`,
-    `    <meta property="og:url" content="${siteDomain}${path}" />`,
+    `    <meta property="og:url" content="${siteDomain}${path}" />${imageTag}`,
   ].join('\n  ')
 }
 
 function renderArticle(post) {
+  const cover = post.cover
+    ? `\n        <figure class="post-detail__cover"><img src="${escapeHtml(post.cover)}" alt="${escapeHtml(post.title)} 封面" decoding="async" /></figure>`
+    : ''
   return `<div class="layout__main"><article class="card post-detail">
         <header class="post-detail__header">
           <h1 class="post-detail__title">${escapeHtml(post.title)}</h1>
@@ -84,7 +90,7 @@ function renderArticle(post) {
             <span>👁 ${post.views} 阅读</span>
             <span>💬 ${post.commentCount} 评论</span>
           </div>
-        </header>
+        </header>${cover}
         <div class="article-body">
 ${blocksToHtml(post.blocks)}
         </div>
@@ -103,7 +109,7 @@ function prerenderPost(post) {
   )
 
   // 2. 注入 canonical / og 标签
-  html = html.replace('</head>', `${seoTags(post.title, post.excerpt, path)}\n  </head>`)
+  html = html.replace('</head>', `${seoTags(post.title, post.excerpt, path, post.cover)}\n  </head>`)
 
   // 3. 注入静态正文（Vue 挂载后会整体接管 #app，此内容仅供爬虫与首屏）
   html = html.replace('<div id="app"></div>', `<div id="app">${renderArticle(post)}</div>`)

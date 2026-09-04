@@ -14,7 +14,7 @@ interface SeoOptions {
   type?: MaybeRefOrGetter<string>
   /** 规范链接 */
   url?: MaybeRefOrGetter<string>
-  image?: MaybeRefOrGetter<string>
+  image?: MaybeRefOrGetter<string | undefined>
 }
 
 function upsertMeta(attr: 'name' | 'property', key: string, content: string): void {
@@ -74,6 +74,11 @@ export function useSeoMeta(options: SeoOptions): void {
       removeLink('canonical')
     }
 
-    if (image) upsertMeta('property', 'og:image', image)
+    // 分享图与规范链接同理：无图页面要清掉上一页残留的 og:image
+    if (image) {
+      upsertMeta('property', 'og:image', image)
+    } else {
+      removeMeta('property', 'og:image')
+    }
   })
 }

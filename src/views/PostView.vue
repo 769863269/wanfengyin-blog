@@ -51,6 +51,8 @@ useSeoMeta({
   description: computed(() => post.value?.excerpt ?? siteConfig.description),
   type: 'article',
   url: canonicalUrl,
+  // og:image 必须是绝对 URL，本地封面路径拼上域名
+  image: computed(() => (post.value?.cover ? `${domain}${post.value.cover}` : undefined)),
 })
 </script>
 
@@ -86,6 +88,11 @@ useSeoMeta({
             </span>
           </div>
         </header>
+
+        <!-- 封面图：有图才显示，与列表页封面同源 -->
+        <figure v-if="post.cover" class="post-detail__cover">
+          <img :src="post.cover" :alt="`${post.title} 封面`" decoding="async" />
+        </figure>
 
         <ArticleBody :blocks="post.body" />
 
@@ -165,6 +172,17 @@ useSeoMeta({
   margin-bottom: 24px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border);
+}
+
+.post-detail__cover {
+  margin: 0 0 24px;
+}
+
+.post-detail__cover img {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
 }
 
 .post-detail__title {
