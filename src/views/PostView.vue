@@ -6,7 +6,7 @@
  * 这里只渲染存在的文章。评论区按当前路径动态挂载 Giscus。
  */
 import { computed } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import ArticleBody from '@/components/article/ArticleBody.vue'
 import CommentSection from '@/components/article/CommentSection.vue'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
@@ -17,6 +17,22 @@ import { estimateReadingTime, formatCount, formatRelativeTime } from '@/utils/fo
 import NotFoundView from './NotFoundView.vue'
 
 const props = defineProps<{ slug: string }>()
+
+const router = useRouter()
+
+/**
+ * 返回上一页。
+ *
+ * 站内跳转进来的（有浏览历史）→ router.back()，回到来源页；
+ * 搜索引擎 / 直接链接进来的（无历史）→ 兜底去归档页，避免死胡同。
+ */
+function goBack(): void {
+  if (router.options.history.state.back !== null) {
+    router.back()
+  } else {
+    void router.push({ name: 'archive' })
+  }
+}
 
 const post = computed(() => findPost(props.slug))
 
@@ -44,6 +60,11 @@ useSeoMeta({
   <div v-else class="layout__main">
     <div class="layout__content">
       <article class="card post-detail">
+        <button class="post-detail__back" type="button" @click="goBack">
+          <span aria-hidden="true">←</span>
+          返回上一页
+        </button>
+
         <header class="post-detail__header">
           <h1 class="post-detail__title">{{ post.title }}</h1>
           <div class="post-detail__meta">
@@ -101,6 +122,11 @@ useSeoMeta({
           </RouterLink>
           <span v-else />
         </nav>
+
+        <!-- 读完去归档页挑下一篇 -->
+        <RouterLink class="post-detail__archive-link" :to="{ name: 'archive' }">
+          🗂 查看全部文章归档
+        </RouterLink>
       </article>
 
       <CommentSection />
@@ -111,6 +137,30 @@ useSeoMeta({
 </template>
 
 <style scoped>
+.post-detail__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 18px;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition:
+    color var(--duration-base) var(--ease-standard),
+    border-color var(--duration-base) var(--ease-standard),
+    background-color var(--duration-base) var(--ease-standard);
+}
+
+.post-detail__back:hover {
+  color: var(--brand);
+  border-color: var(--brand);
+  background: var(--brand-soft);
+}
+
 .post-detail__header {
   margin-bottom: 24px;
   padding-bottom: 16px;
@@ -193,6 +243,25 @@ useSeoMeta({
 
 .post-detail__neighbor--next {
   text-align: right;
+}
+
+.post-detail__archive-link {
+  display: block;
+  margin-top: 16px;
+  padding: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-md);
+  transition:
+    color var(--duration-base) var(--ease-standard),
+    background-color var(--duration-base) var(--ease-standard);
+}
+
+.post-detail__archive-link:hover {
+  color: var(--brand);
+  background: var(--brand-soft);
 }
 
 @media (max-width: 600px) {
