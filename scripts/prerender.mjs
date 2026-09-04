@@ -53,6 +53,7 @@ const posts = files
       slug: data.slug,
       title: data.title,
       excerpt: data.excerpt,
+      cover: data.cover ?? '',
       publishedAt: data.publishedAt,
       views: Number(data.views ?? 0),
       commentCount: Number(data.commentCount ?? 0),
