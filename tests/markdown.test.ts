@@ -58,6 +58,39 @@ describe('markdownToBlocks', () => {
   it('空输入返回空数组', () => {
     expect(markdownToBlocks('')).toEqual([])
   })
+
+  it('围栏代码块整体捕获，保留内部空行与缩进', () => {
+    const blocks = markdownToBlocks('```ts\nconst a = 1\n\nif (a) {\n  log(a)\n}\n```')
+    expect(blocks).toEqual([
+      { type: 'code', lang: 'ts', text: 'const a = 1\n\nif (a) {\n  log(a)\n}' },
+    ])
+  })
+
+  it('无语言标注的代码块 lang 为 text', () => {
+    const blocks = markdownToBlocks('```\nplain\n```')
+    expect(blocks).toEqual([{ type: 'code', lang: 'text', text: 'plain' }])
+  })
+
+  it('代码块内部的 # 与 > 不当作语法解析', () => {
+    const blocks = markdownToBlocks('```\n# 注释不是标题\n> 也不是引文\n```')
+    expect(blocks).toEqual([
+      { type: 'code', lang: 'text', text: '# 注释不是标题\n> 也不是引文' },
+    ])
+  })
+
+  it('未闭合代码块取到文末', () => {
+    const blocks = markdownToBlocks('```ts\nconst a = 1')
+    expect(blocks).toEqual([{ type: 'code', lang: 'ts', text: 'const a = 1' }])
+  })
+
+  it('代码块前后的段落正常分段', () => {
+    const blocks = markdownToBlocks('前文\n\n```css\n.a { color: red }\n```\n\n后文')
+    expect(blocks).toEqual([
+      { type: 'paragraph', text: '前文' },
+      { type: 'code', lang: 'css', text: '.a { color: red }' },
+      { type: 'paragraph', text: '后文' },
+    ])
+  })
 })
 
 describe('blocksToHtml', () => {
@@ -72,6 +105,15 @@ describe('blocksToHtml', () => {
 
   it('HTML 特殊字符被转义（防注入）', () => {
     const html = blocksToHtml([{ type: 'paragraph', text: '<script>alert(1)</script>' }])
+    expect(html).not.toContain('<script>')
+    expect(html).toContain('&lt;script&gt;')
+  })
+
+  it('代码块渲染为 pre code 且内容转义', () => {
+    const html = blocksToHtml([
+      { type: 'code', lang: 'html', text: '<script>alert(1)</script>' },
+    ])
+    expect(html).toContain('class="article-body__code" data-lang="html"')
     expect(html).not.toContain('<script>')
     expect(html).toContain('&lt;script&gt;')
   })

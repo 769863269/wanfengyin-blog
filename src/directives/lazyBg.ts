@@ -12,8 +12,19 @@ import type { Directive } from 'vue'
 
 type LazyBgElement = HTMLElement & { _lazyObserver?: IntersectionObserver }
 
+/**
+ * 值兼容两种写法：
+ * - CSS 值（linear-gradient(...) / url(...)）：原样使用
+ * - 裸图片路径（/images/covers/x.jpg）：包上 url()
+ */
+function toBackgroundImage(value: string): string {
+  const v = value.trim()
+  if (/^(url\(|[a-z-]+-gradient\()/i.test(v)) return v
+  return `url("${v}")`
+}
+
 function apply(el: HTMLElement, value: string): void {
-  el.style.backgroundImage = value
+  el.style.backgroundImage = toBackgroundImage(value)
   el.dataset.lazyLoaded = 'true'
 }
 

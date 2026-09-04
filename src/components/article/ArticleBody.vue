@@ -25,6 +25,8 @@ const { blocks } = defineProps<{ blocks: readonly ArticleBlock[] }>()
       <figure v-else-if="block.type === 'image'" class="article-body__figure">
         <img :src="block.src" :alt="block.alt" loading="lazy" decoding="async" />
       </figure>
+
+      <pre v-else-if="block.type === 'code'" class="article-body__code" :data-lang="block.lang"><code>{{ block.text }}</code></pre>
     </template>
   </div>
 </template>
@@ -61,5 +63,36 @@ const { blocks } = defineProps<{ blocks: readonly ArticleBlock[] }>()
 .article-body__figure img {
   width: 100%;
   border-radius: var(--radius-md);
+}
+
+/* 深色代码块：浅色主题下也保持深底，阅读代码更聚焦 */
+.article-body__code {
+  position: relative;
+  margin: 18px 0 22px;
+  padding: 16px 18px;
+  overflow-x: auto;
+  font-size: 13.5px;
+  line-height: 1.7;
+  font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+  color: #e8eaed;
+  background: #1e2028;
+  border-radius: var(--radius-md);
+}
+
+/* 语言标签：右上角小徽标 */
+.article-body__code::before {
+  content: attr(data-lang);
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: rgb(255 255 255 / 45%);
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.article-body__code code {
+  font-family: inherit;
 }
 </style>

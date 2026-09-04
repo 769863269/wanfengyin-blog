@@ -9,6 +9,7 @@
  *   # / ## / ###      标题（统一渲染为 h2 语义）
  *   > 引文
  *   ![alt](src)       图片（独占一行）
+ *   ```lang 围栏代码块（``` 结束；未闭合时取到文末）
  *   普通段落
  *
  * 输出为结构化 ArticleBlock 而非 HTML 字符串 —— 与 ArticleBody.vue 的
@@ -73,6 +74,7 @@ export function parseFrontmatter(raw) {
 /**
  * Markdown 正文 → ArticleBlock[]
  * 空行分段；连续非空行合并为一个段落。
+ * ``` 围栏代码块整体捕获（含空行），lang 记录语言标签。
  */
 export function markdownToBlocks(markdown) {
   const lines = markdown.replace(/\r\n/g, '\n').split('\n')
@@ -86,8 +88,23 @@ export function markdownToBlocks(markdown) {
     }
   }
 
-  for (const rawLine of lines) {
-    const line = rawLine.trim()
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim()
+
+    // 代码块开始：```lang ... ```
+    const fence = line.match(/^(```+|~~~+)\s*([A-Za-z0-9_-]*)\s*$/)
+    if (fence) {
+      flushParagraph()
+      const closing = fence[1][0] === '`' ? /^`{3,}\s*$/ : /^~{3,}\s*$/
+      const codeLines = []
+      i++
+      while (i < lines.length && !closing.test(lines[i].trim())) {
+        codeLines.push(lines[i])
+        i++
+      }
+      blocks.push({ type: 'code', lang: fence[2] || 'text', text: codeLines.join('\n') })
+      continue
+    }
 
     if (!line) {
       flushParagraph()
@@ -143,6 +160,8 @@ export function blocksToHtml(blocks) {
           return `<blockquote class="article-body__quote">${escapeHtml(block.text)}</blockquote>`
         case 'image':
           return `<figure class="article-body__figure"><img src="${escapeHtml(block.src)}" alt="${escapeHtml(block.alt)}" loading="lazy" decoding="async" /></figure>`
+        case 'code':
+          return `<pre class="article-body__code" data-lang="${escapeHtml(block.lang)}"><code>${escapeHtml(block.text)}</code></pre>`
         default:
           return ''
       }

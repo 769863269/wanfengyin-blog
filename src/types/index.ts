@@ -14,6 +14,7 @@ export type ArticleBlock =
   | { type: 'heading'; text: string }
   | { type: 'quote'; text: string }
   | { type: 'image'; src: string; alt: string }
+  | { type: 'code'; lang: string; text: string }
 
 export interface Post {
   /** URL 友好标识，同时用作路由参数 */
