@@ -20,6 +20,7 @@ import { mkdirSync, readFileSync, writeFileSync, readdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseFrontmatter, markdownToBlocks, blocksToHtml, escapeHtml } from './lib/markdown.mjs'
+import { highlightToCodeHtml } from './lib/highlight.mjs'
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const distDir = join(root, 'dist')
@@ -62,6 +63,15 @@ const posts = files
   })
   .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
 
+// 代码块高亮与 build-posts.mjs 同步：静态 HTML 里的代码也带 Shiki 配色
+for (const post of posts) {
+  for (const block of post.blocks) {
+    if (block.type !== 'code') continue
+    const html = await highlightToCodeHtml(block.text, block.lang)
+    if (html) block.codeHtml = html
+  }
+}
+
 /* ---------- 预渲染 ---------- */
 
 const shell = readFileSync(shellPath, 'utf8')
@@ -83,6 +93,17 @@ function renderArticle(post) {
   const cover = post.cover
     ? `\n        <figure class="post-detail__cover"><img src="${escapeHtml(post.cover)}" alt="${escapeHtml(post.title)} 封面" decoding="async" /></figure>`
     : ''
+  // 文章目录：与 PostView 一致，2 个以上标题才渲染
+  const headings = post.blocks.filter((block) => block.type === 'heading')
+  const toc =
+    headings.length >= 2
+      ? `\n        <details class="post-detail__toc"><summary>📑 本文目录（${headings.length} 节）</summary><ol>${headings
+          .map(
+            (h) =>
+              `<li><a href="#${escapeHtml(h.id)}">${escapeHtml(h.text)}</a></li>`,
+          )
+          .join('')}</ol></details>`
+      : ''
   return `<div class="layout__main"><article class="card post-detail">
         <header class="post-detail__header">
           <h1 class="post-detail__title">${escapeHtml(post.title)}</h1>
@@ -91,7 +112,7 @@ function renderArticle(post) {
             <span>👁 ${post.views} 阅读</span>
             <span>💬 ${post.commentCount} 评论</span>
           </div>
-        </header>${cover}
+        </header>${cover}${toc}
         <div class="article-body">
 ${blocksToHtml(post.blocks)}
         </div>
