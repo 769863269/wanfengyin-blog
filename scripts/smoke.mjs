@@ -153,6 +153,20 @@ async function main() {
     click(loadMore)
     await sleep(80)
     check('加载更多追加卡片', $$('.post-card').length > n0, `${n0} -> ${$$('.post-card').length}`)
+
+    // 进度跨路由保留：进入文章详情再返回，加载进度不应被收回
+    const expanded = $$('.post-card').length
+    click($$('.post-card__link')[0])
+    await waitFor(() => window.location.pathname.startsWith('/post/'))
+    await waitFor(() => $('.post-detail__title'))
+    click($('.post-detail__back'))
+    await waitFor(() => window.location.pathname === '/')
+    await waitFor(() => $$('.post-card').length === expanded)
+    check(
+      '返回后加载进度保留',
+      $$('.post-card').length === expanded,
+      `展开 ${expanded}，返回后 ${$$('.post-card').length}`,
+    )
   } else {
     check('无加载更多按钮（文章不足时合法）', $$('.home__end').length > 0)
   }
