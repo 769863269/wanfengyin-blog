@@ -153,10 +153,7 @@ const viewCount = computed(() => formatCount(post.views))
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='6' viewBox='0 0 36 6'%3E%3Cpath d='M0 3 Q9 0.4 18 3 T36 3' fill='none' stroke='%238b7355' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
-/* 最后一张卡片不显示分隔线 */
-.post-card:last-child::after {
-  display: none;
-}
+/* 波浪线现在是行的一部分（行尾装饰），每一行都有，包括最后一行 */
 
 @media (max-width: 992px) {
   .post-card__thumb {
