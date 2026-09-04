@@ -11,10 +11,10 @@
  */
 export type ArticleBlock =
   | { type: 'paragraph'; text: string }
-  | { type: 'heading'; text: string }
+  | { type: 'heading'; id: string; text: string }
   | { type: 'quote'; text: string }
   | { type: 'image'; src: string; alt: string }
-  | { type: 'code'; lang: string; text: string }
+  | { type: 'code'; lang: string; text: string; /** 构建期 Shiki 高亮的 <code> 内部 HTML（可选，缺省走纯文本） */ codeHtml?: string }
 
 export interface Post {
   /** URL 友好标识，同时用作路由参数 */

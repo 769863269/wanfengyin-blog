@@ -26,6 +26,16 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/ArchiveView.vue'),
   },
   {
+    path: '/tags',
+    name: 'tags',
+    component: () => import('@/views/TagsView.vue'),
+  },
+  {
+    path: '/about',
+    name: 'about',
+    component: () => import('@/views/AboutView.vue'),
+  },
+  {
     path: '/random',
     name: 'random',
     // 随机跳转：每次访问随机抽一篇文章

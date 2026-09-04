@@ -2,13 +2,38 @@
 /**
  * 文章正文渲染
  *
- * 按结构化 block 渲染而非 v-html：
- *   - 内容来源即便将来换成接口 / 用户投稿，也没有 XSS 风险；
- *   - 每个 block 类型有对应的语义标签（p / h2 / blockquote / figure）。
+ * 结构化 block 渲染，仅两处例外使用受控 HTML：
+ *   - heading 的 id（构建期生成的 sec-N 锚点）；
+ *   - code 的 codeHtml（构建期 Shiki 高亮产物，token span 已转义）。
+ * 其余一律文本插值，杜绝 XSS。
  */
+import { ref } from 'vue'
 import type { ArticleBlock } from '@/types'
 
 const { blocks } = defineProps<{ blocks: readonly ArticleBlock[] }>()
+
+/** 目录跳转 / 侧栏交互后代码块复制按钮的状态 */
+const copiedSlug = ref('')
+
+async function copyCode(block: Extract<ArticleBlock, { type: 'code' }>): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(block.text)
+  } catch {
+    // 非安全上下文 / 旧浏览器兜底
+    const textarea = document.createElement('textarea')
+    textarea.value = block.text
+    textarea.style.position = 'fixed'
+    textarea.style.opacity = '0'
+    document.body.appendChild(textarea)
+    textarea.select()
+    document.execCommand('copy')
+    textarea.remove()
+  }
+  copiedSlug.value = block.text
+  setTimeout(() => {
+    if (copiedSlug.value === block.text) copiedSlug.value = ''
+  }, 1500)
+}
 </script>
 
 <template>
@@ -16,7 +41,9 @@ const { blocks } = defineProps<{ blocks: readonly ArticleBlock[] }>()
     <template v-for="(block, index) in blocks" :key="index">
       <p v-if="block.type === 'paragraph'">{{ block.text }}</p>
 
-      <h2 v-else-if="block.type === 'heading'" class="article-body__heading">{{ block.text }}</h2>
+      <h2 v-else-if="block.type === 'heading'" :id="block.id" class="article-body__heading">
+        {{ block.text }}
+      </h2>
 
       <blockquote v-else-if="block.type === 'quote'" class="article-body__quote">
         {{ block.text }}
@@ -26,7 +53,20 @@ const { blocks } = defineProps<{ blocks: readonly ArticleBlock[] }>()
         <img :src="block.src" :alt="block.alt" loading="lazy" decoding="async" />
       </figure>
 
-      <pre v-else-if="block.type === 'code'" class="article-body__code" :data-lang="block.lang"><code>{{ block.text }}</code></pre>
+      <div v-else-if="block.type === 'code'" class="article-body__codewrap">
+        <!-- eslint-disable-next-line vue/no-v-html -- codeHtml 为构建期 Shiki 产物，token 内容已在构建时转义 -->
+        <pre class="article-body__code" :data-lang="block.lang"><code v-if="block.codeHtml" v-html="block.codeHtml" /><code v-else>{{ block.text }}</code></pre>
+
+        <button
+          class="article-body__copy"
+          :class="{ 'is-done': copiedSlug === block.text }"
+          type="button"
+          :aria-label="copiedSlug === block.text ? '已复制' : '复制代码'"
+          @click="copyCode(block)"
+        >
+          {{ copiedSlug === block.text ? '已复制' : '复制' }}
+        </button>
+      </div>
     </template>
   </div>
 </template>
@@ -45,6 +85,8 @@ const { blocks } = defineProps<{ blocks: readonly ArticleBlock[] }>()
 .article-body__heading {
   margin: 28px 0 12px;
   font-size: 20px;
+  /* 锚点跳转不被吸顶导航遮住 */
+  scroll-margin-top: 80px;
 }
 
 .article-body__quote {
@@ -66,9 +108,13 @@ const { blocks } = defineProps<{ blocks: readonly ArticleBlock[] }>()
 }
 
 /* 深色代码块：浅色主题下也保持深底，阅读代码更聚焦 */
-.article-body__code {
+.article-body__codewrap {
   position: relative;
   margin: 18px 0 22px;
+}
+
+.article-body__code {
+  margin: 0;
   padding: 16px 18px;
   overflow-x: auto;
   font-size: 13.5px;
@@ -79,12 +125,12 @@ const { blocks } = defineProps<{ blocks: readonly ArticleBlock[] }>()
   border-radius: var(--radius-md);
 }
 
-/* 语言标签：右上角小徽标 */
+/* 语言标签：左上角小徽标（右上角让位给复制按钮） */
 .article-body__code::before {
   content: attr(data-lang);
   position: absolute;
   top: 8px;
-  right: 12px;
+  left: 12px;
   font-size: 11px;
   letter-spacing: 0.5px;
   color: rgb(255 255 255 / 45%);
@@ -92,7 +138,39 @@ const { blocks } = defineProps<{ blocks: readonly ArticleBlock[] }>()
   user-select: none;
 }
 
+/* 语言徽标是绝对定位，代码首行给它留出空隙 */
 .article-body__code code {
+  display: block;
+  padding-top: 14px;
   font-family: inherit;
+}
+
+/* Shiki token：与深底配色一致（github-dark） */
+.article-body__code :deep(code) {
+  background: transparent;
+}
+
+.article-body__copy {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  padding: 3px 10px;
+  font-size: 12px;
+  color: rgb(255 255 255 / 60%);
+  background: rgb(255 255 255 / 8%);
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all var(--duration-fast) ease;
+}
+
+.article-body__copy:hover {
+  color: #fff;
+  background: rgb(255 255 255 / 16%);
+}
+
+.article-body__copy.is-done {
+  color: #4ade80;
+  border-color: rgb(74 222 128 / 40%);
 }
 </style>

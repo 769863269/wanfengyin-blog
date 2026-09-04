@@ -27,6 +27,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-1",
         "text": "迁移成本"
       },
       {
@@ -36,12 +37,14 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "ts",
-        "text": "// Vite 7 及以前：对象写法\nbuild: {\n  rollupOptions: {\n    output: {\n      manualChunks: {\n        vue: ['vue', 'vue-router'],\n      },\n    },\n  },\n}"
+        "text": "// Vite 7 及以前：对象写法\nbuild: {\n  rollupOptions: {\n    output: {\n      manualChunks: {\n        vue: ['vue', 'vue-router'],\n      },\n    },\n  },\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#6A737D\">// Vite 7 及以前：对象写法</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">build</span><span style=\"color:#E1E4E8\">: {</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  rollupOptions</span><span style=\"color:#E1E4E8\">: {</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">    output</span><span style=\"color:#E1E4E8\">: {</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">      manualChunks</span><span style=\"color:#E1E4E8\">: {</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">        vue</span><span style=\"color:#E1E4E8\">: [</span><span style=\"color:#9ECBFF\">'vue'</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#9ECBFF\">'vue-router'</span><span style=\"color:#E1E4E8\">],</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "code",
         "lang": "ts",
-        "text": "// Vite 8：必须函数返回\nbuild: {\n  rollupOptions: {\n    output: {\n      manualChunks(id) {\n        if (id.includes('node_modules')) return 'vue'\n        return undefined\n      },\n    },\n  },\n}"
+        "text": "// Vite 8：必须函数返回\nbuild: {\n  rollupOptions: {\n    output: {\n      manualChunks(id) {\n        if (id.includes('node_modules')) return 'vue'\n        return undefined\n      },\n    },\n  },\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#6A737D\">// Vite 8：必须函数返回</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">build</span><span style=\"color:#E1E4E8\">: {</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  rollupOptions</span><span style=\"color:#E1E4E8\">: {</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">    output</span><span style=\"color:#E1E4E8\">: {</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">      manualChunks</span><span style=\"color:#E1E4E8\">(id) {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">        if</span><span style=\"color:#E1E4E8\"> (id.</span><span style=\"color:#B392F0\">includes</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'node_modules'</span><span style=\"color:#E1E4E8\">)) </span><span style=\"color:#F97583\">return</span><span style=\"color:#9ECBFF\"> 'vue'</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">        return</span><span style=\"color:#79B8FF\"> undefined</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "paragraph",
@@ -49,6 +52,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-2",
         "text": "速度对比"
       },
       {
@@ -58,7 +62,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "text",
-        "text": "                     Vite 7      Vite 8 (Rolldown)\n冷启动 dev           ~1.8s       ~0.9s\n生产构建             ~11s        ~5.9s\n依赖预构建           明显等待     几乎无感"
+        "text": "                     Vite 7      Vite 8 (Rolldown)\n冷启动 dev           ~1.8s       ~0.9s\n生产构建             ~11s        ~5.9s\n依赖预构建           明显等待     几乎无感",
+        "codeHtml": "<span class=\"line\"><span>                     Vite 7      Vite 8 (Rolldown)</span></span>\n<span class=\"line\"><span>冷启动 dev           ~1.8s       ~0.9s</span></span>\n<span class=\"line\"><span>生产构建             ~11s        ~5.9s</span></span>\n<span class=\"line\"><span>依赖预构建           明显等待     几乎无感</span></span>"
       },
       {
         "type": "paragraph",
@@ -66,6 +71,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-3",
         "text": "插件生态"
       },
       {
@@ -74,6 +80,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-4",
         "text": "建议"
       },
       {
@@ -102,6 +109,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-1",
         "text": "状态放哪"
       },
       {
@@ -111,7 +119,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "ts",
-        "text": "// src/composables/usePostList.ts —— 模块级单例\nconst sharedCount = shallowRef<number | null>(null)\n\nexport function usePostList() {\n  // 没有实例才初始化，跨路由保留状态\n  sharedCount.value ??= ref(PAGE_SIZE)\n  return { visibleCount: sharedCount }\n}"
+        "text": "// src/composables/usePostList.ts —— 模块级单例\nconst sharedCount = shallowRef<number | null>(null)\n\nexport function usePostList() {\n  // 没有实例才初始化，跨路由保留状态\n  sharedCount.value ??= ref(PAGE_SIZE)\n  return { visibleCount: sharedCount }\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#6A737D\">// src/composables/usePostList.ts —— 模块级单例</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">const</span><span style=\"color:#79B8FF\"> sharedCount</span><span style=\"color:#F97583\"> =</span><span style=\"color:#B392F0\"> shallowRef</span><span style=\"color:#E1E4E8\">&#x3C;</span><span style=\"color:#79B8FF\">number</span><span style=\"color:#F97583\"> |</span><span style=\"color:#79B8FF\"> null</span><span style=\"color:#E1E4E8\">>(</span><span style=\"color:#79B8FF\">null</span><span style=\"color:#E1E4E8\">)</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#F97583\">export</span><span style=\"color:#F97583\"> function</span><span style=\"color:#B392F0\"> usePostList</span><span style=\"color:#E1E4E8\">() {</span></span>\n<span class=\"line\"><span style=\"color:#6A737D\">  // 没有实例才初始化，跨路由保留状态</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  sharedCount.value </span><span style=\"color:#F97583\">??=</span><span style=\"color:#B392F0\"> ref</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#79B8FF\">PAGE_SIZE</span><span style=\"color:#E1E4E8\">)</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">  return</span><span style=\"color:#E1E4E8\"> { visibleCount: sharedCount }</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "paragraph",
@@ -119,6 +128,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-2",
         "text": "什么时候抽 composable"
       },
       {
@@ -131,6 +141,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-3",
         "text": "类型体验"
       },
       {
@@ -140,7 +151,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "ts",
-        "text": "const { post } = defineProps<{ post: Post }>()\nconst relativeTime = computed(() => formatRelativeTime(post.publishedAt))"
+        "text": "const { post } = defineProps<{ post: Post }>()\nconst relativeTime = computed(() => formatRelativeTime(post.publishedAt))",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#F97583\">const</span><span style=\"color:#E1E4E8\"> { </span><span style=\"color:#79B8FF\">post</span><span style=\"color:#E1E4E8\"> } </span><span style=\"color:#F97583\">=</span><span style=\"color:#B392F0\"> defineProps</span><span style=\"color:#E1E4E8\">&#x3C;{ </span><span style=\"color:#FFAB70\">post</span><span style=\"color:#F97583\">:</span><span style=\"color:#B392F0\"> Post</span><span style=\"color:#E1E4E8\"> }>()</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">const</span><span style=\"color:#79B8FF\"> relativeTime</span><span style=\"color:#F97583\"> =</span><span style=\"color:#B392F0\"> computed</span><span style=\"color:#E1E4E8\">(() </span><span style=\"color:#F97583\">=></span><span style=\"color:#B392F0\"> formatRelativeTime</span><span style=\"color:#E1E4E8\">(post.publishedAt))</span></span>"
       },
       {
         "type": "paragraph",
@@ -148,6 +160,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-4",
         "text": "一个提醒"
       },
       {
@@ -175,12 +188,14 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-1",
         "text": "实现"
       },
       {
         "type": "code",
         "lang": "css",
-        "text": ".layout {\n  display: grid;\n  grid-template-columns: 8fr 2fr;\n  gap: 32px;\n  max-width: 1200px;\n  margin: 0 auto;\n  align-items: start;\n}"
+        "text": ".layout {\n  display: grid;\n  grid-template-columns: 8fr 2fr;\n  gap: 32px;\n  max-width: 1200px;\n  margin: 0 auto;\n  align-items: start;\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#B392F0\">.layout</span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#79B8FF\">  display</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">grid</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#79B8FF\">  grid-template-columns</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">8</span><span style=\"color:#F97583\">fr</span><span style=\"color:#79B8FF\"> 2</span><span style=\"color:#F97583\">fr</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#79B8FF\">  gap</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">32</span><span style=\"color:#F97583\">px</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#79B8FF\">  max-width</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">1200</span><span style=\"color:#F97583\">px</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#79B8FF\">  margin</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">0</span><span style=\"color:#79B8FF\"> auto</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#79B8FF\">  align-items</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">start</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "paragraph",
@@ -193,7 +208,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "css",
-        "text": ".sidebar {\n  position: sticky;\n  top: 24px;\n}"
+        "text": ".sidebar {\n  position: sticky;\n  top: 24px;\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#B392F0\">.sidebar</span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#79B8FF\">  position</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">sticky</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#79B8FF\">  top</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">24</span><span style=\"color:#F97583\">px</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "quote",
@@ -201,6 +217,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-2",
         "text": "响应式收窄"
       },
       {
@@ -210,7 +227,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "css",
-        "text": "/* 992px 以下：侧栏退场，主列占满 */\n@media (max-width: 992px) {\n  .layout {\n    grid-template-columns: 1fr;\n  }\n  .sidebar {\n    display: none;\n  }\n}"
+        "text": "/* 992px 以下：侧栏退场，主列占满 */\n@media (max-width: 992px) {\n  .layout {\n    grid-template-columns: 1fr;\n  }\n  .sidebar {\n    display: none;\n  }\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#6A737D\">/* 992px 以下：侧栏退场，主列占满 */</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">@media</span><span style=\"color:#E1E4E8\"> (</span><span style=\"color:#79B8FF\">max-width</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">992</span><span style=\"color:#F97583\">px</span><span style=\"color:#E1E4E8\">) {</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  .layout</span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#79B8FF\">    grid-template-columns</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">1</span><span style=\"color:#F97583\">fr</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  }</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  .sidebar</span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#79B8FF\">    display</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">none</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  }</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "paragraph",
@@ -218,6 +236,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-3",
         "text": "为什么不用 flex"
       },
       {
@@ -246,6 +265,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-1",
         "text": "架构决策"
       },
       {
@@ -255,7 +275,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "ts",
-        "text": "// src/config/site.ts —— 站点配置与页面彻底解耦\nexport const siteConfig = {\n  name: '晚风吟',\n  url: 'https://example.com',\n  nav: [\n    { id: 'home', label: '首页', icon: '🏠', kind: 'route', to: 'home' },\n    { id: 'archive', label: '归档', icon: '🗂', kind: 'route', to: 'archive' },\n    { id: 'rss', label: 'RSS', icon: '📡', kind: 'external', href: '/feed.xml' },\n  ],\n} as const"
+        "text": "// src/config/site.ts —— 站点配置与页面彻底解耦\nexport const siteConfig = {\n  name: '晚风吟',\n  url: 'https://example.com',\n  nav: [\n    { id: 'home', label: '首页', icon: '🏠', kind: 'route', to: 'home' },\n    { id: 'archive', label: '归档', icon: '🗂', kind: 'route', to: 'archive' },\n    { id: 'rss', label: 'RSS', icon: '📡', kind: 'external', href: '/feed.xml' },\n  ],\n} as const",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#6A737D\">// src/config/site.ts —— 站点配置与页面彻底解耦</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">export</span><span style=\"color:#F97583\"> const</span><span style=\"color:#79B8FF\"> siteConfig</span><span style=\"color:#F97583\"> =</span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  name: </span><span style=\"color:#9ECBFF\">'晚风吟'</span><span style=\"color:#E1E4E8\">,</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  url: </span><span style=\"color:#9ECBFF\">'https://example.com'</span><span style=\"color:#E1E4E8\">,</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  nav: [</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    { id: </span><span style=\"color:#9ECBFF\">'home'</span><span style=\"color:#E1E4E8\">, label: </span><span style=\"color:#9ECBFF\">'首页'</span><span style=\"color:#E1E4E8\">, icon: </span><span style=\"color:#9ECBFF\">'🏠'</span><span style=\"color:#E1E4E8\">, kind: </span><span style=\"color:#9ECBFF\">'route'</span><span style=\"color:#E1E4E8\">, to: </span><span style=\"color:#9ECBFF\">'home'</span><span style=\"color:#E1E4E8\"> },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    { id: </span><span style=\"color:#9ECBFF\">'archive'</span><span style=\"color:#E1E4E8\">, label: </span><span style=\"color:#9ECBFF\">'归档'</span><span style=\"color:#E1E4E8\">, icon: </span><span style=\"color:#9ECBFF\">'🗂'</span><span style=\"color:#E1E4E8\">, kind: </span><span style=\"color:#9ECBFF\">'route'</span><span style=\"color:#E1E4E8\">, to: </span><span style=\"color:#9ECBFF\">'archive'</span><span style=\"color:#E1E4E8\"> },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    { id: </span><span style=\"color:#9ECBFF\">'rss'</span><span style=\"color:#E1E4E8\">, label: </span><span style=\"color:#9ECBFF\">'RSS'</span><span style=\"color:#E1E4E8\">, icon: </span><span style=\"color:#9ECBFF\">'📡'</span><span style=\"color:#E1E4E8\">, kind: </span><span style=\"color:#9ECBFF\">'external'</span><span style=\"color:#E1E4E8\">, href: </span><span style=\"color:#9ECBFF\">'/feed.xml'</span><span style=\"color:#E1E4E8\"> },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  ],</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">} </span><span style=\"color:#F97583\">as</span><span style=\"color:#F97583\"> const</span></span>"
       },
       {
         "type": "paragraph",
@@ -264,7 +285,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "ts",
-        "text": "// src/composables/useTheme.ts\nconst theme = ref<ThemeMode>('light')\n\nexport function useTheme() {\n  const toggle = () => {\n    theme.value = theme.value === 'light' ? 'dark' : 'light'\n    document.documentElement.classList.toggle('night', theme.value === 'dark')\n    localStorage.setItem('theme', theme.value)\n  }\n  return { theme, toggle }\n}"
+        "text": "// src/composables/useTheme.ts\nconst theme = ref<ThemeMode>('light')\n\nexport function useTheme() {\n  const toggle = () => {\n    theme.value = theme.value === 'light' ? 'dark' : 'light'\n    document.documentElement.classList.toggle('night', theme.value === 'dark')\n    localStorage.setItem('theme', theme.value)\n  }\n  return { theme, toggle }\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#6A737D\">// src/composables/useTheme.ts</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">const</span><span style=\"color:#79B8FF\"> theme</span><span style=\"color:#F97583\"> =</span><span style=\"color:#B392F0\"> ref</span><span style=\"color:#E1E4E8\">&#x3C;</span><span style=\"color:#B392F0\">ThemeMode</span><span style=\"color:#E1E4E8\">>(</span><span style=\"color:#9ECBFF\">'light'</span><span style=\"color:#E1E4E8\">)</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#F97583\">export</span><span style=\"color:#F97583\"> function</span><span style=\"color:#B392F0\"> useTheme</span><span style=\"color:#E1E4E8\">() {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">  const</span><span style=\"color:#B392F0\"> toggle</span><span style=\"color:#F97583\"> =</span><span style=\"color:#E1E4E8\"> () </span><span style=\"color:#F97583\">=></span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    theme.value </span><span style=\"color:#F97583\">=</span><span style=\"color:#E1E4E8\"> theme.value </span><span style=\"color:#F97583\">===</span><span style=\"color:#9ECBFF\"> 'light'</span><span style=\"color:#F97583\"> ?</span><span style=\"color:#9ECBFF\"> 'dark'</span><span style=\"color:#F97583\"> :</span><span style=\"color:#9ECBFF\"> 'light'</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    document.documentElement.classList.</span><span style=\"color:#B392F0\">toggle</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'night'</span><span style=\"color:#E1E4E8\">, theme.value </span><span style=\"color:#F97583\">===</span><span style=\"color:#9ECBFF\"> 'dark'</span><span style=\"color:#E1E4E8\">)</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    localStorage.</span><span style=\"color:#B392F0\">setItem</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'theme'</span><span style=\"color:#E1E4E8\">, theme.value)</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  }</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">  return</span><span style=\"color:#E1E4E8\"> { theme, toggle }</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "quote",
@@ -272,6 +294,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-2",
         "text": "迁移顺序"
       },
       {
@@ -280,6 +303,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-3",
         "text": "验证闭环"
       },
       {
@@ -292,6 +316,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-4",
         "text": "复盘"
       },
       {
@@ -319,6 +344,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-1",
         "text": "为什么全开"
       },
       {
@@ -328,7 +354,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "json",
-        "text": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noUncheckedIndexedAccess\": true\n  }\n}"
+        "text": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noUncheckedIndexedAccess\": true\n  }\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#E1E4E8\">{</span></span>\n<span class=\"line\"><span style=\"color:#79B8FF\">  \"compilerOptions\"</span><span style=\"color:#E1E4E8\">: {</span></span>\n<span class=\"line\"><span style=\"color:#79B8FF\">    \"strict\"</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">true</span><span style=\"color:#E1E4E8\">,</span></span>\n<span class=\"line\"><span style=\"color:#79B8FF\">    \"noUncheckedIndexedAccess\"</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">true</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  }</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "quote",
@@ -336,6 +363,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-2",
         "text": "noUncheckedIndexedAccess：最狠也最值"
       },
       {
@@ -345,7 +373,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "ts",
-        "text": "const posts: Post[] = getAllPosts()\nconst first = posts[0]\n// 类型是 Post | undefined，不判空不让用\n\nif (first) {\n  console.log(first.title) // 这里才安全\n}"
+        "text": "const posts: Post[] = getAllPosts()\nconst first = posts[0]\n// 类型是 Post | undefined，不判空不让用\n\nif (first) {\n  console.log(first.title) // 这里才安全\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#F97583\">const</span><span style=\"color:#79B8FF\"> posts</span><span style=\"color:#F97583\">:</span><span style=\"color:#B392F0\"> Post</span><span style=\"color:#E1E4E8\">[] </span><span style=\"color:#F97583\">=</span><span style=\"color:#B392F0\"> getAllPosts</span><span style=\"color:#E1E4E8\">()</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">const</span><span style=\"color:#79B8FF\"> first</span><span style=\"color:#F97583\"> =</span><span style=\"color:#E1E4E8\"> posts[</span><span style=\"color:#79B8FF\">0</span><span style=\"color:#E1E4E8\">]</span></span>\n<span class=\"line\"><span style=\"color:#6A737D\">// 类型是 Post | undefined，不判空不让用</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#F97583\">if</span><span style=\"color:#E1E4E8\"> (first) {</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  console.</span><span style=\"color:#B392F0\">log</span><span style=\"color:#E1E4E8\">(first.title) </span><span style=\"color:#6A737D\">// 这里才安全</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "paragraph",
@@ -353,6 +382,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-3",
         "text": "实战三件套"
       },
       {
@@ -362,7 +392,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "ts",
-        "text": "function isPost(value: unknown): value is Post {\n  return (\n    typeof value === 'object' &&\n    value !== null &&\n    typeof (value as Post).slug === 'string'\n  )\n}"
+        "text": "function isPost(value: unknown): value is Post {\n  return (\n    typeof value === 'object' &&\n    value !== null &&\n    typeof (value as Post).slug === 'string'\n  )\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#F97583\">function</span><span style=\"color:#B392F0\"> isPost</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#FFAB70\">value</span><span style=\"color:#F97583\">:</span><span style=\"color:#79B8FF\"> unknown</span><span style=\"color:#E1E4E8\">)</span><span style=\"color:#F97583\">:</span><span style=\"color:#FFAB70\"> value</span><span style=\"color:#F97583\"> is</span><span style=\"color:#B392F0\"> Post</span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">  return</span><span style=\"color:#E1E4E8\"> (</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">    typeof</span><span style=\"color:#E1E4E8\"> value </span><span style=\"color:#F97583\">===</span><span style=\"color:#9ECBFF\"> 'object'</span><span style=\"color:#F97583\"> &#x26;&#x26;</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    value </span><span style=\"color:#F97583\">!==</span><span style=\"color:#79B8FF\"> null</span><span style=\"color:#F97583\"> &#x26;&#x26;</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">    typeof</span><span style=\"color:#E1E4E8\"> (value </span><span style=\"color:#F97583\">as</span><span style=\"color:#B392F0\"> Post</span><span style=\"color:#E1E4E8\">).slug </span><span style=\"color:#F97583\">===</span><span style=\"color:#9ECBFF\"> 'string'</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  )</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "paragraph",
@@ -374,6 +405,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-4",
         "text": "迁移建议"
       },
       {
@@ -401,6 +433,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-1",
         "text": "史前方案：监听 scroll"
       },
       {
@@ -410,7 +443,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "js",
-        "text": "// 每个 scroll 帧都在做几何计算，节流写不好就是性能灾难\nwindow.addEventListener('scroll', () => {\n  document.querySelectorAll('img[data-src]').forEach((img) => {\n    const rect = img.getBoundingClientRect()\n    if (rect.top < window.innerHeight + 200) {\n      img.src = img.dataset.src\n    }\n  })\n})"
+        "text": "// 每个 scroll 帧都在做几何计算，节流写不好就是性能灾难\nwindow.addEventListener('scroll', () => {\n  document.querySelectorAll('img[data-src]').forEach((img) => {\n    const rect = img.getBoundingClientRect()\n    if (rect.top < window.innerHeight + 200) {\n      img.src = img.dataset.src\n    }\n  })\n})",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#6A737D\">// 每个 scroll 帧都在做几何计算，节流写不好就是性能灾难</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">window.</span><span style=\"color:#B392F0\">addEventListener</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'scroll'</span><span style=\"color:#E1E4E8\">, () </span><span style=\"color:#F97583\">=></span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  document.</span><span style=\"color:#B392F0\">querySelectorAll</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'img[data-src]'</span><span style=\"color:#E1E4E8\">).</span><span style=\"color:#B392F0\">forEach</span><span style=\"color:#E1E4E8\">((</span><span style=\"color:#FFAB70\">img</span><span style=\"color:#E1E4E8\">) </span><span style=\"color:#F97583\">=></span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">    const</span><span style=\"color:#79B8FF\"> rect</span><span style=\"color:#F97583\"> =</span><span style=\"color:#E1E4E8\"> img.</span><span style=\"color:#B392F0\">getBoundingClientRect</span><span style=\"color:#E1E4E8\">()</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">    if</span><span style=\"color:#E1E4E8\"> (rect.top </span><span style=\"color:#F97583\">&#x3C;</span><span style=\"color:#E1E4E8\"> window.innerHeight </span><span style=\"color:#F97583\">+</span><span style=\"color:#79B8FF\"> 200</span><span style=\"color:#E1E4E8\">) {</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      img.src </span><span style=\"color:#F97583\">=</span><span style=\"color:#E1E4E8\"> img.dataset.src</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    }</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  })</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">})</span></span>"
       },
       {
         "type": "paragraph",
@@ -418,6 +452,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-2",
         "text": "现代方案：IntersectionObserver"
       },
       {
@@ -427,7 +462,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "js",
-        "text": "const observer = new IntersectionObserver(\n  (entries, obs) => {\n    for (const entry of entries) {\n      if (!entry.isIntersecting) continue\n      entry.target.src = entry.target.dataset.src\n      obs.unobserve(entry.target) // 加载后立刻摘除，不占名额\n    }\n  },\n  { rootMargin: '200px 0px' }, // 提前 200px 预载\n)\n\ndocument.querySelectorAll('img[data-src]').forEach((img) => observer.observe(img))"
+        "text": "const observer = new IntersectionObserver(\n  (entries, obs) => {\n    for (const entry of entries) {\n      if (!entry.isIntersecting) continue\n      entry.target.src = entry.target.dataset.src\n      obs.unobserve(entry.target) // 加载后立刻摘除，不占名额\n    }\n  },\n  { rootMargin: '200px 0px' }, // 提前 200px 预载\n)\n\ndocument.querySelectorAll('img[data-src]').forEach((img) => observer.observe(img))",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#F97583\">const</span><span style=\"color:#79B8FF\"> observer</span><span style=\"color:#F97583\"> =</span><span style=\"color:#F97583\"> new</span><span style=\"color:#B392F0\"> IntersectionObserver</span><span style=\"color:#E1E4E8\">(</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  (</span><span style=\"color:#FFAB70\">entries</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#FFAB70\">obs</span><span style=\"color:#E1E4E8\">) </span><span style=\"color:#F97583\">=></span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">    for</span><span style=\"color:#E1E4E8\"> (</span><span style=\"color:#F97583\">const</span><span style=\"color:#79B8FF\"> entry</span><span style=\"color:#F97583\"> of</span><span style=\"color:#E1E4E8\"> entries) {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">      if</span><span style=\"color:#E1E4E8\"> (</span><span style=\"color:#F97583\">!</span><span style=\"color:#E1E4E8\">entry.isIntersecting) </span><span style=\"color:#F97583\">continue</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      entry.target.src </span><span style=\"color:#F97583\">=</span><span style=\"color:#E1E4E8\"> entry.target.dataset.src</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      obs.</span><span style=\"color:#B392F0\">unobserve</span><span style=\"color:#E1E4E8\">(entry.target) </span><span style=\"color:#6A737D\">// 加载后立刻摘除，不占名额</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    }</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  { rootMargin: </span><span style=\"color:#9ECBFF\">'200px 0px'</span><span style=\"color:#E1E4E8\"> }, </span><span style=\"color:#6A737D\">// 提前 200px 预载</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">)</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">document.</span><span style=\"color:#B392F0\">querySelectorAll</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'img[data-src]'</span><span style=\"color:#E1E4E8\">).</span><span style=\"color:#B392F0\">forEach</span><span style=\"color:#E1E4E8\">((</span><span style=\"color:#FFAB70\">img</span><span style=\"color:#E1E4E8\">) </span><span style=\"color:#F97583\">=></span><span style=\"color:#E1E4E8\"> observer.</span><span style=\"color:#B392F0\">observe</span><span style=\"color:#E1E4E8\">(img))</span></span>"
       },
       {
         "type": "paragraph",
@@ -439,6 +475,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-3",
         "text": "原生 loading 属性"
       },
       {
@@ -448,7 +485,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "html",
-        "text": "<img src=\"cover.jpg\" loading=\"lazy\" decoding=\"async\" alt=\"封面\" />"
+        "text": "<img src=\"cover.jpg\" loading=\"lazy\" decoding=\"async\" alt=\"封面\" />",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#E1E4E8\">&#x3C;</span><span style=\"color:#85E89D\">img</span><span style=\"color:#B392F0\"> src</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"cover.jpg\"</span><span style=\"color:#B392F0\"> loading</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"lazy\"</span><span style=\"color:#B392F0\"> decoding</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"async\"</span><span style=\"color:#B392F0\"> alt</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"封面\"</span><span style=\"color:#E1E4E8\"> /></span></span>"
       },
       {
         "type": "paragraph",
@@ -456,6 +494,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-4",
         "text": "兜底"
       },
       {
@@ -465,7 +504,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "js",
-        "text": "if (typeof IntersectionObserver === 'undefined') {\n  loadAllImmediately()\n} else {\n  observeAll()\n}"
+        "text": "if (typeof IntersectionObserver === 'undefined') {\n  loadAllImmediately()\n} else {\n  observeAll()\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#F97583\">if</span><span style=\"color:#E1E4E8\"> (</span><span style=\"color:#F97583\">typeof</span><span style=\"color:#E1E4E8\"> IntersectionObserver </span><span style=\"color:#F97583\">===</span><span style=\"color:#9ECBFF\"> 'undefined'</span><span style=\"color:#E1E4E8\">) {</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  loadAllImmediately</span><span style=\"color:#E1E4E8\">()</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">} </span><span style=\"color:#F97583\">else</span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  observeAll</span><span style=\"color:#E1E4E8\">()</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "paragraph",
@@ -493,6 +533,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-1",
         "text": "问题本质"
       },
       {
@@ -501,6 +542,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-2",
         "text": "预渲染方案"
       },
       {
@@ -510,7 +552,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "js",
-        "text": "// scripts/prerender.mjs 核心逻辑\nfor (const post of posts) {\n  const html = shell\n    .replace('<!-- TITLE -->', escapeHtml(post.title))\n    .replace('<!-- META -->', buildMetaTags(post))\n    .replace('<!-- PRERENDERED -->', blocksToHtml(post.body))\n\n  const dir = join(distDir, 'post', post.slug)\n  mkdirSync(dir, { recursive: true })\n  writeFileSync(join(dir, 'index.html'), html)\n}"
+        "text": "// scripts/prerender.mjs 核心逻辑\nfor (const post of posts) {\n  const html = shell\n    .replace('<!-- TITLE -->', escapeHtml(post.title))\n    .replace('<!-- META -->', buildMetaTags(post))\n    .replace('<!-- PRERENDERED -->', blocksToHtml(post.body))\n\n  const dir = join(distDir, 'post', post.slug)\n  mkdirSync(dir, { recursive: true })\n  writeFileSync(join(dir, 'index.html'), html)\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#6A737D\">// scripts/prerender.mjs 核心逻辑</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">for</span><span style=\"color:#E1E4E8\"> (</span><span style=\"color:#F97583\">const</span><span style=\"color:#79B8FF\"> post</span><span style=\"color:#F97583\"> of</span><span style=\"color:#E1E4E8\"> posts) {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">  const</span><span style=\"color:#79B8FF\"> html</span><span style=\"color:#F97583\"> =</span><span style=\"color:#E1E4E8\"> shell</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    .</span><span style=\"color:#B392F0\">replace</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'&#x3C;!-- TITLE -->'</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#B392F0\">escapeHtml</span><span style=\"color:#E1E4E8\">(post.title))</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    .</span><span style=\"color:#B392F0\">replace</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'&#x3C;!-- META -->'</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#B392F0\">buildMetaTags</span><span style=\"color:#E1E4E8\">(post))</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    .</span><span style=\"color:#B392F0\">replace</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'&#x3C;!-- PRERENDERED -->'</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#B392F0\">blocksToHtml</span><span style=\"color:#E1E4E8\">(post.body))</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#F97583\">  const</span><span style=\"color:#79B8FF\"> dir</span><span style=\"color:#F97583\"> =</span><span style=\"color:#B392F0\"> join</span><span style=\"color:#E1E4E8\">(distDir, </span><span style=\"color:#9ECBFF\">'post'</span><span style=\"color:#E1E4E8\">, post.slug)</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  mkdirSync</span><span style=\"color:#E1E4E8\">(dir, { recursive: </span><span style=\"color:#79B8FF\">true</span><span style=\"color:#E1E4E8\"> })</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  writeFileSync</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#B392F0\">join</span><span style=\"color:#E1E4E8\">(dir, </span><span style=\"color:#9ECBFF\">'index.html'</span><span style=\"color:#E1E4E8\">), html)</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "paragraph",
@@ -522,6 +565,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-3",
         "text": "接管无感知"
       },
       {
@@ -530,6 +574,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-4",
         "text": "配套"
       },
       {
@@ -539,7 +584,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "xml",
-        "text": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n  <url>\n    <loc>https://example.com/post/vite8-rolldown-migration/</loc>\n    <lastmod>2026-08-30</lastmod>\n  </url>\n</urlset>"
+        "text": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n  <url>\n    <loc>https://example.com/post/vite8-rolldown-migration/</loc>\n    <lastmod>2026-08-30</lastmod>\n  </url>\n</urlset>",
+        "codeHtml": "<span class=\"line\"><span>&#x3C;?xml version=\"1.0\" encoding=\"UTF-8\"?></span></span>\n<span class=\"line\"><span>&#x3C;urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"></span></span>\n<span class=\"line\"><span>  &#x3C;url></span></span>\n<span class=\"line\"><span>    &#x3C;loc>https://example.com/post/vite8-rolldown-migration/&#x3C;/loc></span></span>\n<span class=\"line\"><span>    &#x3C;lastmod>2026-08-30&#x3C;/lastmod></span></span>\n<span class=\"line\"><span>  &#x3C;/url></span></span>\n<span class=\"line\"><span>&#x3C;/urlset></span></span>"
       },
       {
         "type": "paragraph",
@@ -566,6 +612,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-1",
         "text": "为什么做"
       },
       {
@@ -578,6 +625,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-2",
         "text": "做法零成本"
       },
       {
@@ -587,7 +635,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "xml",
-        "text": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<rss version=\"2.0\" xmlns:atom=\"http://www.w3.org/2005/Atom\">\n  <channel>\n    <title>晚风吟</title>\n    <link>https://example.com/</link>\n    <description>个人开发博客</description>\n    <atom:link href=\"https://example.com/feed.xml\" rel=\"self\" type=\"application/rss+xml\"/>\n    <item>\n      <title>vite8-rolldown-迁移实录</title>\n      <link>https://example.com/post/vite8-rolldown-migration/</link>\n      <pubDate>Sun, 30 Aug 2026 00:00:00 GMT</pubDate>\n      <description>Vite 8 换用 Rolldown 构建引擎的迁移记录。</description>\n    </item>\n  </channel>\n</rss>"
+        "text": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<rss version=\"2.0\" xmlns:atom=\"http://www.w3.org/2005/Atom\">\n  <channel>\n    <title>晚风吟</title>\n    <link>https://example.com/</link>\n    <description>个人开发博客</description>\n    <atom:link href=\"https://example.com/feed.xml\" rel=\"self\" type=\"application/rss+xml\"/>\n    <item>\n      <title>vite8-rolldown-迁移实录</title>\n      <link>https://example.com/post/vite8-rolldown-migration/</link>\n      <pubDate>Sun, 30 Aug 2026 00:00:00 GMT</pubDate>\n      <description>Vite 8 换用 Rolldown 构建引擎的迁移记录。</description>\n    </item>\n  </channel>\n</rss>",
+        "codeHtml": "<span class=\"line\"><span>&#x3C;?xml version=\"1.0\" encoding=\"UTF-8\"?></span></span>\n<span class=\"line\"><span>&#x3C;rss version=\"2.0\" xmlns:atom=\"http://www.w3.org/2005/Atom\"></span></span>\n<span class=\"line\"><span>  &#x3C;channel></span></span>\n<span class=\"line\"><span>    &#x3C;title>晚风吟&#x3C;/title></span></span>\n<span class=\"line\"><span>    &#x3C;link>https://example.com/&#x3C;/link></span></span>\n<span class=\"line\"><span>    &#x3C;description>个人开发博客&#x3C;/description></span></span>\n<span class=\"line\"><span>    &#x3C;atom:link href=\"https://example.com/feed.xml\" rel=\"self\" type=\"application/rss+xml\"/></span></span>\n<span class=\"line\"><span>    &#x3C;item></span></span>\n<span class=\"line\"><span>      &#x3C;title>vite8-rolldown-迁移实录&#x3C;/title></span></span>\n<span class=\"line\"><span>      &#x3C;link>https://example.com/post/vite8-rolldown-migration/&#x3C;/link></span></span>\n<span class=\"line\"><span>      &#x3C;pubDate>Sun, 30 Aug 2026 00:00:00 GMT&#x3C;/pubDate></span></span>\n<span class=\"line\"><span>      &#x3C;description>Vite 8 换用 Rolldown 构建引擎的迁移记录。&#x3C;/description></span></span>\n<span class=\"line\"><span>    &#x3C;/item></span></span>\n<span class=\"line\"><span>  &#x3C;/channel></span></span>\n<span class=\"line\"><span>&#x3C;/rss></span></span>"
       },
       {
         "type": "paragraph",
@@ -595,6 +644,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-3",
         "text": "页面上留入口"
       },
       {
@@ -604,7 +654,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "html",
-        "text": "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"晚风吟\" href=\"/feed.xml\" />"
+        "text": "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"晚风吟\" href=\"/feed.xml\" />",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#E1E4E8\">&#x3C;</span><span style=\"color:#85E89D\">link</span><span style=\"color:#B392F0\"> rel</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"alternate\"</span><span style=\"color:#B392F0\"> type</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"application/rss+xml\"</span><span style=\"color:#B392F0\"> title</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"晚风吟\"</span><span style=\"color:#B392F0\"> href</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"/feed.xml\"</span><span style=\"color:#E1E4E8\"> /></span></span>"
       },
       {
         "type": "paragraph",
@@ -612,6 +663,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-4",
         "text": "结论"
       },
       {
@@ -640,6 +692,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-1",
         "text": "从哪测起"
       },
       {
@@ -649,7 +702,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "ts",
-        "text": "import { describe, expect, it } from 'vitest'\nimport { formatCount } from '@/utils/format'\n\ndescribe('formatCount', () => {\n  it('不足一千原样输出', () => {\n    expect(formatCount(892)).toBe('892')\n  })\n\n  it('千位缩写保留一位小数', () => {\n    expect(formatCount(1593)).toBe('1.6k')\n  })\n\n  it('整千不显示小数点', () => {\n    expect(formatCount(2000)).toBe('2k')\n  })\n})"
+        "text": "import { describe, expect, it } from 'vitest'\nimport { formatCount } from '@/utils/format'\n\ndescribe('formatCount', () => {\n  it('不足一千原样输出', () => {\n    expect(formatCount(892)).toBe('892')\n  })\n\n  it('千位缩写保留一位小数', () => {\n    expect(formatCount(1593)).toBe('1.6k')\n  })\n\n  it('整千不显示小数点', () => {\n    expect(formatCount(2000)).toBe('2k')\n  })\n})",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#F97583\">import</span><span style=\"color:#E1E4E8\"> { describe, expect, it } </span><span style=\"color:#F97583\">from</span><span style=\"color:#9ECBFF\"> 'vitest'</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">import</span><span style=\"color:#E1E4E8\"> { formatCount } </span><span style=\"color:#F97583\">from</span><span style=\"color:#9ECBFF\"> '@/utils/format'</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#B392F0\">describe</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'formatCount'</span><span style=\"color:#E1E4E8\">, () </span><span style=\"color:#F97583\">=></span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  it</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'不足一千原样输出'</span><span style=\"color:#E1E4E8\">, () </span><span style=\"color:#F97583\">=></span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">    expect</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#B392F0\">formatCount</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#79B8FF\">892</span><span style=\"color:#E1E4E8\">)).</span><span style=\"color:#B392F0\">toBe</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'892'</span><span style=\"color:#E1E4E8\">)</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  })</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  it</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'千位缩写保留一位小数'</span><span style=\"color:#E1E4E8\">, () </span><span style=\"color:#F97583\">=></span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">    expect</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#B392F0\">formatCount</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#79B8FF\">1593</span><span style=\"color:#E1E4E8\">)).</span><span style=\"color:#B392F0\">toBe</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'1.6k'</span><span style=\"color:#E1E4E8\">)</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  })</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  it</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'整千不显示小数点'</span><span style=\"color:#E1E4E8\">, () </span><span style=\"color:#F97583\">=></span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">    expect</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#B392F0\">formatCount</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#79B8FF\">2000</span><span style=\"color:#E1E4E8\">)).</span><span style=\"color:#B392F0\">toBe</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'2k'</span><span style=\"color:#E1E4E8\">)</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  })</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">})</span></span>"
       },
       {
         "type": "quote",
@@ -657,6 +711,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-2",
         "text": "转换器是重点保护对象"
       },
       {
@@ -666,10 +721,12 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "ts",
-        "text": "it('代码块里的 HTML 标签必须被转义', () => {\n  const blocks = markdownToBlocks('```html\\n<script>alert(1)</script>\\n```')\n  const html = blocksToHtml(blocks)\n  expect(html).not.toContain('<script>')\n  expect(html).toContain('&lt;script&gt;')\n})\n\nit('未闭合代码块取到文末且不吞后续解析', () => {\n  const blocks = markdownToBlocks('```ts\\nconst a = 1')\n  expect(blocks[0]).toEqual({ type: 'code', lang: 'ts', text: 'const a = 1' })\n})"
+        "text": "it('代码块里的 HTML 标签必须被转义', () => {\n  const blocks = markdownToBlocks('```html\\n<script>alert(1)</script>\\n```')\n  const html = blocksToHtml(blocks)\n  expect(html).not.toContain('<script>')\n  expect(html).toContain('&lt;script&gt;')\n})\n\nit('未闭合代码块取到文末且不吞后续解析', () => {\n  const blocks = markdownToBlocks('```ts\\nconst a = 1')\n  expect(blocks[0]).toEqual({ type: 'code', lang: 'ts', text: 'const a = 1' })\n})",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#B392F0\">it</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'代码块里的 HTML 标签必须被转义'</span><span style=\"color:#E1E4E8\">, () </span><span style=\"color:#F97583\">=></span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">  const</span><span style=\"color:#79B8FF\"> blocks</span><span style=\"color:#F97583\"> =</span><span style=\"color:#B392F0\"> markdownToBlocks</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'```html</span><span style=\"color:#79B8FF\">\\n</span><span style=\"color:#9ECBFF\">&#x3C;script>alert(1)&#x3C;/script></span><span style=\"color:#79B8FF\">\\n</span><span style=\"color:#9ECBFF\">```'</span><span style=\"color:#E1E4E8\">)</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">  const</span><span style=\"color:#79B8FF\"> html</span><span style=\"color:#F97583\"> =</span><span style=\"color:#B392F0\"> blocksToHtml</span><span style=\"color:#E1E4E8\">(blocks)</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  expect</span><span style=\"color:#E1E4E8\">(html).not.</span><span style=\"color:#B392F0\">toContain</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'&#x3C;script>'</span><span style=\"color:#E1E4E8\">)</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  expect</span><span style=\"color:#E1E4E8\">(html).</span><span style=\"color:#B392F0\">toContain</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'&#x26;lt;script&#x26;gt;'</span><span style=\"color:#E1E4E8\">)</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">})</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#B392F0\">it</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'未闭合代码块取到文末且不吞后续解析'</span><span style=\"color:#E1E4E8\">, () </span><span style=\"color:#F97583\">=></span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">  const</span><span style=\"color:#79B8FF\"> blocks</span><span style=\"color:#F97583\"> =</span><span style=\"color:#B392F0\"> markdownToBlocks</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'```ts</span><span style=\"color:#79B8FF\">\\n</span><span style=\"color:#9ECBFF\">const a = 1'</span><span style=\"color:#E1E4E8\">)</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  expect</span><span style=\"color:#E1E4E8\">(blocks[</span><span style=\"color:#79B8FF\">0</span><span style=\"color:#E1E4E8\">]).</span><span style=\"color:#B392F0\">toEqual</span><span style=\"color:#E1E4E8\">({ type: </span><span style=\"color:#9ECBFF\">'code'</span><span style=\"color:#E1E4E8\">, lang: </span><span style=\"color:#9ECBFF\">'ts'</span><span style=\"color:#E1E4E8\">, text: </span><span style=\"color:#9ECBFF\">'const a = 1'</span><span style=\"color:#E1E4E8\"> })</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">})</span></span>"
       },
       {
         "type": "heading",
+        "id": "sec-3",
         "text": "边界意识"
       },
       {
@@ -678,6 +735,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-4",
         "text": "运行与守护"
       },
       {
@@ -706,6 +764,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-1",
         "text": "流水线设计"
       },
       {
@@ -715,7 +774,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "yaml",
-        "text": "name: Deploy\non:\n  push:\n    branches: [main]\n\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n\n      - uses: actions/setup-node@v4\n        with:\n          node-version-file: .nvmrc\n          cache: npm\n\n      - run: npm ci\n\n      - run: npm run type-check\n      - run: npm run lint\n      - run: npm test\n      - run: npm run build\n\n      - uses: actions/upload-pages-artifact@v3\n        with:\n          path: dist"
+        "text": "name: Deploy\non:\n  push:\n    branches: [main]\n\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n\n      - uses: actions/setup-node@v4\n        with:\n          node-version-file: .nvmrc\n          cache: npm\n\n      - run: npm ci\n\n      - run: npm run type-check\n      - run: npm run lint\n      - run: npm test\n      - run: npm run build\n\n      - uses: actions/upload-pages-artifact@v3\n        with:\n          path: dist",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#85E89D\">name</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#9ECBFF\">Deploy</span></span>\n<span class=\"line\"><span style=\"color:#79B8FF\">on</span><span style=\"color:#E1E4E8\">:</span></span>\n<span class=\"line\"><span style=\"color:#85E89D\">  push</span><span style=\"color:#E1E4E8\">:</span></span>\n<span class=\"line\"><span style=\"color:#85E89D\">    branches</span><span style=\"color:#E1E4E8\">: [</span><span style=\"color:#9ECBFF\">main</span><span style=\"color:#E1E4E8\">]</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#85E89D\">jobs</span><span style=\"color:#E1E4E8\">:</span></span>\n<span class=\"line\"><span style=\"color:#85E89D\">  deploy</span><span style=\"color:#E1E4E8\">:</span></span>\n<span class=\"line\"><span style=\"color:#85E89D\">    runs-on</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#9ECBFF\">ubuntu-latest</span></span>\n<span class=\"line\"><span style=\"color:#85E89D\">    steps</span><span style=\"color:#E1E4E8\">:</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      - </span><span style=\"color:#85E89D\">uses</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#9ECBFF\">actions/checkout@v4</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      - </span><span style=\"color:#85E89D\">uses</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#9ECBFF\">actions/setup-node@v4</span></span>\n<span class=\"line\"><span style=\"color:#85E89D\">        with</span><span style=\"color:#E1E4E8\">:</span></span>\n<span class=\"line\"><span style=\"color:#85E89D\">          node-version-file</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#9ECBFF\">.nvmrc</span></span>\n<span class=\"line\"><span style=\"color:#85E89D\">          cache</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#9ECBFF\">npm</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      - </span><span style=\"color:#85E89D\">run</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#9ECBFF\">npm ci</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      - </span><span style=\"color:#85E89D\">run</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#9ECBFF\">npm run type-check</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      - </span><span style=\"color:#85E89D\">run</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#9ECBFF\">npm run lint</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      - </span><span style=\"color:#85E89D\">run</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#9ECBFF\">npm test</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      - </span><span style=\"color:#85E89D\">run</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#9ECBFF\">npm run build</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      - </span><span style=\"color:#85E89D\">uses</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#9ECBFF\">actions/upload-pages-artifact@v3</span></span>\n<span class=\"line\"><span style=\"color:#85E89D\">        with</span><span style=\"color:#E1E4E8\">:</span></span>\n<span class=\"line\"><span style=\"color:#85E89D\">          path</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#9ECBFF\">dist</span></span>"
       },
       {
         "type": "paragraph",
@@ -723,6 +783,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-2",
         "text": "顺序有讲究"
       },
       {
@@ -735,6 +796,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-3",
         "text": "缓存"
       },
       {
@@ -743,6 +805,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-4",
         "text": "踩坑"
       },
       {
@@ -775,6 +838,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-1",
         "text": "令牌方案"
       },
       {
@@ -784,7 +848,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "css",
-        "text": "html.night {\n  --bg-page: #111113;\n  --bg-surface: #1c1c1e;\n  --text-primary: #f5f5f7;\n  --text-secondary: #98989d;\n  --shadow-card: 0 1px 3px rgb(0 0 0 / 60%);\n}"
+        "text": "html.night {\n  --bg-page: #111113;\n  --bg-surface: #1c1c1e;\n  --text-primary: #f5f5f7;\n  --text-secondary: #98989d;\n  --shadow-card: 0 1px 3px rgb(0 0 0 / 60%);\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#85E89D\">html</span><span style=\"color:#B392F0\">.night</span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#FFAB70\">  --bg-page</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">#111113</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#FFAB70\">  --bg-surface</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">#1c1c1e</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#FFAB70\">  --text-primary</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">#f5f5f7</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#FFAB70\">  --text-secondary</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">#98989d</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#FFAB70\">  --shadow-card</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">0</span><span style=\"color:#79B8FF\"> 1</span><span style=\"color:#F97583\">px</span><span style=\"color:#79B8FF\"> 3</span><span style=\"color:#F97583\">px</span><span style=\"color:#79B8FF\"> rgb</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#79B8FF\">0</span><span style=\"color:#79B8FF\"> 0</span><span style=\"color:#79B8FF\"> 0</span><span style=\"color:#E1E4E8\"> / </span><span style=\"color:#79B8FF\">60</span><span style=\"color:#F97583\">%</span><span style=\"color:#E1E4E8\">);</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "paragraph",
@@ -792,6 +857,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-2",
         "text": "偏好初始化的三级策略"
       },
       {
@@ -801,7 +867,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "ts",
-        "text": "const saved = localStorage.getItem('theme')\nconst prefersDark =\n  typeof window.matchMedia === 'function' &&\n  window.matchMedia('(prefers-color-scheme: dark)').matches\n\ndocument.documentElement.classList.toggle('night', saved === 'night' || (!saved && prefersDark))"
+        "text": "const saved = localStorage.getItem('theme')\nconst prefersDark =\n  typeof window.matchMedia === 'function' &&\n  window.matchMedia('(prefers-color-scheme: dark)').matches\n\ndocument.documentElement.classList.toggle('night', saved === 'night' || (!saved && prefersDark))",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#F97583\">const</span><span style=\"color:#79B8FF\"> saved</span><span style=\"color:#F97583\"> =</span><span style=\"color:#E1E4E8\"> localStorage.</span><span style=\"color:#B392F0\">getItem</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'theme'</span><span style=\"color:#E1E4E8\">)</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">const</span><span style=\"color:#79B8FF\"> prefersDark</span><span style=\"color:#F97583\"> =</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">  typeof</span><span style=\"color:#E1E4E8\"> window.matchMedia </span><span style=\"color:#F97583\">===</span><span style=\"color:#9ECBFF\"> 'function'</span><span style=\"color:#F97583\"> &#x26;&#x26;</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  window.</span><span style=\"color:#B392F0\">matchMedia</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'(prefers-color-scheme: dark)'</span><span style=\"color:#E1E4E8\">).matches</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">document.documentElement.classList.</span><span style=\"color:#B392F0\">toggle</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'night'</span><span style=\"color:#E1E4E8\">, saved </span><span style=\"color:#F97583\">===</span><span style=\"color:#9ECBFF\"> 'night'</span><span style=\"color:#F97583\"> ||</span><span style=\"color:#E1E4E8\"> (</span><span style=\"color:#F97583\">!</span><span style=\"color:#E1E4E8\">saved </span><span style=\"color:#F97583\">&#x26;&#x26;</span><span style=\"color:#E1E4E8\"> prefersDark))</span></span>"
       },
       {
         "type": "paragraph",
@@ -809,6 +876,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-3",
         "text": "切换动画只给颜色"
       },
       {
@@ -818,7 +886,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "css",
-        "text": "html.theme-switching *,\nhtml.theme-switching *::before {\n  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;\n}"
+        "text": "html.theme-switching *,\nhtml.theme-switching *::before {\n  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#85E89D\">html</span><span style=\"color:#B392F0\">.theme-switching</span><span style=\"color:#85E89D\"> *</span><span style=\"color:#E1E4E8\">,</span></span>\n<span class=\"line\"><span style=\"color:#85E89D\">html</span><span style=\"color:#B392F0\">.theme-switching</span><span style=\"color:#85E89D\"> *</span><span style=\"color:#B392F0\">::before</span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#79B8FF\">  transition</span><span style=\"color:#E1E4E8\">: background-color </span><span style=\"color:#79B8FF\">0.3</span><span style=\"color:#F97583\">s</span><span style=\"color:#79B8FF\"> ease</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#79B8FF\">color</span><span style=\"color:#79B8FF\"> 0.3</span><span style=\"color:#F97583\">s</span><span style=\"color:#79B8FF\"> ease</span><span style=\"color:#E1E4E8\">, border-color </span><span style=\"color:#79B8FF\">0.3</span><span style=\"color:#F97583\">s</span><span style=\"color:#79B8FF\"> ease</span><span style=\"color:#F97583\"> !important</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "paragraph",
@@ -826,6 +895,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-4",
         "text": "防闪烁"
       },
       {
@@ -835,7 +905,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "html",
-        "text": "<head>\n  <script>\n    document.documentElement.classList.toggle(\n      'night',\n      localStorage.getItem('theme') === 'night',\n    )\n  </script>\n</head>"
+        "text": "<head>\n  <script>\n    document.documentElement.classList.toggle(\n      'night',\n      localStorage.getItem('theme') === 'night',\n    )\n  </script>\n</head>",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#E1E4E8\">&#x3C;</span><span style=\"color:#85E89D\">head</span><span style=\"color:#E1E4E8\">></span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  &#x3C;</span><span style=\"color:#85E89D\">script</span><span style=\"color:#E1E4E8\">></span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    document.documentElement.classList.</span><span style=\"color:#B392F0\">toggle</span><span style=\"color:#E1E4E8\">(</span></span>\n<span class=\"line\"><span style=\"color:#9ECBFF\">      'night'</span><span style=\"color:#E1E4E8\">,</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      localStorage.</span><span style=\"color:#B392F0\">getItem</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'theme'</span><span style=\"color:#E1E4E8\">) </span><span style=\"color:#F97583\">===</span><span style=\"color:#9ECBFF\"> 'night'</span><span style=\"color:#E1E4E8\">,</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    )</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  &#x3C;/</span><span style=\"color:#85E89D\">script</span><span style=\"color:#E1E4E8\">></span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">&#x3C;/</span><span style=\"color:#85E89D\">head</span><span style=\"color:#E1E4E8\">></span></span>"
       },
       {
         "type": "quote",
@@ -862,6 +933,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-1",
         "text": "基建"
       },
       {
@@ -871,7 +943,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "js",
-        "text": "import { JSDOM } from 'jsdom'\n\nconst dom = await JSDOM.fromFile('dist-smoke/index.html', {\n  runScripts: 'dangerously',\n  resources: 'usable',\n  pretendToBeVisual: true,\n})\n\nawait waitFor(() => dom.window.document.querySelector('.post-card'))"
+        "text": "import { JSDOM } from 'jsdom'\n\nconst dom = await JSDOM.fromFile('dist-smoke/index.html', {\n  runScripts: 'dangerously',\n  resources: 'usable',\n  pretendToBeVisual: true,\n})\n\nawait waitFor(() => dom.window.document.querySelector('.post-card'))",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#F97583\">import</span><span style=\"color:#E1E4E8\"> { JSDOM } </span><span style=\"color:#F97583\">from</span><span style=\"color:#9ECBFF\"> 'jsdom'</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#F97583\">const</span><span style=\"color:#79B8FF\"> dom</span><span style=\"color:#F97583\"> =</span><span style=\"color:#F97583\"> await</span><span style=\"color:#79B8FF\"> JSDOM</span><span style=\"color:#E1E4E8\">.</span><span style=\"color:#B392F0\">fromFile</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'dist-smoke/index.html'</span><span style=\"color:#E1E4E8\">, {</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  runScripts: </span><span style=\"color:#9ECBFF\">'dangerously'</span><span style=\"color:#E1E4E8\">,</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  resources: </span><span style=\"color:#9ECBFF\">'usable'</span><span style=\"color:#E1E4E8\">,</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  pretendToBeVisual: </span><span style=\"color:#79B8FF\">true</span><span style=\"color:#E1E4E8\">,</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">})</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#F97583\">await</span><span style=\"color:#B392F0\"> waitFor</span><span style=\"color:#E1E4E8\">(() </span><span style=\"color:#F97583\">=></span><span style=\"color:#E1E4E8\"> dom.window.document.</span><span style=\"color:#B392F0\">querySelector</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'.post-card'</span><span style=\"color:#E1E4E8\">))</span></span>"
       },
       {
         "type": "paragraph",
@@ -879,6 +952,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-2",
         "text": "断言要等，不要睡"
       },
       {
@@ -888,10 +962,12 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "js",
-        "text": "async function waitFor(fn, timeout = 3000) {\n  const start = Date.now()\n  while (Date.now() - start < timeout) {\n    try {\n      const result = fn()\n      if (result) return result\n    } catch {\n      /* 条件未就绪，继续轮询 */\n    }\n    await new Promise((r) => setTimeout(r, 50))\n  }\n  throw new Error('waitFor 超时')\n}"
+        "text": "async function waitFor(fn, timeout = 3000) {\n  const start = Date.now()\n  while (Date.now() - start < timeout) {\n    try {\n      const result = fn()\n      if (result) return result\n    } catch {\n      /* 条件未就绪，继续轮询 */\n    }\n    await new Promise((r) => setTimeout(r, 50))\n  }\n  throw new Error('waitFor 超时')\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#F97583\">async</span><span style=\"color:#F97583\"> function</span><span style=\"color:#B392F0\"> waitFor</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#FFAB70\">fn</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#FFAB70\">timeout</span><span style=\"color:#F97583\"> =</span><span style=\"color:#79B8FF\"> 3000</span><span style=\"color:#E1E4E8\">) {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">  const</span><span style=\"color:#79B8FF\"> start</span><span style=\"color:#F97583\"> =</span><span style=\"color:#E1E4E8\"> Date.</span><span style=\"color:#B392F0\">now</span><span style=\"color:#E1E4E8\">()</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">  while</span><span style=\"color:#E1E4E8\"> (Date.</span><span style=\"color:#B392F0\">now</span><span style=\"color:#E1E4E8\">() </span><span style=\"color:#F97583\">-</span><span style=\"color:#E1E4E8\"> start </span><span style=\"color:#F97583\">&#x3C;</span><span style=\"color:#E1E4E8\"> timeout) {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">    try</span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">      const</span><span style=\"color:#79B8FF\"> result</span><span style=\"color:#F97583\"> =</span><span style=\"color:#B392F0\"> fn</span><span style=\"color:#E1E4E8\">()</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">      if</span><span style=\"color:#E1E4E8\"> (result) </span><span style=\"color:#F97583\">return</span><span style=\"color:#E1E4E8\"> result</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    } </span><span style=\"color:#F97583\">catch</span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#6A737D\">      /* 条件未就绪，继续轮询 */</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    }</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">    await</span><span style=\"color:#F97583\"> new</span><span style=\"color:#79B8FF\"> Promise</span><span style=\"color:#E1E4E8\">((</span><span style=\"color:#FFAB70\">r</span><span style=\"color:#E1E4E8\">) </span><span style=\"color:#F97583\">=></span><span style=\"color:#B392F0\"> setTimeout</span><span style=\"color:#E1E4E8\">(r, </span><span style=\"color:#79B8FF\">50</span><span style=\"color:#E1E4E8\">))</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  }</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">  throw</span><span style=\"color:#F97583\"> new</span><span style=\"color:#B392F0\"> Error</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'waitFor 超时'</span><span style=\"color:#E1E4E8\">)</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "heading",
+        "id": "sec-3",
         "text": "环境缺口要补"
       },
       {
@@ -901,7 +977,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "js",
-        "text": "dom.window.matchMedia = (query) => ({\n  matches: false,\n  media: query,\n  addEventListener() {},\n  removeEventListener() {},\n})"
+        "text": "dom.window.matchMedia = (query) => ({\n  matches: false,\n  media: query,\n  addEventListener() {},\n  removeEventListener() {},\n})",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#E1E4E8\">dom.window.</span><span style=\"color:#B392F0\">matchMedia</span><span style=\"color:#F97583\"> =</span><span style=\"color:#E1E4E8\"> (</span><span style=\"color:#FFAB70\">query</span><span style=\"color:#E1E4E8\">) </span><span style=\"color:#F97583\">=></span><span style=\"color:#E1E4E8\"> ({</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  matches: </span><span style=\"color:#79B8FF\">false</span><span style=\"color:#E1E4E8\">,</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  media: query,</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  addEventListener</span><span style=\"color:#E1E4E8\">() {},</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  removeEventListener</span><span style=\"color:#E1E4E8\">() {},</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">})</span></span>"
       },
       {
         "type": "paragraph",
@@ -913,6 +990,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-4",
         "text": "收益"
       },
       {
@@ -941,6 +1019,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-1",
         "text": "设计原则"
       },
       {
@@ -950,7 +1029,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "md",
-        "text": "---\nslug: my-new-post\ntitle: 新文章标题\nexcerpt: 一句话摘要，列表页展示\ncover: /images/covers/my-new-post.jpg\npublishedAt: 2026-06-02\ntags: [Vue]\n---\n\n正文直接写，支持标题、引文、图片和代码块。"
+        "text": "---\nslug: my-new-post\ntitle: 新文章标题\nexcerpt: 一句话摘要，列表页展示\ncover: /images/covers/my-new-post.jpg\npublishedAt: 2026-06-02\ntags: [Vue]\n---\n\n正文直接写，支持标题、引文、图片和代码块。",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#E1E4E8\">---</span></span>\n<span class=\"line\"><span style=\"color:#85E89D\">slug</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#9ECBFF\">my-new-post</span></span>\n<span class=\"line\"><span style=\"color:#85E89D\">title</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#9ECBFF\">新文章标题</span></span>\n<span class=\"line\"><span style=\"color:#85E89D\">excerpt</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#9ECBFF\">一句话摘要，列表页展示</span></span>\n<span class=\"line\"><span style=\"color:#85E89D\">cover</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#9ECBFF\">/images/covers/my-new-post.jpg</span></span>\n<span class=\"line\"><span style=\"color:#85E89D\">publishedAt</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">2026-06-02</span></span>\n<span class=\"line\"><span style=\"color:#85E89D\">tags</span><span style=\"color:#E1E4E8\">: [</span><span style=\"color:#9ECBFF\">Vue</span><span style=\"color:#E1E4E8\">]</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">---</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">正文直接写，支持标题、引文、图片和代码块。</span></span>"
       },
       {
         "type": "paragraph",
@@ -958,6 +1038,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-2",
         "text": "校验前置"
       },
       {
@@ -967,7 +1048,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "js",
-        "text": "for (const field of ['slug', 'title', 'excerpt', 'publishedAt', 'tags']) {\n  if (!data[field]) fail(file, `frontmatter 缺少必填字段 \"${field}\"`)\n}\nif (seenSlugs.has(data.slug)) fail(file, `slug \"${data.slug}\" 重复`)\nif (!ISO_DATE.test(data.publishedAt)) fail(file, 'publishedAt 必须是 YYYY-MM-DD 格式')"
+        "text": "for (const field of ['slug', 'title', 'excerpt', 'publishedAt', 'tags']) {\n  if (!data[field]) fail(file, `frontmatter 缺少必填字段 \"${field}\"`)\n}\nif (seenSlugs.has(data.slug)) fail(file, `slug \"${data.slug}\" 重复`)\nif (!ISO_DATE.test(data.publishedAt)) fail(file, 'publishedAt 必须是 YYYY-MM-DD 格式')",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#F97583\">for</span><span style=\"color:#E1E4E8\"> (</span><span style=\"color:#F97583\">const</span><span style=\"color:#79B8FF\"> field</span><span style=\"color:#F97583\"> of</span><span style=\"color:#E1E4E8\"> [</span><span style=\"color:#9ECBFF\">'slug'</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#9ECBFF\">'title'</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#9ECBFF\">'excerpt'</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#9ECBFF\">'publishedAt'</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#9ECBFF\">'tags'</span><span style=\"color:#E1E4E8\">]) {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">  if</span><span style=\"color:#E1E4E8\"> (</span><span style=\"color:#F97583\">!</span><span style=\"color:#E1E4E8\">data[field]) </span><span style=\"color:#B392F0\">fail</span><span style=\"color:#E1E4E8\">(file, </span><span style=\"color:#9ECBFF\">`frontmatter 缺少必填字段 \"${</span><span style=\"color:#E1E4E8\">field</span><span style=\"color:#9ECBFF\">}\"`</span><span style=\"color:#E1E4E8\">)</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">if</span><span style=\"color:#E1E4E8\"> (seenSlugs.</span><span style=\"color:#B392F0\">has</span><span style=\"color:#E1E4E8\">(data.slug)) </span><span style=\"color:#B392F0\">fail</span><span style=\"color:#E1E4E8\">(file, </span><span style=\"color:#9ECBFF\">`slug \"${</span><span style=\"color:#E1E4E8\">data</span><span style=\"color:#9ECBFF\">.</span><span style=\"color:#E1E4E8\">slug</span><span style=\"color:#9ECBFF\">}\" 重复`</span><span style=\"color:#E1E4E8\">)</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">if</span><span style=\"color:#E1E4E8\"> (</span><span style=\"color:#F97583\">!</span><span style=\"color:#79B8FF\">ISO_DATE</span><span style=\"color:#E1E4E8\">.</span><span style=\"color:#B392F0\">test</span><span style=\"color:#E1E4E8\">(data.publishedAt)) </span><span style=\"color:#B392F0\">fail</span><span style=\"color:#E1E4E8\">(file, </span><span style=\"color:#9ECBFF\">'publishedAt 必须是 YYYY-MM-DD 格式'</span><span style=\"color:#E1E4E8\">)</span></span>"
       },
       {
         "type": "paragraph",
@@ -975,6 +1057,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-3",
         "text": "转换器刻意保持克制"
       },
       {
@@ -987,6 +1070,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-4",
         "text": "延伸产物"
       },
       {
@@ -1014,6 +1098,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-1",
         "text": "兜底方案"
       },
       {
@@ -1023,7 +1108,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "ts",
-        "text": "// App.vue\nimport { onErrorCaptured, ref } from 'vue'\n\nconst errorMessage = ref('')\n\nonErrorCaptured((err, instance, info) => {\n  errorMessage.value = `${err.message} (${info})`\n  reportToMonitor(err, info) // 上报监控\n  return false // 阻断传播，整页不崩\n})"
+        "text": "// App.vue\nimport { onErrorCaptured, ref } from 'vue'\n\nconst errorMessage = ref('')\n\nonErrorCaptured((err, instance, info) => {\n  errorMessage.value = `${err.message} (${info})`\n  reportToMonitor(err, info) // 上报监控\n  return false // 阻断传播，整页不崩\n})",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#6A737D\">// App.vue</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">import</span><span style=\"color:#E1E4E8\"> { onErrorCaptured, ref } </span><span style=\"color:#F97583\">from</span><span style=\"color:#9ECBFF\"> 'vue'</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#F97583\">const</span><span style=\"color:#79B8FF\"> errorMessage</span><span style=\"color:#F97583\"> =</span><span style=\"color:#B392F0\"> ref</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">''</span><span style=\"color:#E1E4E8\">)</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#B392F0\">onErrorCaptured</span><span style=\"color:#E1E4E8\">((</span><span style=\"color:#FFAB70\">err</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#FFAB70\">instance</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#FFAB70\">info</span><span style=\"color:#E1E4E8\">) </span><span style=\"color:#F97583\">=></span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  errorMessage.value </span><span style=\"color:#F97583\">=</span><span style=\"color:#9ECBFF\"> `${</span><span style=\"color:#E1E4E8\">err</span><span style=\"color:#9ECBFF\">.</span><span style=\"color:#E1E4E8\">message</span><span style=\"color:#9ECBFF\">} (${</span><span style=\"color:#E1E4E8\">info</span><span style=\"color:#9ECBFF\">})`</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  reportToMonitor</span><span style=\"color:#E1E4E8\">(err, info) </span><span style=\"color:#6A737D\">// 上报监控</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">  return</span><span style=\"color:#79B8FF\"> false</span><span style=\"color:#6A737D\"> // 阻断传播，整页不崩</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">})</span></span>"
       },
       {
         "type": "paragraph",
@@ -1032,7 +1118,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "html",
-        "text": "<div v-if=\"errorMessage\" class=\"app-fallback\">\n  <p>页面开小差了，部分功能暂时不可用</p>\n  <button type=\"button\" @click=\"errorMessage = ''\">重试</button>\n</div>\n<RouterView v-else />"
+        "text": "<div v-if=\"errorMessage\" class=\"app-fallback\">\n  <p>页面开小差了，部分功能暂时不可用</p>\n  <button type=\"button\" @click=\"errorMessage = ''\">重试</button>\n</div>\n<RouterView v-else />",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#E1E4E8\">&#x3C;</span><span style=\"color:#85E89D\">div</span><span style=\"color:#B392F0\"> v-if</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"errorMessage\"</span><span style=\"color:#B392F0\"> class</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"app-fallback\"</span><span style=\"color:#E1E4E8\">></span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  &#x3C;</span><span style=\"color:#85E89D\">p</span><span style=\"color:#E1E4E8\">>页面开小差了，部分功能暂时不可用&#x3C;/</span><span style=\"color:#85E89D\">p</span><span style=\"color:#E1E4E8\">></span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  &#x3C;</span><span style=\"color:#85E89D\">button</span><span style=\"color:#B392F0\"> type</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"button\"</span><span style=\"color:#B392F0\"> @click</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"errorMessage = ''\"</span><span style=\"color:#E1E4E8\">>重试&#x3C;/</span><span style=\"color:#85E89D\">button</span><span style=\"color:#E1E4E8\">></span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">&#x3C;/</span><span style=\"color:#85E89D\">div</span><span style=\"color:#E1E4E8\">></span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">&#x3C;</span><span style=\"color:#FDAEB7;font-style:italic\">RouterView</span><span style=\"color:#B392F0\"> v-else</span><span style=\"color:#E1E4E8\"> /></span></span>"
       },
       {
         "type": "quote",
@@ -1040,6 +1127,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-2",
         "text": "配套动作：环境探测全部封装"
       },
       {
@@ -1049,7 +1137,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "ts",
-        "text": "export function safeMatchMedia(query: string): MediaQueryList | null {\n  if (typeof window.matchMedia !== 'function') return null\n  try {\n    return window.matchMedia(query)\n  } catch {\n    return null\n  }\n}"
+        "text": "export function safeMatchMedia(query: string): MediaQueryList | null {\n  if (typeof window.matchMedia !== 'function') return null\n  try {\n    return window.matchMedia(query)\n  } catch {\n    return null\n  }\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#F97583\">export</span><span style=\"color:#F97583\"> function</span><span style=\"color:#B392F0\"> safeMatchMedia</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#FFAB70\">query</span><span style=\"color:#F97583\">:</span><span style=\"color:#79B8FF\"> string</span><span style=\"color:#E1E4E8\">)</span><span style=\"color:#F97583\">:</span><span style=\"color:#B392F0\"> MediaQueryList</span><span style=\"color:#F97583\"> |</span><span style=\"color:#79B8FF\"> null</span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">  if</span><span style=\"color:#E1E4E8\"> (</span><span style=\"color:#F97583\">typeof</span><span style=\"color:#E1E4E8\"> window.matchMedia </span><span style=\"color:#F97583\">!==</span><span style=\"color:#9ECBFF\"> 'function'</span><span style=\"color:#E1E4E8\">) </span><span style=\"color:#F97583\">return</span><span style=\"color:#79B8FF\"> null</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">  try</span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">    return</span><span style=\"color:#E1E4E8\"> window.</span><span style=\"color:#B392F0\">matchMedia</span><span style=\"color:#E1E4E8\">(query)</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  } </span><span style=\"color:#F97583\">catch</span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">    return</span><span style=\"color:#79B8FF\"> null</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  }</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "paragraph",
@@ -1057,6 +1146,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-3",
         "text": "验证方式"
       },
       {
@@ -1084,6 +1174,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-1",
         "text": "令牌化"
       },
       {
@@ -1093,7 +1184,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "css",
-        "text": ":root {\n  --brand: #4a7dff;\n  --bg-page: #f7f7f8;\n  --bg-surface: #ffffff;\n  --text-primary: #1d1d1f;\n  --text-secondary: #6e6e73;\n  --radius-md: 12px;\n  --shadow-card: 0 1px 3px rgb(0 0 0 / 8%);\n  --duration-base: 0.25s;\n  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);\n}"
+        "text": ":root {\n  --brand: #4a7dff;\n  --bg-page: #f7f7f8;\n  --bg-surface: #ffffff;\n  --text-primary: #1d1d1f;\n  --text-secondary: #6e6e73;\n  --radius-md: 12px;\n  --shadow-card: 0 1px 3px rgb(0 0 0 / 8%);\n  --duration-base: 0.25s;\n  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#B392F0\">:root</span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#FFAB70\">  --brand</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">#4a7dff</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#FFAB70\">  --bg-page</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">#f7f7f8</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#FFAB70\">  --bg-surface</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">#ffffff</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#FFAB70\">  --text-primary</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">#1d1d1f</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#FFAB70\">  --text-secondary</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">#6e6e73</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#FFAB70\">  --radius-md</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">12</span><span style=\"color:#F97583\">px</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#FFAB70\">  --shadow-card</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">0</span><span style=\"color:#79B8FF\"> 1</span><span style=\"color:#F97583\">px</span><span style=\"color:#79B8FF\"> 3</span><span style=\"color:#F97583\">px</span><span style=\"color:#79B8FF\"> rgb</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#79B8FF\">0</span><span style=\"color:#79B8FF\"> 0</span><span style=\"color:#79B8FF\"> 0</span><span style=\"color:#E1E4E8\"> / </span><span style=\"color:#79B8FF\">8</span><span style=\"color:#F97583\">%</span><span style=\"color:#E1E4E8\">);</span></span>\n<span class=\"line\"><span style=\"color:#FFAB70\">  --duration-base</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">0.25</span><span style=\"color:#F97583\">s</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#FFAB70\">  --ease-standard</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">cubic-bezier</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#79B8FF\">0.4</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#79B8FF\">0</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#79B8FF\">0.2</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#79B8FF\">1</span><span style=\"color:#E1E4E8\">);</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "paragraph",
@@ -1102,10 +1194,12 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "css",
-        "text": ".post-card {\n  background: var(--bg-surface);\n  border-radius: var(--radius-md);\n  box-shadow: var(--shadow-card);\n  transition: color var(--duration-base) var(--ease-standard);\n}"
+        "text": ".post-card {\n  background: var(--bg-surface);\n  border-radius: var(--radius-md);\n  box-shadow: var(--shadow-card);\n  transition: color var(--duration-base) var(--ease-standard);\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#B392F0\">.post-card</span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#79B8FF\">  background</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">var</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#FFAB70\">--bg-surface</span><span style=\"color:#E1E4E8\">);</span></span>\n<span class=\"line\"><span style=\"color:#79B8FF\">  border-radius</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">var</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#FFAB70\">--radius-md</span><span style=\"color:#E1E4E8\">);</span></span>\n<span class=\"line\"><span style=\"color:#79B8FF\">  box-shadow</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">var</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#FFAB70\">--shadow-card</span><span style=\"color:#E1E4E8\">);</span></span>\n<span class=\"line\"><span style=\"color:#79B8FF\">  transition</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">color</span><span style=\"color:#79B8FF\"> var</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#FFAB70\">--duration-base</span><span style=\"color:#E1E4E8\">) </span><span style=\"color:#79B8FF\">var</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#FFAB70\">--ease-standard</span><span style=\"color:#E1E4E8\">);</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "heading",
+        "id": "sec-2",
         "text": "命名按用途，不按色值"
       },
       {
@@ -1118,6 +1212,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-3",
         "text": "效果"
       },
       {
@@ -1127,7 +1222,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "css",
-        "text": "html.night {\n  --bg-page: #111113;\n  --bg-surface: #1c1c1e;\n  --text-primary: #f5f5f7;\n  --text-secondary: #98989d;\n  --shadow-card: 0 1px 3px rgb(0 0 0 / 60%);\n}"
+        "text": "html.night {\n  --bg-page: #111113;\n  --bg-surface: #1c1c1e;\n  --text-primary: #f5f5f7;\n  --text-secondary: #98989d;\n  --shadow-card: 0 1px 3px rgb(0 0 0 / 60%);\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#85E89D\">html</span><span style=\"color:#B392F0\">.night</span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#FFAB70\">  --bg-page</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">#111113</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#FFAB70\">  --bg-surface</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">#1c1c1e</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#FFAB70\">  --text-primary</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">#f5f5f7</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#FFAB70\">  --text-secondary</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">#98989d</span><span style=\"color:#E1E4E8\">;</span></span>\n<span class=\"line\"><span style=\"color:#FFAB70\">  --shadow-card</span><span style=\"color:#E1E4E8\">: </span><span style=\"color:#79B8FF\">0</span><span style=\"color:#79B8FF\"> 1</span><span style=\"color:#F97583\">px</span><span style=\"color:#79B8FF\"> 3</span><span style=\"color:#F97583\">px</span><span style=\"color:#79B8FF\"> rgb</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#79B8FF\">0</span><span style=\"color:#79B8FF\"> 0</span><span style=\"color:#79B8FF\"> 0</span><span style=\"color:#E1E4E8\"> / </span><span style=\"color:#79B8FF\">60</span><span style=\"color:#F97583\">%</span><span style=\"color:#E1E4E8\">);</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "paragraph",
@@ -1155,6 +1251,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-1",
         "text": "改了什么"
       },
       {
@@ -1164,7 +1261,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "html",
-        "text": "<a class=\"skip-link\" href=\"#main\">跳到主要内容</a>\n<main id=\"main\" tabindex=\"-1\">\n  <!-- 文章内容 -->\n</main>"
+        "text": "<a class=\"skip-link\" href=\"#main\">跳到主要内容</a>\n<main id=\"main\" tabindex=\"-1\">\n  <!-- 文章内容 -->\n</main>",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#E1E4E8\">&#x3C;</span><span style=\"color:#85E89D\">a</span><span style=\"color:#B392F0\"> class</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"skip-link\"</span><span style=\"color:#B392F0\"> href</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"#main\"</span><span style=\"color:#E1E4E8\">>跳到主要内容&#x3C;/</span><span style=\"color:#85E89D\">a</span><span style=\"color:#E1E4E8\">></span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">&#x3C;</span><span style=\"color:#85E89D\">main</span><span style=\"color:#B392F0\"> id</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"main\"</span><span style=\"color:#B392F0\"> tabindex</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"-1\"</span><span style=\"color:#E1E4E8\">></span></span>\n<span class=\"line\"><span style=\"color:#6A737D\">  &#x3C;!-- 文章内容 --></span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">&#x3C;/</span><span style=\"color:#85E89D\">main</span><span style=\"color:#E1E4E8\">></span></span>"
       },
       {
         "type": "paragraph",
@@ -1173,7 +1271,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "html",
-        "text": "<!-- 读屏用户听到的只有「按钮」，等于没有 -->\n<button class=\"theme-toggle\">🌙</button>\n\n<!-- 至少告诉他这是个什么按钮 -->\n<button class=\"theme-toggle\" aria-label=\"切换夜间模式\">🌙</button>"
+        "text": "<!-- 读屏用户听到的只有「按钮」，等于没有 -->\n<button class=\"theme-toggle\">🌙</button>\n\n<!-- 至少告诉他这是个什么按钮 -->\n<button class=\"theme-toggle\" aria-label=\"切换夜间模式\">🌙</button>",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#6A737D\">&#x3C;!-- 读屏用户听到的只有「按钮」，等于没有 --></span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">&#x3C;</span><span style=\"color:#85E89D\">button</span><span style=\"color:#B392F0\"> class</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"theme-toggle\"</span><span style=\"color:#E1E4E8\">>🌙&#x3C;/</span><span style=\"color:#85E89D\">button</span><span style=\"color:#E1E4E8\">></span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#6A737D\">&#x3C;!-- 至少告诉他这是个什么按钮 --></span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">&#x3C;</span><span style=\"color:#85E89D\">button</span><span style=\"color:#B392F0\"> class</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"theme-toggle\"</span><span style=\"color:#B392F0\"> aria-label</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"切换夜间模式\"</span><span style=\"color:#E1E4E8\">>🌙&#x3C;/</span><span style=\"color:#85E89D\">button</span><span style=\"color:#E1E4E8\">></span></span>"
       },
       {
         "type": "paragraph",
@@ -1181,6 +1280,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-2",
         "text": "列表语义的坑"
       },
       {
@@ -1190,7 +1290,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "html",
-        "text": "<!-- 错误：一页多个 h1 -->\n<h1 class=\"post-card__title\">{{ post.title }}</h1>\n\n<!-- 正确：列表用 h2，时间交给 time 标签 -->\n<h2 class=\"post-card__title\">{{ post.title }}</h2>\n<time :datetime=\"post.publishedAt\">{{ relativeTime }}</time>"
+        "text": "<!-- 错误：一页多个 h1 -->\n<h1 class=\"post-card__title\">{{ post.title }}</h1>\n\n<!-- 正确：列表用 h2，时间交给 time 标签 -->\n<h2 class=\"post-card__title\">{{ post.title }}</h2>\n<time :datetime=\"post.publishedAt\">{{ relativeTime }}</time>",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#6A737D\">&#x3C;!-- 错误：一页多个 h1 --></span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">&#x3C;</span><span style=\"color:#85E89D\">h1</span><span style=\"color:#B392F0\"> class</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"post-card__title\"</span><span style=\"color:#E1E4E8\">>{{ post.title }}&#x3C;/</span><span style=\"color:#85E89D\">h1</span><span style=\"color:#E1E4E8\">></span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#6A737D\">&#x3C;!-- 正确：列表用 h2，时间交给 time 标签 --></span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">&#x3C;</span><span style=\"color:#85E89D\">h2</span><span style=\"color:#B392F0\"> class</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"post-card__title\"</span><span style=\"color:#E1E4E8\">>{{ post.title }}&#x3C;/</span><span style=\"color:#85E89D\">h2</span><span style=\"color:#E1E4E8\">></span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">&#x3C;</span><span style=\"color:#85E89D\">time</span><span style=\"color:#B392F0\"> :datetime</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"post.publishedAt\"</span><span style=\"color:#E1E4E8\">>{{ relativeTime }}&#x3C;/</span><span style=\"color:#85E89D\">time</span><span style=\"color:#E1E4E8\">></span></span>"
       },
       {
         "type": "quote",
@@ -1198,6 +1299,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-3",
         "text": "顺手修的"
       },
       {
@@ -1225,6 +1327,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-1",
         "text": "表象"
       },
       {
@@ -1233,6 +1336,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-2",
         "text": "真相"
       },
       {
@@ -1242,7 +1346,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "ts",
-        "text": "// 错误示范：时序上滚了个寂寞\nconst router = createRouter({\n  scrollBehavior(to, from, savedPosition) {\n    if (savedPosition) {\n      window.scrollTo(savedPosition.left, savedPosition.top)\n    }\n    return { top: 0 }\n  },\n})"
+        "text": "// 错误示范：时序上滚了个寂寞\nconst router = createRouter({\n  scrollBehavior(to, from, savedPosition) {\n    if (savedPosition) {\n      window.scrollTo(savedPosition.left, savedPosition.top)\n    }\n    return { top: 0 }\n  },\n})",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#6A737D\">// 错误示范：时序上滚了个寂寞</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">const</span><span style=\"color:#79B8FF\"> router</span><span style=\"color:#F97583\"> =</span><span style=\"color:#B392F0\"> createRouter</span><span style=\"color:#E1E4E8\">({</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  scrollBehavior</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#FFAB70\">to</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#FFAB70\">from</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#FFAB70\">savedPosition</span><span style=\"color:#E1E4E8\">) {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">    if</span><span style=\"color:#E1E4E8\"> (savedPosition) {</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      window.</span><span style=\"color:#B392F0\">scrollTo</span><span style=\"color:#E1E4E8\">(savedPosition.left, savedPosition.top)</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    }</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">    return</span><span style=\"color:#E1E4E8\"> { top: </span><span style=\"color:#79B8FF\">0</span><span style=\"color:#E1E4E8\"> }</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">})</span></span>"
       },
       {
         "type": "quote",
@@ -1250,6 +1355,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-3",
         "text": "解法：把滚动时机交给过渡"
       },
       {
@@ -1259,10 +1365,12 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "ts",
-        "text": "let pendingRestore: { left: number; top: number } | null = null\n\nconst router = createRouter({\n  scrollBehavior(to, from, savedPosition) {\n    if (savedPosition) {\n      pendingRestore = savedPosition\n      return false // 先不滚，等过渡完成\n    }\n    pendingRestore = null\n    return { top: 0 }\n  },\n})\n\n// 页面过渡的 @enter 钩子里执行真正的滚动\nfunction onPageEnter() {\n  if (pendingRestore) {\n    window.scrollTo(pendingRestore.left, pendingRestore.top)\n    pendingRestore = null\n  }\n}"
+        "text": "let pendingRestore: { left: number; top: number } | null = null\n\nconst router = createRouter({\n  scrollBehavior(to, from, savedPosition) {\n    if (savedPosition) {\n      pendingRestore = savedPosition\n      return false // 先不滚，等过渡完成\n    }\n    pendingRestore = null\n    return { top: 0 }\n  },\n})\n\n// 页面过渡的 @enter 钩子里执行真正的滚动\nfunction onPageEnter() {\n  if (pendingRestore) {\n    window.scrollTo(pendingRestore.left, pendingRestore.top)\n    pendingRestore = null\n  }\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#F97583\">let</span><span style=\"color:#E1E4E8\"> pendingRestore</span><span style=\"color:#F97583\">:</span><span style=\"color:#E1E4E8\"> { </span><span style=\"color:#FFAB70\">left</span><span style=\"color:#F97583\">:</span><span style=\"color:#79B8FF\"> number</span><span style=\"color:#E1E4E8\">; </span><span style=\"color:#FFAB70\">top</span><span style=\"color:#F97583\">:</span><span style=\"color:#79B8FF\"> number</span><span style=\"color:#E1E4E8\"> } </span><span style=\"color:#F97583\">|</span><span style=\"color:#79B8FF\"> null</span><span style=\"color:#F97583\"> =</span><span style=\"color:#79B8FF\"> null</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#F97583\">const</span><span style=\"color:#79B8FF\"> router</span><span style=\"color:#F97583\"> =</span><span style=\"color:#B392F0\"> createRouter</span><span style=\"color:#E1E4E8\">({</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  scrollBehavior</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#FFAB70\">to</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#FFAB70\">from</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#FFAB70\">savedPosition</span><span style=\"color:#E1E4E8\">) {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">    if</span><span style=\"color:#E1E4E8\"> (savedPosition) {</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      pendingRestore </span><span style=\"color:#F97583\">=</span><span style=\"color:#E1E4E8\"> savedPosition</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">      return</span><span style=\"color:#79B8FF\"> false</span><span style=\"color:#6A737D\"> // 先不滚，等过渡完成</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    }</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    pendingRestore </span><span style=\"color:#F97583\">=</span><span style=\"color:#79B8FF\"> null</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">    return</span><span style=\"color:#E1E4E8\"> { top: </span><span style=\"color:#79B8FF\">0</span><span style=\"color:#E1E4E8\"> }</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">})</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#6A737D\">// 页面过渡的 @enter 钩子里执行真正的滚动</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">function</span><span style=\"color:#B392F0\"> onPageEnter</span><span style=\"color:#E1E4E8\">() {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">  if</span><span style=\"color:#E1E4E8\"> (pendingRestore) {</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    window.</span><span style=\"color:#B392F0\">scrollTo</span><span style=\"color:#E1E4E8\">(pendingRestore.left, pendingRestore.top)</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    pendingRestore </span><span style=\"color:#F97583\">=</span><span style=\"color:#79B8FF\"> null</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  }</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "heading",
+        "id": "sec-4",
         "text": "还有一个隐藏坑"
       },
       {
@@ -1295,6 +1403,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-1",
         "text": "第一招：路由级代码分割"
       },
       {
@@ -1304,10 +1413,12 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "ts",
-        "text": "const routes = [\n  { path: '/', component: HomeView },\n  {\n    path: '/post/:slug',\n    component: () => import('@/views/PostView.vue'),\n  },\n  {\n    path: '/archives',\n    component: () => import('@/views/ArchiveView.vue'),\n  },\n]"
+        "text": "const routes = [\n  { path: '/', component: HomeView },\n  {\n    path: '/post/:slug',\n    component: () => import('@/views/PostView.vue'),\n  },\n  {\n    path: '/archives',\n    component: () => import('@/views/ArchiveView.vue'),\n  },\n]",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#F97583\">const</span><span style=\"color:#79B8FF\"> routes</span><span style=\"color:#F97583\"> =</span><span style=\"color:#E1E4E8\"> [</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  { path: </span><span style=\"color:#9ECBFF\">'/'</span><span style=\"color:#E1E4E8\">, component: HomeView },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  {</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    path: </span><span style=\"color:#9ECBFF\">'/post/:slug'</span><span style=\"color:#E1E4E8\">,</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">    component</span><span style=\"color:#E1E4E8\">: () </span><span style=\"color:#F97583\">=></span><span style=\"color:#F97583\"> import</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'@/views/PostView.vue'</span><span style=\"color:#E1E4E8\">),</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  {</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    path: </span><span style=\"color:#9ECBFF\">'/archives'</span><span style=\"color:#E1E4E8\">,</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">    component</span><span style=\"color:#E1E4E8\">: () </span><span style=\"color:#F97583\">=></span><span style=\"color:#F97583\"> import</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'@/views/ArchiveView.vue'</span><span style=\"color:#E1E4E8\">),</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">]</span></span>"
       },
       {
         "type": "heading",
+        "id": "sec-2",
         "text": "第二招：框架与业务分包"
       },
       {
@@ -1317,7 +1428,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "ts",
-        "text": "// vite.config.ts\nbuild: {\n  rollupOptions: {\n    output: {\n      manualChunks(id) {\n        if (id.includes('node_modules')) return 'vue'\n        return undefined\n      },\n    },\n  },\n}"
+        "text": "// vite.config.ts\nbuild: {\n  rollupOptions: {\n    output: {\n      manualChunks(id) {\n        if (id.includes('node_modules')) return 'vue'\n        return undefined\n      },\n    },\n  },\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#6A737D\">// vite.config.ts</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">build</span><span style=\"color:#E1E4E8\">: {</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  rollupOptions</span><span style=\"color:#E1E4E8\">: {</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">    output</span><span style=\"color:#E1E4E8\">: {</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">      manualChunks</span><span style=\"color:#E1E4E8\">(id) {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">        if</span><span style=\"color:#E1E4E8\"> (id.</span><span style=\"color:#B392F0\">includes</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#9ECBFF\">'node_modules'</span><span style=\"color:#E1E4E8\">)) </span><span style=\"color:#F97583\">return</span><span style=\"color:#9ECBFF\"> 'vue'</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">        return</span><span style=\"color:#79B8FF\"> undefined</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "paragraph",
@@ -1325,6 +1437,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-3",
         "text": "第三招：干掉全量引入"
       },
       {
@@ -1333,6 +1446,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-4",
         "text": "第四到十招（速览）"
       },
       {
@@ -1365,6 +1479,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-1",
         "text": "指令设计"
       },
       {
@@ -1374,7 +1489,8 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "ts",
-        "text": "import type { Directive } from 'vue'\n\ntype LazyEl = HTMLElement & { _observer?: IntersectionObserver }\n\nexport const lazyBg: Directive<LazyEl, string> = {\n  mounted(el, binding) {\n    if (!binding.value) return\n    if (typeof IntersectionObserver === 'undefined') {\n      el.style.backgroundImage = `url(\"${binding.value}\")`\n      return\n    }\n    const observer = new IntersectionObserver(\n      (entries, obs) => {\n        for (const entry of entries) {\n          if (!entry.isIntersecting) continue\n          el.style.backgroundImage = `url(\"${binding.value}\")`\n          obs.unobserve(el)\n        }\n      },\n      { rootMargin: '200px 0px' },\n    )\n    el._observer = observer\n    observer.observe(el)\n  },\n  unmounted(el) {\n    el._observer?.disconnect()\n  },\n}"
+        "text": "import type { Directive } from 'vue'\n\ntype LazyEl = HTMLElement & { _observer?: IntersectionObserver }\n\nexport const lazyBg: Directive<LazyEl, string> = {\n  mounted(el, binding) {\n    if (!binding.value) return\n    if (typeof IntersectionObserver === 'undefined') {\n      el.style.backgroundImage = `url(\"${binding.value}\")`\n      return\n    }\n    const observer = new IntersectionObserver(\n      (entries, obs) => {\n        for (const entry of entries) {\n          if (!entry.isIntersecting) continue\n          el.style.backgroundImage = `url(\"${binding.value}\")`\n          obs.unobserve(el)\n        }\n      },\n      { rootMargin: '200px 0px' },\n    )\n    el._observer = observer\n    observer.observe(el)\n  },\n  unmounted(el) {\n    el._observer?.disconnect()\n  },\n}",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#F97583\">import</span><span style=\"color:#F97583\"> type</span><span style=\"color:#E1E4E8\"> { Directive } </span><span style=\"color:#F97583\">from</span><span style=\"color:#9ECBFF\"> 'vue'</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#F97583\">type</span><span style=\"color:#B392F0\"> LazyEl</span><span style=\"color:#F97583\"> =</span><span style=\"color:#B392F0\"> HTMLElement</span><span style=\"color:#F97583\"> &#x26;</span><span style=\"color:#E1E4E8\"> { </span><span style=\"color:#FFAB70\">_observer</span><span style=\"color:#F97583\">?:</span><span style=\"color:#B392F0\"> IntersectionObserver</span><span style=\"color:#E1E4E8\"> }</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#F97583\">export</span><span style=\"color:#F97583\"> const</span><span style=\"color:#79B8FF\"> lazyBg</span><span style=\"color:#F97583\">:</span><span style=\"color:#B392F0\"> Directive</span><span style=\"color:#E1E4E8\">&#x3C;</span><span style=\"color:#B392F0\">LazyEl</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#79B8FF\">string</span><span style=\"color:#E1E4E8\">> </span><span style=\"color:#F97583\">=</span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  mounted</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#FFAB70\">el</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#FFAB70\">binding</span><span style=\"color:#E1E4E8\">) {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">    if</span><span style=\"color:#E1E4E8\"> (</span><span style=\"color:#F97583\">!</span><span style=\"color:#E1E4E8\">binding.value) </span><span style=\"color:#F97583\">return</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">    if</span><span style=\"color:#E1E4E8\"> (</span><span style=\"color:#F97583\">typeof</span><span style=\"color:#E1E4E8\"> IntersectionObserver </span><span style=\"color:#F97583\">===</span><span style=\"color:#9ECBFF\"> 'undefined'</span><span style=\"color:#E1E4E8\">) {</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      el.style.backgroundImage </span><span style=\"color:#F97583\">=</span><span style=\"color:#9ECBFF\"> `url(\"${</span><span style=\"color:#E1E4E8\">binding</span><span style=\"color:#9ECBFF\">.</span><span style=\"color:#E1E4E8\">value</span><span style=\"color:#9ECBFF\">}\")`</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">      return</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    }</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">    const</span><span style=\"color:#79B8FF\"> observer</span><span style=\"color:#F97583\"> =</span><span style=\"color:#F97583\"> new</span><span style=\"color:#B392F0\"> IntersectionObserver</span><span style=\"color:#E1E4E8\">(</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      (</span><span style=\"color:#FFAB70\">entries</span><span style=\"color:#E1E4E8\">, </span><span style=\"color:#FFAB70\">obs</span><span style=\"color:#E1E4E8\">) </span><span style=\"color:#F97583\">=></span><span style=\"color:#E1E4E8\"> {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">        for</span><span style=\"color:#E1E4E8\"> (</span><span style=\"color:#F97583\">const</span><span style=\"color:#79B8FF\"> entry</span><span style=\"color:#F97583\"> of</span><span style=\"color:#E1E4E8\"> entries) {</span></span>\n<span class=\"line\"><span style=\"color:#F97583\">          if</span><span style=\"color:#E1E4E8\"> (</span><span style=\"color:#F97583\">!</span><span style=\"color:#E1E4E8\">entry.isIntersecting) </span><span style=\"color:#F97583\">continue</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">          el.style.backgroundImage </span><span style=\"color:#F97583\">=</span><span style=\"color:#9ECBFF\"> `url(\"${</span><span style=\"color:#E1E4E8\">binding</span><span style=\"color:#9ECBFF\">.</span><span style=\"color:#E1E4E8\">value</span><span style=\"color:#9ECBFF\">}\")`</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">          obs.</span><span style=\"color:#B392F0\">unobserve</span><span style=\"color:#E1E4E8\">(el)</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">        }</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">      { rootMargin: </span><span style=\"color:#9ECBFF\">'200px 0px'</span><span style=\"color:#E1E4E8\"> },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    )</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    el._observer </span><span style=\"color:#F97583\">=</span><span style=\"color:#E1E4E8\"> observer</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    observer.</span><span style=\"color:#B392F0\">observe</span><span style=\"color:#E1E4E8\">(el)</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  },</span></span>\n<span class=\"line\"><span style=\"color:#B392F0\">  unmounted</span><span style=\"color:#E1E4E8\">(</span><span style=\"color:#FFAB70\">el</span><span style=\"color:#E1E4E8\">) {</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">    el._observer?.</span><span style=\"color:#B392F0\">disconnect</span><span style=\"color:#E1E4E8\">()</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">  },</span></span>\n<span class=\"line\"><span style=\"color:#E1E4E8\">}</span></span>"
       },
       {
         "type": "paragraph",
@@ -1383,10 +1499,12 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "html",
-        "text": "<div v-lazy-bg=\"post.cover\" class=\"post-card__thumb\" />"
+        "text": "<div v-lazy-bg=\"post.cover\" class=\"post-card__thumb\" />",
+        "codeHtml": "<span class=\"line\"><span style=\"color:#E1E4E8\">&#x3C;</span><span style=\"color:#85E89D\">div</span><span style=\"color:#B392F0\"> v-lazy-bg</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"post.cover\"</span><span style=\"color:#B392F0\"> class</span><span style=\"color:#E1E4E8\">=</span><span style=\"color:#9ECBFF\">\"post-card__thumb\"</span><span style=\"color:#FDAEB7;font-style:italic\"> /</span><span style=\"color:#E1E4E8\">></span></span>"
       },
       {
         "type": "heading",
+        "id": "sec-2",
         "text": "两个必须处理的细节"
       },
       {
@@ -1403,6 +1521,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-3",
         "text": "值变化怎么办"
       },
       {
@@ -1430,6 +1549,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-1",
         "text": "为什么自己写"
       },
       {
@@ -1438,6 +1558,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-2",
         "text": "技术选型"
       },
       {
@@ -1451,10 +1572,12 @@ export const generatedPosts: Post[] = [
       {
         "type": "code",
         "lang": "text",
-        "text": "├── articles/        # 文章源文件（Markdown）\n├── public/          # 静态资源\n├── scripts/         # 构建脚本（编译文章、预渲染）\n└── src/             # 应用代码\n    ├── components/\n    ├── views/\n    └── data/"
+        "text": "├── articles/        # 文章源文件（Markdown）\n├── public/          # 静态资源\n├── scripts/         # 构建脚本（编译文章、预渲染）\n└── src/             # 应用代码\n    ├── components/\n    ├── views/\n    └── data/",
+        "codeHtml": "<span class=\"line\"><span>├── articles/        # 文章源文件（Markdown）</span></span>\n<span class=\"line\"><span>├── public/          # 静态资源</span></span>\n<span class=\"line\"><span>├── scripts/         # 构建脚本（编译文章、预渲染）</span></span>\n<span class=\"line\"><span>└── src/             # 应用代码</span></span>\n<span class=\"line\"><span>    ├── components/</span></span>\n<span class=\"line\"><span>    ├── views/</span></span>\n<span class=\"line\"><span>    └── data/</span></span>"
       },
       {
         "type": "heading",
+        "id": "sec-3",
         "text": "踩的第一个坑"
       },
       {
@@ -1467,6 +1590,7 @@ export const generatedPosts: Post[] = [
       },
       {
         "type": "heading",
+        "id": "sec-4",
         "text": "后续计划"
       },
       {

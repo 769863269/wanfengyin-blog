@@ -12,16 +12,31 @@ import type { Post } from '@/types'
 
 const { slides } = defineProps<{ slides: readonly Post[] }>()
 
-const { activeIndex, isHovered, select } = useCarousel(() => slides.length, CAROUSEL_INTERVAL)
+const { activeIndex, isHovered, select, next, prev } = useCarousel(() => slides.length, CAROUSEL_INTERVAL)
+
+/** 键盘可达性：聚焦轮播后方向键切换 */
+function handleKeydown(event: KeyboardEvent): void {
+  if (event.key === 'ArrowRight') {
+    event.preventDefault()
+    next()
+  } else if (event.key === 'ArrowLeft') {
+    event.preventDefault()
+    prev()
+  }
+}
 </script>
 
 <template>
   <section
     class="carousel"
     aria-roledescription="carousel"
-    aria-label="精选文章"
+    aria-label="精选文章，可用左右方向键切换"
+    tabindex="0"
     @mouseenter="isHovered = true"
     @mouseleave="isHovered = false"
+    @keydown="handleKeydown"
+    @focusin="isHovered = true"
+    @focusout="isHovered = false"
   >
     <div class="carousel__track" :style="{ transform: `translateX(${-activeIndex * 100}%)` }">
       <RouterLink
@@ -66,6 +81,12 @@ const { activeIndex, isHovered, select } = useCarousel(() => slides.length, CARO
   background: var(--bg-surface);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
+}
+
+/* 键盘 Tab 聚焦时的可见指示 */
+.carousel:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
 }
 
 .carousel__track {

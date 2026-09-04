@@ -80,6 +80,7 @@ export function markdownToBlocks(markdown) {
   const lines = markdown.replace(/\r\n/g, '\n').split('\n')
   const blocks = []
   let paragraphLines = []
+  let headingCount = 0
 
   const flushParagraph = () => {
     if (paragraphLines.length) {
@@ -111,11 +112,11 @@ export function markdownToBlocks(markdown) {
       continue
     }
 
-    // 标题
+    // 标题（id 供文章目录 TOC 锚点跳转）
     const heading = line.match(/^(#{1,6})\s+(.+)$/)
     if (heading) {
       flushParagraph()
-      blocks.push({ type: 'heading', text: heading[2].trim() })
+      blocks.push({ type: 'heading', id: `sec-${++headingCount}`, text: heading[2].trim() })
       continue
     }
 
@@ -155,13 +156,15 @@ export function blocksToHtml(blocks) {
         case 'paragraph':
           return `<p>${escapeHtml(block.text)}</p>`
         case 'heading':
-          return `<h2 class="article-body__heading">${escapeHtml(block.text)}</h2>`
+          return `<h2 id="${escapeHtml(block.id ?? '')}" class="article-body__heading">${escapeHtml(block.text)}</h2>`
         case 'quote':
           return `<blockquote class="article-body__quote">${escapeHtml(block.text)}</blockquote>`
         case 'image':
           return `<figure class="article-body__figure"><img src="${escapeHtml(block.src)}" alt="${escapeHtml(block.alt)}" loading="lazy" decoding="async" /></figure>`
         case 'code':
-          return `<pre class="article-body__code" data-lang="${escapeHtml(block.lang)}"><code>${escapeHtml(block.text)}</code></pre>`
+          // 构建期已高亮（block.codeHtml 为 Shiki 生成的 token span，构建产物可信）；
+          // 未高亮的（语言不支持/降级）走纯文本转义
+          return `<pre class="article-body__code" data-lang="${escapeHtml(block.lang)}"><code>${block.codeHtml ?? escapeHtml(block.text)}</code></pre>`
         default:
           return ''
       }

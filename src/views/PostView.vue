@@ -36,6 +36,15 @@ function goBack(): void {
 
 const post = computed(() => findPost(props.slug))
 
+/** 文章目录：标题块抽取，少于 2 个不渲染目录 */
+const toc = computed(() =>
+  post.value
+    ? post.value.body
+        .filter((block): block is Extract<typeof block, { type: 'heading' }> => block.type === 'heading')
+        .map((block) => ({ id: block.id, text: block.text }))
+    : [],
+)
+
 const neighbors = computed(() => (post.value ? getNeighbors(post.value.slug) : undefined))
 
 const readingTime = computed(() =>
@@ -93,6 +102,16 @@ useSeoMeta({
         <figure v-if="post.cover" class="post-detail__cover">
           <img :src="post.cover" :alt="`${post.title} 封面`" decoding="async" />
         </figure>
+
+        <!-- 文章目录：2 个以上标题才渲染 -->
+        <details v-if="toc.length >= 2" class="post-detail__toc">
+          <summary>📑 本文目录（{{ toc.length }} 节）</summary>
+          <ol>
+            <li v-for="item in toc" :key="item.id">
+              <a :href="`#${item.id}`">{{ item.text }}</a>
+            </li>
+          </ol>
+        </details>
 
         <ArticleBody :blocks="post.body" />
 
@@ -183,6 +202,36 @@ useSeoMeta({
   width: 100%;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
+}
+
+.post-detail__toc {
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  font-size: 14px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-md);
+}
+
+.post-detail__toc summary {
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.post-detail__toc ol {
+  margin: 12px 0 4px;
+  padding-left: 22px;
+  line-height: 2;
+}
+
+.post-detail__toc a {
+  color: var(--text-secondary);
+  transition: color var(--duration-base) var(--ease-standard);
+}
+
+.post-detail__toc a:hover {
+  color: var(--brand);
 }
 
 .post-detail__title {

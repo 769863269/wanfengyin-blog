@@ -46,6 +46,21 @@ function goToPost(slug: string): void {
   void router.push({ name: 'post', params: { slug } })
 }
 
+/**
+ * 标题关键词高亮：先转义 HTML，再把命中词包上 <mark>。
+ * 转义在前保证注入内容无法脱离文本节点，<mark> 是唯一引入的标签。
+ */
+function highlightTitle(title: string): string {
+  const escaped = title
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+  const pattern = query.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  if (!pattern) return escaped
+  return escaped.replace(new RegExp(pattern, 'gi'), (match) => `<mark>${match}</mark>`)
+}
+
 function handleKeydown(event: KeyboardEvent): void {
   if (event.key === 'Escape') close()
 }
@@ -94,7 +109,8 @@ onBeforeUnmount(() => {
       <ul v-if="results.length" class="search-modal__results">
         <li v-for="post in results" :key="post.slug">
           <button class="search-modal__result" type="button" @click="goToPost(post.slug)">
-            <span class="search-modal__result-title">{{ post.title }}</span>
+            <!-- eslint-disable-next-line vue/no-v-html -- 先转义后包 mark，无注入面 -->
+            <span class="search-modal__result-title" v-html="highlightTitle(post.title)" />
             <span class="search-modal__result-meta">{{ formatDate(post.publishedAt) }}</span>
           </button>
         </li>
@@ -199,6 +215,14 @@ onBeforeUnmount(() => {
 .search-modal__result-title {
   font-size: 15px;
   color: var(--text-primary);
+}
+
+.search-modal__result-title :deep(mark) {
+  padding: 0 1px;
+  color: var(--brand);
+  font-weight: 700;
+  background: var(--brand-soft);
+  border-radius: 3px;
 }
 
 .search-modal__result:hover .search-modal__result-title {

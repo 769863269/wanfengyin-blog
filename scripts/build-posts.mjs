@@ -11,6 +11,7 @@ import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseFrontmatter, markdownToBlocks } from './lib/markdown.mjs'
+import { highlightToCodeHtml } from './lib/highlight.mjs'
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const articlesDir = join(root, 'articles')
@@ -69,6 +70,22 @@ for (const file of files) {
   })
 }
 
+// 构建期 Shiki 高亮：为每个代码块生成 codeHtml（失败自动降级纯文本）
+let highlighted = 0
+let degraded = 0
+for (const post of posts) {
+  for (const block of post.body) {
+    if (block.type !== 'code') continue
+    const html = await highlightToCodeHtml(block.text, block.lang)
+    if (html) {
+      block.codeHtml = html
+      highlighted++
+    } else {
+      degraded++
+    }
+  }
+}
+
 // 按时间倒序输出，读起来直观；运行时排序逻辑依然独立存在
 posts.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
 
@@ -85,4 +102,7 @@ export const generatedPosts: Post[] = `
 mkdirSync(dirname(outputFile), { recursive: true })
 writeFileSync(outputFile, banner + JSON.stringify(posts, null, 2) + '\n', 'utf8')
 
-console.log(`[posts] ${posts.length} 篇文章编译完成 → src/data/posts.generated.ts`)
+console.log(
+  `[posts] ${posts.length} 篇文章编译完成 → src/data/posts.generated.ts` +
+    (highlighted || degraded ? `（代码块高亮 ${highlighted}，降级 ${degraded}）` : ''),
+)

@@ -41,8 +41,8 @@ export const mainNav: readonly NavItem[] = [
   { id: 'home', label: '首页', icon: '🏠', kind: 'route', to: 'home', showOnMobile: true },
   { id: 'guestbook', label: '留言板', icon: '💬', kind: 'disabled', showOnMobile: true },
   { id: 'random', label: '随便看看', icon: '🎲', kind: 'route', to: 'random', showOnMobile: true },
-  { id: 'rss', label: 'Rss订阅', icon: '📡', kind: 'disabled', showOnMobile: true },
-  { id: 'about', label: '关于博客', icon: 'ℹ️', kind: 'disabled', showOnMobile: true },
+  { id: 'rss', label: 'Rss订阅', icon: '📡', kind: 'external', href: '/feed.xml', showOnMobile: true },
+  { id: 'about', label: '关于博客', icon: 'ℹ️', kind: 'route', to: 'about', showOnMobile: true },
 ] as const
 
 /** 移动端抽屉额外入口（PC 顶栏放不下） */
@@ -57,10 +57,9 @@ export const drawerNav: readonly NavItem[] = [...mainNav, ...mobileExtraNav]
 
 export const footerQuickLinks: readonly NavItem[] = [
   { id: 'f-home', label: '首页', icon: '', kind: 'route', to: 'home' },
-  { id: 'f-guestbook', label: '留言板', icon: '', kind: 'disabled' },
-  { id: 'f-gallery', label: '相册', icon: '', kind: 'disabled' },
-  { id: 'f-archive', label: '归档', icon: '', kind: 'disabled' },
-  { id: 'f-about', label: '关于博客', icon: '', kind: 'disabled' },
+  { id: 'f-tags', label: '标签', icon: '', kind: 'route', to: 'tags' },
+  { id: 'f-archive', label: '归档', icon: '', kind: 'route', to: 'archive' },
+  { id: 'f-about', label: '关于博客', icon: '', kind: 'route', to: 'about' },
 ] as const
 
 export const footerFriendLinks: readonly NavItem[] = [

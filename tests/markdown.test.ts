@@ -34,10 +34,15 @@ describe('markdownToBlocks', () => {
     const blocks = markdownToBlocks('第一段\n\n## 小标题\n\n第二段\n\n> 引文')
     expect(blocks).toEqual([
       { type: 'paragraph', text: '第一段' },
-      { type: 'heading', text: '小标题' },
+      { type: 'heading', id: 'sec-1', text: '小标题' },
       { type: 'paragraph', text: '第二段' },
       { type: 'quote', text: '引文' },
     ])
+  })
+
+  it('多个标题按顺序编号锚点 id', () => {
+    const blocks = markdownToBlocks('## 一\n\n### 二\n\n## 三')
+    expect(blocks.map((b) => (b as { id?: string }).id)).toEqual(['sec-1', 'sec-2', 'sec-3'])
   })
 
   it('连续行合并为同一段落', () => {
@@ -96,11 +101,22 @@ describe('markdownToBlocks', () => {
 describe('blocksToHtml', () => {
   it('类名与 ArticleBody.vue 对齐', () => {
     const html = blocksToHtml([
-      { type: 'heading', text: '标题' },
+      { type: 'heading', id: 'sec-1', text: '标题' },
       { type: 'quote', text: '引文' },
     ])
-    expect(html).toContain('<h2 class="article-body__heading">标题</h2>')
+    expect(html).toContain('<h2 id="sec-1" class="article-body__heading">标题</h2>')
     expect(html).toContain('<blockquote class="article-body__quote">引文</blockquote>')
+  })
+
+  it('代码块带高亮 HTML 时直接输出（构建期产物可信），无则转义纯文本', () => {
+    const highlighted = blocksToHtml([
+      { type: 'code', lang: 'ts', text: 'const a = 1', codeHtml: '<span style="color:#f00">const</span> a = 1' },
+    ])
+    expect(highlighted).toContain('<span style="color:#f00">const</span>')
+
+    const plain = blocksToHtml([{ type: 'code', lang: 'html', text: '<script>alert(1)</script>' }])
+    expect(plain).not.toContain('<script>')
+    expect(plain).toContain('&lt;script&gt;')
   })
 
   it('HTML 特殊字符被转义（防注入）', () => {
