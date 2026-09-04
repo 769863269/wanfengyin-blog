@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# TODO: 域名定稿后在 config/site.ts 同步更新，并替换下面这行
+Sitemap: https://your-domain.com/sitemap.xml

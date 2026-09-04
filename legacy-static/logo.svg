@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="44" viewBox="0 0 180 44" role="img" aria-label="晚风吟">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff6b6b"/>
+      <stop offset="1" stop-color="#ff5050"/>
+    </linearGradient>
+  </defs>
+  <!-- 标记：圆角红方块 + 白色「晚」 -->
+  <rect x="2" y="2" width="40" height="40" rx="11" fill="url(#g)"/>
+  <text x="22" y="32" font-size="25" text-anchor="middle" fill="#ffffff"
+        font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif" font-weight="700">晚</text>
+  <!-- 文字：晚(红) 风吟(深) -->
+  <text x="54" y="30" font-size="24" letter-spacing="3"
+        font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif" font-weight="700">
+    <tspan fill="#ff5050">晚</tspan><tspan fill="#1c1c1c">风吟</tspan>
+  </text>
+</svg>

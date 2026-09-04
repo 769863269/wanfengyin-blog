@@ -1,0 +1,109 @@
+/**
+ * 布局层：页面骨架 + 通用容器 / 卡片 / 网格
+ * 跨组件复用的结构类放这里，单组件专属结构放 SFC scoped。
+ */
+
+/* ============ 主容器：8 : 2 ============ */
+.layout__main {
+  max-width: var(--container-max);
+  margin: 40px auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 8fr 2fr;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+.layout__main > :first-child {
+  min-width: 0; /* 防止 grid 子项被长内容撑破 */
+}
+
+.app-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ============ 卡片 / 面板 ============ */
+.card {
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-card);
+  padding: 36px 40px;
+}
+
+.panel {
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-card);
+  padding: 18px 20px;
+}
+
+.panel-heading {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  padding-left: 10px;
+  border-left: 3px solid var(--brand);
+}
+
+/* ============ 通用：图标按钮 ============ */
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  background: transparent;
+  transition:
+    color var(--duration-base) var(--ease-standard),
+    background-color var(--duration-base) var(--ease-standard);
+}
+
+.icon-button:hover {
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+
+.icon-button--touch {
+  width: var(--tap-target);
+  height: var(--tap-target);
+  font-size: 20px;
+}
+
+/* ============ 响应式 ============ */
+@media (min-width: 1024px) {
+  body {
+    font-size: 17px;
+  }
+}
+
+@media (max-width: 992px) {
+  .layout__main {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .app-sidebar {
+    display: none;
+  }
+
+  .card {
+    padding: 28px 22px;
+  }
+}
+
+@media (max-width: 768px) {
+  .layout__main {
+    margin-top: 16px; /* 给 sticky 移动端顶栏留白 */
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 22px 16px;
+    border-radius: 6px;
+  }
+}

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ff5050" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>晚风吟个人开发博客</title>
+    <meta
+      name="description"
+      content="晚风吟个人开发博客 —— 记录开发、生活与技术碎碎念，浮生拾韵，且听风吟。"
+    />
+
+    <!-- 首屏防闪：在 Vue 挂载前同步应用主题，避免深色模式白屏闪烁 -->
+    <script>
+      ;(function () {
+        try {
+          var saved = localStorage.getItem('night')
+          var dark =
+            saved === '1' ||
+            (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          if (dark) document.documentElement.classList.add('night')
+        } catch (e) {
+          /* localStorage 不可用时静默降级为浅色 */
+        }
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
