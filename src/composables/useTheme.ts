@@ -1,6 +1,6 @@
 import { readonly, ref } from 'vue'
 import type { ThemeMode } from '@/types'
-import { useMediaQuery } from '@/utils/media'
+import { useMediaQuery } from '@/utils/mediaQuery'
 
 /**
  * 夜间模式（全局单例）

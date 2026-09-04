@@ -1,7 +1,7 @@
 /**
  * jsdom 冒烟测试
  *
- * 流程：vite 以 IIFE 单文件打出测试包（vite.smoke.config.ts）→
+ * 流程：vite 以 IIFE 单文件打出测试包（vite.config.smoke.ts）→
  * 在 jsdom 里挂载完整应用（Vue + vue-router）→ 逐项断言核心交互。
  *
  * 运行：`npm run smoke`（Node >= 18，无其他外部依赖）

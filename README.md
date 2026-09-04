@@ -40,8 +40,26 @@ npm run smoke      # jsdom 冒烟测试（挂载/主题/搜索/路由/加载更�
 ```
 
 冒烟测试说明：jsdom 不执行 `<script type="module">`，故 `npm run smoke`
-先用 `vite.smoke.config.ts` 打一个 IIFE 单文件测试包到 `dist-smoke/`（已 gitignore），
+先用 `vite.config.smoke.ts` 打一个 IIFE 单文件测试包到 `dist-smoke/`（已 gitignore），
 再由 `scripts/smoke.mjs` 在 jsdom 中挂载完整应用并逐项断言核心交互。
+
+## 命名规范
+
+| 类别                | 规则                                  | 示例                                     |
+| ------------------- | ------------------------------------- | ---------------------------------------- |
+| Vue 组件            | PascalCase + 多词（防与原生标签冲突） | `PostCard.vue`、`AppHeader.vue`          |
+| 组合式函数          | `use` 前缀 + camelCase                | `useTheme.ts`                            |
+| 指令文件            | 驼峰，与指令名（kebab-case）对应      | `lazyBg.ts` → `v-lazy-bg`                |
+| utils / 数据 / 配置 | camelCase，名称体现职责               | `mediaQuery.ts`、`scrollLock.ts`         |
+| 构建脚本            | kebab-case + `.mjs`                   | `build-posts.mjs`、`prerender.mjs`       |
+| Vite 配置           | `vite.config.<用途>.ts`，主配置无后缀 | `vite.config.ts`、`vite.config.smoke.ts` |
+| 测试文件            | `<被测模块>.test.ts`，集中在 `tests/` | `format.test.ts`                         |
+| 类型声明            | Vite 惯例位置与名称                   | `src/vite-env.d.ts`                      |
+| 样式                | 全小写，按层级命名                    | `tokens.css`、`base.css`、`layout.css`   |
+| 文章                | `YYYY-MM-DD-<slug>.md`，slug 即 URL   | `2026-09-02-rest-day.md`                 |
+| 生成产物            | `<源文件名>.generated.ts`，禁止手改   | `posts.generated.ts`                     |
+| 静态资源            | kebab-case，放 `public/`              | `logo.svg`、`robots.txt`                 |
+| 根目录文档          | README.md（总览）+ 全大写主题文档     | `DEPLOY.md`                              |
 
 ## 目录结构
 
@@ -64,12 +82,12 @@ npm run smoke      # jsdom 冒烟测试（挂载/主题/搜索/路由/加载更�
 │   ├── router/             # 路由（含 /archives 归档、/random 随机、404）
 │   ├── styles/             # tokens.css（设计令牌）/ base.css / layout.css
 │   ├── types/              # Post、NavItem 等类型定义
-│   ├── utils/              # media（matchMedia 兜底）、search、format、scrollLock
+│   ├── utils/              # mediaQuery（matchMedia 兜底）、search、format、scrollLock
 │   └── views/              # HomeView、PostView、ArchiveView、NotFoundView
 ├── .github/workflows/      # GitHub Pages 自动部署
 ├── DEPLOY.md               # 部署指南（Pages/Vercel/Nginx + 上线清单）
 ├── vite.config.ts          # 含 sitemap / RSS 构建插件
-└── vite.smoke.config.ts
+└── vite.config.smoke.ts
 ```
 
 ## 构建时自动生成（单一数据源，免维护）

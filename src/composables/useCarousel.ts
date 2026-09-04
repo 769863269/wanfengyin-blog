@@ -1,5 +1,5 @@
 import { computed, onScopeDispose, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
-import { useMediaQuery } from '@/utils/media'
+import { useMediaQuery } from '@/utils/mediaQuery'
 
 /**
  * 轮播控制
