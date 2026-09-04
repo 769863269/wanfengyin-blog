@@ -8,6 +8,49 @@ import type { Post } from '@/types'
 
 export const generatedPosts: Post[] = [
   {
+    "slug": "hello-test-post",
+    "title": "这是一篇测试文章：发文流程实测",
+    "excerpt": "现场实测 Markdown 发文全流程——建文件、填头部、写正文，三步上线。以后老大发文就是这个体验。",
+    "cover": "linear-gradient(135deg,#a8edea,#fed6e3)",
+    "publishedAt": "2026-09-04",
+    "views": 1,
+    "commentCount": 0,
+    "tags": [
+      "测试"
+    ],
+    "featured": false,
+    "body": [
+      {
+        "type": "paragraph",
+        "text": "你现在看到的这篇文章，没有改过任何一行组件代码——它只是一个新建的 `.md` 文件，构建时自动编译成了页面数据。"
+      },
+      {
+        "type": "heading",
+        "text": "发文三步"
+      },
+      {
+        "type": "quote",
+        "text": "建文件、填头部、写正文。完事。"
+      },
+      {
+        "type": "paragraph",
+        "text": "以前在旧版里发一篇文章，要复制整个 `post.html`、手改十几个标签、再手工同步到侧栏和归档——发三篇就烦了。现在这些全部自动化：文章列表、归档页、标签云、RSS、sitemap、预渲染，全部从这一个 md 文件派生。"
+      },
+      {
+        "type": "heading",
+        "text": "自动跟着变的地方"
+      },
+      {
+        "type": "paragraph",
+        "text": "1. 首页文章流（按日期排到最前） 2. 归档页时间线（自动分组到 2026 年） 3. 侧栏标签云（多一个「测试」标签） 4. RSS 订阅流和 sitemap"
+      },
+      {
+        "type": "paragraph",
+        "text": "这篇文章留在站里还是删掉，老大说了算——删掉 md 文件重新构建，它就会从所有地方消失。"
+      }
+    ]
+  },
+  {
     "slug": "rest-day",
     "title": "休息日",
     "excerpt": "上一次休息还是在上一次，制造业是真TM🐮🐴本来今天的行程规划的还是比较满的，准备先去处理个违章，然后去医院看看牙，再去外面淘个二手电瓶车，傻鸟公司不让把车……",

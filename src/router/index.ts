@@ -73,8 +73,14 @@ const router = createRouter({
       // false = 本导航不自动滚动，交给 App.vue 在过渡后恢复
       return false
     }
+    // 前进导航必须清掉残留的待恢复位置：若上一次「返回」落在被复用的
+    // 同组件路由上（如首页 ↔ /?tag=x，无过渡、enter 钩子不触发），
+    // 残留值会被下一次进入详情页的 enter 钩子误消费，导致页面自动
+    // 滚到上一次离开的深处（表现为「进文章详情自动滚到底部」）。
+    pendingRestore = undefined
     if (to.hash) return { el: to.hash, behavior: 'smooth' }
-    return { top: 0, behavior: 'smooth' }
+    // 前进导航直接跳顶，不用平滑滚动：避免用户看到新页面「滑」上去
+    return { top: 0 }
   },
 })
 

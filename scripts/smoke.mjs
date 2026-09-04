@@ -179,6 +179,31 @@ async function main() {
     check('无加载更多按钮（文章不足时合法）', $$('.home__end').length > 0)
   }
 
+  console.log('\n[5.5] 滚动位置残留回归')
+  // 复现路径：进入同组件路由（/?tag=x）→ 浏览器返回（组件复用、enter 不触发）
+  // → 点进文章详情。若 pendingRestore 未在前进导航时清空，详情页会被残留
+  // 位置误滚到离开首页时的深处。
+  const tagLink = $$('a[href*="?tag="]')[0]
+  if (tagLink) {
+    click(tagLink)
+    await waitFor(() => window.location.search.includes('tag='))
+    window.history.back()
+    await waitFor(() => !window.location.search.includes('tag='))
+    await sleep(120)
+    const staleCalls = []
+    window.scrollTo = (left, top) => staleCalls.push([left, top])
+    click($$('.post-card__link')[0])
+    await waitFor(() => window.location.pathname.startsWith('/post/'))
+    await sleep(120)
+    check(
+      '进详情页无残留滚动（仅一次跳顶）',
+      staleCalls.length === 1,
+      `scrollTo 调用 ${staleCalls.length} 次: ${JSON.stringify(staleCalls.slice(0, 3))}`,
+    )
+  } else {
+    check('侧栏标签链接存在（回归前提）', false, '未找到 ?tag= 链接')
+  }
+
   console.log('\n[6] 页面 JS 报错')
   check('无未捕获报错', pageErrors.length === 0, pageErrors.slice(0, 3).join(' | '))
 
