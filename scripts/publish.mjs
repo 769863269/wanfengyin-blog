@@ -18,7 +18,6 @@ import { fileURLToPath } from 'node:url'
 import { parseFrontmatter } from './lib/markdown.mjs'
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
-const articlesDir = join(root, 'articles')
 const DRY_RUN = process.argv.includes('--dry-run')
 
 const isArticle = (name) => name.endsWith('.md') && name !== 'README.md' && !name.startsWith('_')
