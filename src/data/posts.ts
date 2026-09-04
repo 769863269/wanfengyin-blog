@@ -43,10 +43,12 @@ export const tagCloud: readonly TagName[] = [...new Set(posts.flatMap((post) => 
 )
 
 export const recentComments: readonly RecentComment[] = [
-  { id: 'c1', author: '夏末', content: '哈哈哈太真实了，打工人真实写照' },
-  { id: 'c2', author: '阿强', content: '无锡的甜确实有点顶不住' },
-  { id: 'c3', author: '小米', content: '猫猫绝育恢复得怎么样啦' },
-] as const
+  { id: 'c1', author: '阿豪', content: 'Rolldown 迁移这篇太顶了，构建速度肉眼可见地快' },
+  { id: 'c2', author: 'Nina', content: '夜间模式那篇收藏了，令牌方案学到了' },
+  { id: 'c3', author: '老王', content: 'scrollBehavior 的坑我也踩过，看到过渡动画那段泪目' },
+  { id: 'c4', author: '小鱼', content: '从开张篇追到现在，二十篇了，respect' },
+  { id: 'c5', author: 'Tony', content: '友链已加，常来串门' },
+]
 
 /** 按 slug 查找文章。返回 undefined 而非抛错，由调用方决定 404 处理。 */
 export function findPost(slug: string): Post | undefined {

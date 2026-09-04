@@ -8,13 +8,449 @@ import type { Post } from '@/types'
 
 export const generatedPosts: Post[] = [
   {
-    "slug": "hello-test-post",
-    "title": "这是一篇测试文章：发文流程实测",
-    "excerpt": "现场实测 Markdown 发文全流程——建文件、填头部、写正文，三步上线。以后老大发文就是这个体验。",
-    "cover": "linear-gradient(135deg,#a8edea,#fed6e3)",
-    "publishedAt": "2026-09-04",
-    "views": 1,
-    "commentCount": 0,
+    "slug": "vite8-rolldown-migration",
+    "title": "vite8-rolldown-迁移实录",
+    "excerpt": "Vite 8 换用 Rolldown 构建引擎，冷启动和构建速度的变化，以及 manualChunks 那个 breaking change。",
+    "cover": "linear-gradient(135deg,#c471f5,#fa71cd)",
+    "publishedAt": "2026-08-30",
+    "views": 1823,
+    "commentCount": 23,
+    "tags": [
+      "Vite",
+      "构建"
+    ],
+    "featured": true,
+    "body": [
+      {
+        "type": "paragraph",
+        "text": "Vite 8 底层换成了 Rolldown，性能提升是真实的：冷启动肉眼可见地快，生产构建时间近乎减半。"
+      },
+      {
+        "type": "heading",
+        "text": "迁移成本"
+      },
+      {
+        "type": "paragraph",
+        "text": "绝大多数项目零改动直迁。唯一踩到的 breaking change：manualChunks 不再接受对象形式，要改成函数返回。报错信息清晰，照着改就行。"
+      },
+      {
+        "type": "quote",
+        "text": "工具链升级的正确姿势：先看 changelog 的 breaking changes，再动手。"
+      },
+      {
+        "type": "heading",
+        "text": "体感"
+      },
+      {
+        "type": "paragraph",
+        "text": "开发时的依赖预构建几乎无感，改代码的热更新稳定在毫秒级。这种「无感」恰恰是工具链成熟的标志。"
+      }
+    ]
+  },
+  {
+    "slug": "vue3.5-composition-api-notes",
+    "title": "vue3.5-composition-api-心得",
+    "excerpt": "用了一年组合式 API 的阶段性总结：状态放哪、逻辑怎么拆、什么情况下该抽 composable。",
+    "cover": "linear-gradient(135deg,#42e695,#3bb2b8)",
+    "publishedAt": "2026-08-22",
+    "views": 1547,
+    "commentCount": 18,
+    "tags": [
+      "Vue",
+      "TypeScript"
+    ],
+    "featured": false,
+    "body": [
+      {
+        "type": "paragraph",
+        "text": "组合式 API 最大的变化不是写法，是「逻辑的组织方式」。"
+      },
+      {
+        "type": "heading",
+        "text": "状态放哪"
+      },
+      {
+        "type": "paragraph",
+        "text": "全局状态（主题、抽屉、搜索）在根组件挂载一次，子组件 useXxx 取同一实例；页面局部状态留在页面组件里。判断标准：谁的生命周期该管它。"
+      },
+      {
+        "type": "quote",
+        "text": "composable 抽取的时机是第二次重复，不是第一次出现。"
+      },
+      {
+        "type": "heading",
+        "text": "类型体验"
+      },
+      {
+        "type": "paragraph",
+        "text": "defineProps 泛型、computed 自动推导、ref 解包，TS 全程无断言。类型即文档，重构时尤其明显。"
+      }
+    ]
+  },
+  {
+    "slug": "css-grid-82-layout",
+    "title": "css-grid-八二布局",
+    "excerpt": "主内容 8 份、侧栏 2 份的经典博客布局，用 Grid 三行搞定，附响应式收窄方案。",
+    "cover": "linear-gradient(135deg,#89f7fe,#66a6ff)",
+    "publishedAt": "2026-08-15",
+    "views": 986,
+    "commentCount": 9,
+    "tags": [
+      "CSS"
+    ],
+    "featured": false,
+    "body": [
+      {
+        "type": "paragraph",
+        "text": "博客的 8:2 双栏布局，float 时代要写一堆清除，flex 时代要算比例，Grid 时代三行。"
+      },
+      {
+        "type": "heading",
+        "text": "实现"
+      },
+      {
+        "type": "paragraph",
+        "text": "grid-template-columns: 8fr 2fr，对齐方式交给 align-items。侧栏不随主列增长，天然 sticky 友好。"
+      },
+      {
+        "type": "quote",
+        "text": "布局系统的进步，就是把 hack 变成语义。"
+      },
+      {
+        "type": "heading",
+        "text": "响应式收窄"
+      },
+      {
+        "type": "paragraph",
+        "text": "992px 以下侧栏隐藏、主列占满；600px 以下缩略图改纵向堆叠。断点的原则是内容先妥协，布局后妥协。"
+      }
+    ]
+  },
+  {
+    "slug": "blog-rebuild-from-zero",
+    "title": "博客重构-从零到一",
+    "excerpt": "纯静态模板迁移到 Vite + Vue 3 + TS 的完整复盘：架构决策、迁移顺序、验证闭环。",
+    "cover": "linear-gradient(135deg,#ff6b6b,#feca57)",
+    "publishedAt": "2026-08-08",
+    "views": 2310,
+    "commentCount": 31,
+    "tags": [
+      "随笔",
+      "Vue"
+    ],
+    "featured": true,
+    "body": [
+      {
+        "type": "paragraph",
+        "text": "重构不是推倒重来，是把散落的逻辑收拢到该在的位置。"
+      },
+      {
+        "type": "heading",
+        "text": "架构决策"
+      },
+      {
+        "type": "paragraph",
+        "text": "内容与结构分离是第一原则：文章、导航、友链全部抽成类型安全的数据模块，组件只负责渲染。composables 收拢主题、搜索、轮播等全局状态。"
+      },
+      {
+        "type": "quote",
+        "text": "好架构的标志：加一篇文章、加一个页面，都不需要「碰」框架代码。"
+      },
+      {
+        "type": "heading",
+        "text": "验证闭环"
+      },
+      {
+        "type": "paragraph",
+        "text": "lint、类型检查、单测、构建、jsdom 冒烟五道关卡全绿才算完。重构最大的风险不是写错，是「以为没写错」。"
+      }
+    ]
+  },
+  {
+    "slug": "typescript-strict-survival",
+    "title": "typescript-strict-生存指南",
+    "excerpt": "strict 全开 + noUncheckedIndexedAccess，编译器替你抓住的每一个坑都值得。",
+    "cover": "linear-gradient(135deg,#4facfe,#00f2fe)",
+    "publishedAt": "2026-07-30",
+    "views": 1754,
+    "commentCount": 16,
+    "tags": [
+      "TypeScript"
+    ],
+    "featured": false,
+    "body": [
+      {
+        "type": "paragraph",
+        "text": "TS 开 strict 是痛一时爽一时的投资。"
+      },
+      {
+        "type": "heading",
+        "text": "为什么全开"
+      },
+      {
+        "type": "paragraph",
+        "text": "strict 模式会在编译期抓住大量「运行时才炸」的问题：可能为 undefined 的索引访问、漏判的分支、隐式 any。开着难受，关了后悔。"
+      },
+      {
+        "type": "quote",
+        "text": "类型系统的收益和严格程度成正比。"
+      },
+      {
+        "type": "heading",
+        "text": "实战感受"
+      },
+      {
+        "type": "paragraph",
+        "text": "noUncheckedIndexedAccess 最狠也最值：所有数组索引访问都必须判空。配合「查找失败返回 undefined 而不是抛错」的约定，整个数据层的健壮性上了一个台阶。"
+      }
+    ]
+  },
+  {
+    "slug": "lazy-load-and-intersectionobserver",
+    "title": "懒加载与-intersectionobserver",
+    "excerpt": "从监听 scroll 到 IntersectionObserver，图片懒加载的演进史与兼容性兜底方案。",
+    "cover": "linear-gradient(135deg,#667eea,#764ba2)",
+    "publishedAt": "2026-07-24",
+    "views": 879,
+    "commentCount": 7,
+    "tags": [
+      "性能优化"
+    ],
+    "featured": false,
+    "body": [
+      {
+        "type": "paragraph",
+        "text": "懒加载的原理一句话：视口外的图不加载。难点全在「怎么知道进入了视口」。"
+      },
+      {
+        "type": "heading",
+        "text": "演进"
+      },
+      {
+        "type": "paragraph",
+        "text": "老方案监听 scroll 事件算几何，节流写不好就是性能灾难。IntersectionObserver 把判断交给浏览器，主线程零开销。"
+      },
+      {
+        "type": "quote",
+        "text": "让浏览器做浏览器擅长的事。"
+      },
+      {
+        "type": "heading",
+        "text": "兜底"
+      },
+      {
+        "type": "paragraph",
+        "text": "不支持 IO 的环境直接降级为立即加载。兼容性兜底的原则：宁可多加载，不能白屏。"
+      }
+    ]
+  },
+  {
+    "slug": "static-blog-seo-prerender",
+    "title": "静态博客-seo-预渲染",
+    "excerpt": "百度不执行 JS，SPA 等于对搜索引擎隐身。构建时预渲染每篇文章，收录问题一次解决。",
+    "cover": "linear-gradient(135deg,#30cfd0,#330867)",
+    "publishedAt": "2026-07-18",
+    "views": 1315,
+    "commentCount": 12,
+    "tags": [
+      "SEO",
+      "部署"
+    ],
+    "featured": true,
+    "body": [
+      {
+        "type": "paragraph",
+        "text": "单页应用再漂亮，搜索引擎爬虫看到的只有一个空 div。对个人博客来说这是致命伤。"
+      },
+      {
+        "type": "heading",
+        "text": "预渲染方案"
+      },
+      {
+        "type": "paragraph",
+        "text": "文章是纯静态数据，最适合构建时生成：每篇文章输出一份完整 HTML，标题、描述、og 标签、正文全文都在。浏览器打开后应用照常接管，用户无感知。"
+      },
+      {
+        "type": "quote",
+        "text": "预渲染的本质：给爬虫看的和给人看的，是同一份内容的不同时刻快照。"
+      },
+      {
+        "type": "heading",
+        "text": "配套"
+      },
+      {
+        "type": "paragraph",
+        "text": "sitemap 和 robots.txt 同样构建时生成，从文章数据派生，永不手工同步。"
+      }
+    ]
+  },
+  {
+    "slug": "is-rss-dead",
+    "title": "RSS-过时了吗",
+    "excerpt": "大众不用 RSS，但你的核心读者在用。独立博客最后的「关注」通道，值得认真做。",
+    "cover": "linear-gradient(135deg,#fa709a,#fee140)",
+    "publishedAt": "2026-07-11",
+    "views": 742,
+    "commentCount": 14,
+    "tags": [
+      "随笔"
+    ],
+    "featured": false,
+    "body": [
+      {
+        "type": "paragraph",
+        "text": "常有人说 RSS 死了。大众用户确实不用，但这话对独立博客不成立。"
+      },
+      {
+        "type": "heading",
+        "text": "为什么做"
+      },
+      {
+        "type": "paragraph",
+        "text": "博客没有推送算法，读者看完走了大概率不再回来。RSS 是唯一让读者「订阅」你的机制，订阅者属于你的域名，不经过任何平台。"
+      },
+      {
+        "type": "quote",
+        "text": "平台的粉丝是租的，RSS 订阅者是自己的。"
+      },
+      {
+        "type": "heading",
+        "text": "做法"
+      },
+      {
+        "type": "paragraph",
+        "text": "构建时从文章数据自动生成 feed.xml，新文章自动进流。零维护成本，被动收益。"
+      }
+    ]
+  },
+  {
+    "slug": "vitest-getting-started",
+    "title": "vitest-单测入门",
+    "excerpt": "纯函数是最好的单测对象。时间格式化、搜索、Markdown 转换器，33 个用例的思路拆解。",
+    "cover": "linear-gradient(135deg,#43e97b,#38f9d7)",
+    "publishedAt": "2026-07-02",
+    "views": 934,
+    "commentCount": 6,
+    "tags": [
+      "测试",
+      "工具"
+    ],
+    "featured": false,
+    "body": [
+      {
+        "type": "paragraph",
+        "text": "单测不是仪式感，是给未来的自己留的回归保险。"
+      },
+      {
+        "type": "heading",
+        "text": "从哪测起"
+      },
+      {
+        "type": "paragraph",
+        "text": "纯函数性价比最高：时间格式化、计数格式化、搜索过滤、Markdown 转换器。输入输出明确，一行断言一个行为。"
+      },
+      {
+        "type": "quote",
+        "text": "先测逻辑，再测交互；先测纯函数，再测组件。"
+      },
+      {
+        "type": "heading",
+        "text": "边界意识"
+      },
+      {
+        "type": "paragraph",
+        "text": "非法日期、空数组、HTML 注入字符串——这些「不会有人这么传」的参数，恰恰是最值得测的。转换器的 XSS 转义测试就是在攻防里长出来的。"
+      }
+    ]
+  },
+  {
+    "slug": "github-actions-auto-deploy",
+    "title": "github-actions-自动部署",
+    "excerpt": "git push 之后的一切自动完成：类型检查、单测、构建、预渲染、发布。CI 配置逐行讲解。",
+    "cover": "linear-gradient(135deg,#13547a,#80d0c7)",
+    "publishedAt": "2026-06-25",
+    "views": 1268,
+    "commentCount": 10,
+    "tags": [
+      "部署",
+      "工具"
+    ],
+    "featured": false,
+    "body": [
+      {
+        "type": "paragraph",
+        "text": "部署这种事，手动做第三次就该写脚本了。"
+      },
+      {
+        "type": "heading",
+        "text": "流水线设计"
+      },
+      {
+        "type": "paragraph",
+        "text": "push 触发：装依赖 → 类型检查 → 单测 → 构建（含预渲染和 sitemap）→ 发布产物。任何一步红了，部署不会发生。"
+      },
+      {
+        "type": "quote",
+        "text": "CI 的价值不是快，是「坏东西绝对上不了线」。"
+      },
+      {
+        "type": "heading",
+        "text": "踩坑"
+      },
+      {
+        "type": "paragraph",
+        "text": "Node 版本要锁死在 .nvmrc，本地能跑线上挂多半是环境漂移。缓存 node_modules 能把构建时间从三分钟压到五十秒。"
+      }
+    ]
+  },
+  {
+    "slug": "night-mode-done-right",
+    "title": "夜间模式的正确实现",
+    "excerpt": "不做暗色分支判断，只换设计令牌。夜间模式从「全文件搜索替换」变成「覆盖一份变量表」。",
+    "cover": "linear-gradient(135deg,#232526,#414345)",
+    "publishedAt": "2026-06-18",
+    "views": 1687,
+    "commentCount": 21,
+    "tags": [
+      "CSS",
+      "Vue"
+    ],
+    "featured": true,
+    "body": [
+      {
+        "type": "paragraph",
+        "text": "夜间模式最常见的实现是在组件里写一堆 .night 分支，结果样式文件比业务代码还难维护。"
+      },
+      {
+        "type": "heading",
+        "text": "令牌方案"
+      },
+      {
+        "type": "paragraph",
+        "text": "所有颜色收敛为 CSS 变量，html.night 只覆盖变量表。组件里没有一行暗色判断，切主题就是换一层皮。"
+      },
+      {
+        "type": "quote",
+        "text": "判断逻辑收拢到一处，比散落在十个文件里健康一百倍。"
+      },
+      {
+        "type": "heading",
+        "text": "两个细节"
+      },
+      {
+        "type": "paragraph",
+        "text": "主题偏好存 localStorage 并跟随系统 prefers-color-scheme；切换时给根节点加过渡类，只让参与变色的容器做动画，避免全局 transition 的性能损耗。"
+      }
+    ]
+  },
+  {
+    "slug": "jsdom-smoke-testing",
+    "title": "jsdom-冒烟测试实践",
+    "excerpt": "不启浏览器、不依赖后端，20 项核心交互 3 分钟跑完。jsdom 冒烟测试的完整实践。",
+    "cover": "linear-gradient(135deg,#cfd9df,#e2ebf0)",
+    "publishedAt": "2026-06-10",
+    "views": 803,
+    "commentCount": 5,
     "tags": [
       "测试"
     ],
@@ -22,307 +458,343 @@ export const generatedPosts: Post[] = [
     "body": [
       {
         "type": "paragraph",
-        "text": "你现在看到的这篇文章，没有改过任何一行组件代码——它只是一个新建的 `.md` 文件，构建时自动编译成了页面数据。"
+        "text": "每次改完 UI 都手动点一遍？不现实。真浏览器自动化又太重。折中方案：jsdom 冒烟测试。"
       },
       {
         "type": "heading",
-        "text": "发文三步"
+        "text": "基建"
+      },
+      {
+        "type": "paragraph",
+        "text": "jsdom 不执行 ES module，先用 Vite 打 IIFE 单文件测试包，再在 jsdom 里挂载完整应用逐项断言。"
       },
       {
         "type": "quote",
-        "text": "建文件、填头部、写正文。完事。"
-      },
-      {
-        "type": "paragraph",
-        "text": "以前在旧版里发一篇文章，要复制整个 `post.html`、手改十几个标签、再手工同步到侧栏和归档——发三篇就烦了。现在这些全部自动化：文章列表、归档页、标签云、RSS、sitemap、预渲染，全部从这一个 md 文件派生。"
+        "text": "冒烟测试不求覆盖全，只求核心路径永不静默坏死。"
       },
       {
         "type": "heading",
-        "text": "自动跟着变的地方"
+        "text": "踩过的坑"
       },
       {
         "type": "paragraph",
-        "text": "1. 首页文章流（按日期排到最前） 2. 归档页时间线（自动分组到 2026 年） 3. 侧栏标签云（多一个「测试」标签） 4. RSS 订阅流和 sitemap"
-      },
-      {
-        "type": "paragraph",
-        "text": "这篇文章留在站里还是删掉，老大说了算——删掉 md 文件重新构建，它就会从所有地方消失。"
+        "text": "固定 sleep 断言会时序抖动，全部换成轮询等待；matchMedia 未实现会中断整个脚本，记得 polyfill。"
       }
     ]
   },
   {
-    "slug": "rest-day",
-    "title": "休息日",
-    "excerpt": "上一次休息还是在上一次，制造业是真TM🐮🐴本来今天的行程规划的还是比较满的，准备先去处理个违章，然后去医院看看牙，再去外面淘个二手电瓶车，傻鸟公司不让把车……",
-    "cover": "linear-gradient(135deg,#ff9a9e,#fad0c4)",
-    "publishedAt": "2026-09-02",
-    "views": 609,
-    "commentCount": 12,
+    "slug": "markdown-workflow",
+    "title": "markdown-工作流设计",
+    "excerpt": "发文成本决定博客寿命。设计了一套 Markdown + frontmatter 的发文流水线。",
+    "cover": "linear-gradient(135deg,#5ee7df,#b490ca)",
+    "publishedAt": "2026-06-02",
+    "views": 1122,
+    "commentCount": 8,
     "tags": [
-      "生活",
-      "随笔"
-    ],
-    "featured": true,
-    "body": [
-      {
-        "type": "paragraph",
-        "text": "上一次休息还是在上一次，制造业是真TM🐮🐴。本来今天的行程规划得还是比较满的，准备先去处理个违章，然后去医院看看牙，再去外面淘个二手电瓶车。"
-      },
-      {
-        "type": "paragraph",
-        "text": "傻鸟公司不让把车停楼下，绕了三圈才找个车位，结果违章还没处理成，窗口排队排到怀疑人生。下午索性躺平，点了份外卖，看了半部电影，才发现休息日最舒服的事就是「啥也不干」。"
-      },
-      {
-        "type": "heading",
-        "text": "关于节奏"
-      },
-      {
-        "type": "paragraph",
-        "text": "工作久了容易把「忙」当成常态，一旦停下来反而心慌。其实人不是机器，喘口气不是偷懒，是为了下次转得更稳。"
-      },
-      {
-        "type": "quote",
-        "text": "每个人的内心都有一团火，路过的人只能看到烟。"
-      },
-      {
-        "type": "paragraph",
-        "text": "明天又是新的一周，希望违章能顺利处理掉，牙也别再疼了。就到这里，碎碎念结束。"
-      }
-    ]
-  },
-  {
-    "slug": "take-it-slow",
-    "title": "慢慢来",
-    "excerpt": "来无锡这边工作一个多月了，感觉还不错，除了吃的不太习惯，太甜了，我竟然在食堂吃到了甜的辣椒小炒肉……四川人表示大为震撼。15号发完工资，和预想的……",
-    "cover": "linear-gradient(135deg,#a1c4fd,#c2e9fb)",
-    "publishedAt": "2026-08-05",
-    "views": 1600,
-    "commentCount": 36,
-    "tags": [
-      "工作",
-      "生活"
-    ],
-    "featured": true,
-    "body": [
-      {
-        "type": "paragraph",
-        "text": "来无锡这边工作一个多月了，感觉还不错，除了吃的不太习惯，太甜了。我竟然在食堂吃到了甜的辣椒小炒肉，四川人表示大为震撼。"
-      },
-      {
-        "type": "paragraph",
-        "text": "15号发完工资，和预想的差不多，够花但存不下多少。算了下房租水电，剩下的刚够日常。慢慢来吧，反正也不是第一天上班了。"
-      },
-      {
-        "type": "heading",
-        "text": "关于适应"
-      },
-      {
-        "type": "paragraph",
-        "text": "新环境最难的不是工作本身，是把生活重新搭起来：哪家的外卖不踩雷，哪个超市打折，几点下班能赶上末班车。这些都是小事，但每件都要花时间。"
-      },
-      {
-        "type": "quote",
-        "text": "慢慢来，比较快。"
-      },
-      {
-        "type": "paragraph",
-        "text": "同事都还不错，问什么都愿意讲。这点比上一家强多了。"
-      }
-    ]
-  },
-  {
-    "slug": "cat-neutering",
-    "title": "给糯米做绝育",
-    "excerpt": "过年的时候就发过一次情，一直在家喵喵叫，本来想带去做绝育的，不过老爸老妈在家，老年人嘛，知道做个绝育花几大百又要喷我了……也不想因为这些事情吵来吵去。",
-    "cover": "linear-gradient(135deg,#fbc2eb,#a6c1ee)",
-    "publishedAt": "2026-07-15",
-    "views": 1600,
-    "commentCount": 28,
-    "tags": [
-      "生活",
-      "家人"
-    ],
-    "featured": true,
-    "body": [
-      {
-        "type": "paragraph",
-        "text": "过年的时候就发过一次情，一直在家喵喵叫，本来想带去做绝育的，不过老爸老妈在家，老年人嘛，知道做个绝育花几大百又要喷我了。"
-      },
-      {
-        "type": "paragraph",
-        "text": "也不想因为这些事情吵来吵去，就一直拖着。这次趁他们回老家，赶紧带去医院做了。"
-      },
-      {
-        "type": "heading",
-        "text": "术后三天"
-      },
-      {
-        "type": "paragraph",
-        "text": "手术很快，二十分钟就出来了。麻药没过的时候走路打晃，看着挺心疼。医生交代要戴头套，防止舔伤口，糯米戴上的第一反应是往后退，撞到墙。"
-      },
-      {
-        "type": "quote",
-        "text": "它大概以为自己得罪了谁。"
-      },
-      {
-        "type": "paragraph",
-        "text": "现在恢复得挺好，又开始满屋子跑了。就是偶尔还会用幽怨的眼神看我一眼。"
-      }
-    ]
-  },
-  {
-    "slug": "daily-grind",
-    "title": "牛马生活",
-    "excerpt": "本来说5.6号入职的，HR又给提前到4号了，来加班给我办入职，看的出来确实很缺人了。来这边也上了几天班了，工作强度一般般吧，氛围还不错，就是太久没上班了，节奏还没找回来……",
-    "cover": "",
-    "publishedAt": "2026-07-06",
-    "views": 1900,
-    "commentCount": 31,
-    "tags": [
-      "工作",
+      "工具",
       "随笔"
     ],
     "featured": false,
     "body": [
       {
         "type": "paragraph",
-        "text": "本来说5.6号入职的，HR又给提前到4号了，来加班给我办入职，看得出来确实很缺人了。"
-      },
-      {
-        "type": "paragraph",
-        "text": "来这边也上了几天班了，工作强度一般般吧，氛围还不错，就是太久没上班了，节奏还没找回来。早上闹钟响了三遍才爬起来，到工位上先发十分钟呆。"
+        "text": "很多博客死于一件事：发一篇文章的流程太痛苦。"
       },
       {
         "type": "heading",
-        "text": "关于节奏"
+        "text": "设计原则"
       },
       {
         "type": "paragraph",
-        "text": "以前觉得上班是消耗，现在觉得没班上更消耗。人大概就是这样，有活干的时候嫌累，闲下来又开始慌。"
+        "text": "文章就是 articles 目录下的一个 md 文件，frontmatter 声明元信息，构建时自动编译成类型安全的数据。缺字段、slug 重复、日期非法，构建直接报错拦下。"
       },
       {
         "type": "quote",
-        "text": "所谓牛马，就是一边吐槽一边准时打卡。"
+        "text": "流水线的意义是把「坚持」变成「顺便」。"
+      },
+      {
+        "type": "heading",
+        "text": "延伸产物"
       },
       {
         "type": "paragraph",
-        "text": "先这么着吧，等发工资再说。"
+        "text": "sitemap、RSS、预渲染 HTML 全部从同一份数据派生，新文章一发全部自动更新。"
       }
     ]
   },
   {
-    "slug": "sweet-wuxi",
-    "title": "无锡的甜",
-    "excerpt": "来无锡一个多月，最不适应的就是甜。红烧肉是甜的，辣椒炒肉是甜的，连番茄炒蛋都要放糖。作为一个四川胃，每天都在和糖作斗争……",
+    "slug": "error-boundary",
+    "title": "前端错误边界兜底",
+    "excerpt": "一个组件报错不该拖垮整页。用 onErrorCaptured 给应用兜底，白屏问题从此绝迹。",
     "cover": "linear-gradient(135deg,#f6d365,#fda085)",
-    "publishedAt": "2026-06-22",
-    "views": 1200,
-    "commentCount": 17,
+    "publishedAt": "2026-05-26",
+    "views": 954,
+    "commentCount": 7,
     "tags": [
-      "生活",
-      "工作"
+      "Vue"
     ],
     "featured": false,
     "body": [
       {
         "type": "paragraph",
-        "text": "来无锡一个多月，最不适应的就是甜。红烧肉是甜的，辣椒炒肉是甜的，连番茄炒蛋都要放糖。"
-      },
-      {
-        "type": "paragraph",
-        "text": "作为一个四川胃，每天都在和糖作斗争。食堂阿姨打菜的时候，我盯着那勺糖想说点什么，最后还是没开口。"
+        "text": "线上见过最冤的白屏：某个边角组件抛了个错，整页跟着陪葬。"
       },
       {
         "type": "heading",
-        "text": "关于适应"
+        "text": "兜底方案"
       },
       {
         "type": "paragraph",
-        "text": "后来学乖了，自己带瓶辣椒酱，什么菜都能救回来一半。同事看我吃法都觉得新奇，说你们四川人是不是离不开辣。"
+        "text": "根组件挂 onErrorCaptured，捕获后上报并阻断传播；局部组件各自降级渲染占位。"
       },
       {
         "type": "quote",
-        "text": "不是离不开辣，是离不开家乡那口味道。"
+        "text": "错误处理的目标不是消灭报错，而是让报错的爆炸半径可控。"
+      },
+      {
+        "type": "heading",
+        "text": "配套动作"
       },
       {
         "type": "paragraph",
-        "text": "慢慢也习惯了，偶尔觉得甜口也不错。就是回老家大概要被说「口味变了」。"
+        "text": "环境探测类 API（matchMedia、IntersectionObserver）全部封装降级版本，不支持的浏览器走兜底分支，绝不中断脚本。"
       }
     ]
   },
   {
-    "slug": "melon-eating",
-    "title": "吃瓜群众上线",
-    "excerpt": "今天工位对面新来了个实习生，听说是个隐藏的吃瓜高手。中午吃饭聊起部门八卦，那叫一个门儿清，比我这老员工都清楚……",
-    "cover": "linear-gradient(135deg,#84fab0,#8fd3f4)",
-    "publishedAt": "2026-06-10",
-    "views": 980,
+    "slug": "design-tokens-theme",
+    "title": "设计令牌与主题系统",
+    "excerpt": "颜色、间距、圆角、动效全部收敛为 CSS 变量，夜间模式只需覆盖一份令牌。",
+    "cover": "linear-gradient(135deg,#a8edea,#fed6e3)",
+    "publishedAt": "2026-05-18",
+    "views": 1447,
+    "commentCount": 13,
+    "tags": [
+      "CSS"
+    ],
+    "featured": false,
+    "body": [
+      {
+        "type": "paragraph",
+        "text": "重构前样式里散落着几十个硬编码色值，夜间模式等于全文件搜索替换，改一次崩三处。"
+      },
+      {
+        "type": "heading",
+        "text": "令牌化"
+      },
+      {
+        "type": "paragraph",
+        "text": "品牌色、表面色、文字色、描边、阴影、圆角、动效曲线全部收敛为 CSS 变量，组件内禁止硬编码。"
+      },
+      {
+        "type": "quote",
+        "text": "主题系统正确的打开方式：组件零感知，只换令牌。"
+      },
+      {
+        "type": "heading",
+        "text": "效果"
+      },
+      {
+        "type": "paragraph",
+        "text": "夜间模式只需在 html.night 里覆盖一份令牌表，所有组件自动适配。新增页面天然继承两套主题，这才是令牌系统的复利。"
+      }
+    ]
+  },
+  {
+    "slug": "accessibility-basics",
+    "title": "无障碍那点事",
+    "excerpt": "键盘用户和读屏用户不是少数派幻想。给博客补无障碍细节的记录。",
+    "cover": "linear-gradient(135deg,#fdcbf1,#e6dee9)",
+    "publishedAt": "2026-05-09",
+    "views": 689,
+    "commentCount": 4,
+    "tags": [
+      "随笔",
+      "CSS"
+    ],
+    "featured": false,
+    "body": [
+      {
+        "type": "paragraph",
+        "text": "给博客过了一遍无障碍，改完之后整个产品的「完成度」上了一个台阶。"
+      },
+      {
+        "type": "heading",
+        "text": "改了什么"
+      },
+      {
+        "type": "paragraph",
+        "text": "跳转链接让键盘用户直达正文；交互按钮补齐 aria-label；焦点管理在弹窗和抽屉里做闭环——打开时聚焦输入框，关闭时归还焦点。"
+      },
+      {
+        "type": "quote",
+        "text": "无障碍不是慈善，是把「能用的产品」变成「好用的产品」。"
+      },
+      {
+        "type": "heading",
+        "text": "顺手修的"
+      },
+      {
+        "type": "paragraph",
+        "text": "对比度不足的灰色文字全部加深一档，读屏模式和夜间模式都受益，视觉上反而更精致。"
+      }
+    ]
+  },
+  {
+    "slug": "scrollbehavior-notes",
+    "title": "scrollbehavior-踩坑记录",
+    "excerpt": "scrollBehavior 写了 savedPosition 却不生效？查了一晚上，凶手是页面过渡动画。",
+    "cover": "linear-gradient(135deg,#fbc2eb,#a6c1ee)",
+    "publishedAt": "2026-04-30",
+    "views": 1076,
     "commentCount": 9,
     "tags": [
-      "工作",
-      "随笔"
+      "Vue"
     ],
     "featured": false,
     "body": [
       {
         "type": "paragraph",
-        "text": "今天工位对面新来了个实习生，听说是个隐藏的吃瓜高手。中午吃饭聊起部门八卦，那叫一个门儿清，比我这老员工都清楚。"
-      },
-      {
-        "type": "paragraph",
-        "text": "我在这待了俩月，连隔壁组组长叫啥都还没记全，人家三天就把关系网摸透了。"
+        "text": "明明配置了 savedPosition 恢复，返回上一页却总是落在错误的位置。这个问题断断续续查了一晚上。"
       },
       {
         "type": "heading",
-        "text": "关于信息差"
+        "text": "真相"
       },
       {
         "type": "paragraph",
-        "text": "想想也有道理，新人没包袱，谁都敢聊，聊完就记住了。老人反而有自己的圈子，待久了信息就固化了。"
+        "text": "页面切换用了 out-in 过渡：scrollBehavior 触发时新页面还没挂载，旧页面还占着 DOM。此刻滚动会被旧页面高度截断。"
       },
       {
         "type": "quote",
-        "text": "入职三天，胜过老员工半年。"
+        "text": "过渡动画和滚动恢复的执行时序冲突，是单页应用的经典暗坑。"
+      },
+      {
+        "type": "heading",
+        "text": "解法"
+      },
+      {
+        "type": "paragraph",
+        "text": "scrollBehavior 里只记录位置并返回 false，等新页面 enter 钩子触发再真正滚动。另有一个隐藏坑：同组件路由间的返回不会触发过渡，记得在前进导航时清掉残留位置。"
       }
     ]
   },
   {
-    "slug": "about-saving",
-    "title": "关于攒钱这件事",
-    "excerpt": "发工资第二天就还了花呗和白条，剩下的钱打算强制存一半。以前总觉得钱是赚出来的不是省出来的，现在觉得，先别月光再说吧……",
-    "cover": "",
-    "publishedAt": "2026-05-14",
-    "views": 2100,
-    "commentCount": 44,
+    "slug": "bundle-size-ten-tips",
+    "title": "打包体积优化十连",
+    "excerpt": "首屏 JS 从 380KB 压到 55KB 的完整记录：分包、懒加载、按需引入，十招全部实战验证。",
+    "cover": "linear-gradient(135deg,#84fab0,#8fd3f4)",
+    "publishedAt": "2026-04-21",
+    "views": 1593,
+    "commentCount": 17,
     "tags": [
-      "生活",
-      "随笔"
+      "性能优化",
+      "构建"
     ],
     "featured": false,
     "body": [
       {
         "type": "paragraph",
-        "text": "发工资第二天就还了花呗和白条，剩下的钱打算强制存一半。"
-      },
-      {
-        "type": "paragraph",
-        "text": "以前总觉得钱是赚出来的不是省出来的，现在觉得，先别月光再说吧。"
+        "text": "首屏 380KB JS，弱网下白屏三秒，忍不了。这次集中治理，完整记录每一步的收益。"
       },
       {
         "type": "heading",
-        "text": "关于观念"
+        "text": "收益最大的三招"
       },
       {
         "type": "paragraph",
-        "text": "工作以后才发现，「能存下钱」本身就是一种能力，跟收入高低不完全挂钩。身边有人工资比我高一半，月底照样只剩两位数。"
+        "text": "第一是路由级代码分割，详情页懒加载后首包直接砍半；第二是把框架依赖和业务代码分包，缓存命中率大幅提升；第三是清掉两个「顺手装」的全量引入。"
       },
       {
         "type": "quote",
-        "text": "存钱不是为了变有钱，是为了有得选。"
+        "text": "体积优化的本质是：只加载当前页面需要的东西。"
+      },
+      {
+        "type": "heading",
+        "text": "意料之外"
       },
       {
         "type": "paragraph",
-        "text": "先坚持三个月看看效果。"
+        "text": "CSS 代码分割的收益被严重低估了。拆完之后首屏样式体积降了 40%，比砍 JS 还狠。"
+      }
+    ]
+  },
+  {
+    "slug": "lazy-load-directive",
+    "title": "图片懒加载指令封装",
+    "excerpt": "把 IntersectionObserver 封装成 v-lazy-bg 指令，一行指令搞定背景图懒加载。",
+    "cover": "linear-gradient(135deg,#a1c4fd,#c2e9fb)",
+    "publishedAt": "2026-04-12",
+    "views": 892,
+    "commentCount": 6,
+    "tags": [
+      "Vue",
+      "性能优化"
+    ],
+    "featured": false,
+    "body": [
+      {
+        "type": "paragraph",
+        "text": "列表页几十张封面图，一次性全加载等于自杀。原生 loading 属性只管 img 标签，背景图就得自己来。"
+      },
+      {
+        "type": "heading",
+        "text": "指令设计"
+      },
+      {
+        "type": "paragraph",
+        "text": "封装成 v-lazy-bg 指令：挂载时观察元素，进入视口才把真实 URL 写入样式。不支持 IntersectionObserver 的环境直接降级为立即加载。"
+      },
+      {
+        "type": "quote",
+        "text": "兜底逻辑的优先级永远高于炫技。"
+      },
+      {
+        "type": "heading",
+        "text": "细节"
+      },
+      {
+        "type": "paragraph",
+        "text": "卸载时记得 unobserve，不然单页应用切几次路由监听器就堆成山了。这个坑不报错，只会慢慢变卡，很难排查。"
+      }
+    ]
+  },
+  {
+    "slug": "blog-launch",
+    "title": "博客开张",
+    "excerpt": "折腾两个周末，博客总算开张了。从选型到上线，把踩的坑和做的决定都记录下来。",
+    "cover": "linear-gradient(135deg,#ff9a9e,#fad0c4)",
+    "publishedAt": "2026-04-01",
+    "views": 2461,
+    "commentCount": 36,
+    "tags": [
+      "随笔"
+    ],
+    "featured": true,
+    "body": [
+      {
+        "type": "paragraph",
+        "text": "折腾两个周末，博客总算开张了。"
+      },
+      {
+        "type": "heading",
+        "text": "为什么自己写"
+      },
+      {
+        "type": "paragraph",
+        "text": "托管平台很方便，但样式不由自己说了算，总感觉是给别人打工。自己写的博客，每一像素都能讲出理由。"
+      },
+      {
+        "type": "quote",
+        "text": "独立博客的价值不在阅读量，在于有一块完全属于自己的地。"
+      },
+      {
+        "type": "heading",
+        "text": "技术选型"
+      },
+      {
+        "type": "paragraph",
+        "text": "最终定了 Vue 3 + Vite + TypeScript，纯静态输出。数据就是一组 Markdown 文件，构建时编译成类型安全的数据模块。 后续计划：接入评论、加归档页、写一套自动部署。这个坑会慢慢填，文章会慢慢写。"
       }
     ]
   }

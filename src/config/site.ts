@@ -64,10 +64,10 @@ export const footerQuickLinks: readonly NavItem[] = [
 ] as const
 
 export const footerFriendLinks: readonly NavItem[] = [
-  { id: 'fr-1', label: '某某技术博客', icon: '', kind: 'disabled' },
-  { id: 'fr-2', label: '前端周刊', icon: '', kind: 'disabled' },
-  { id: 'fr-3', label: '设计资源站', icon: '', kind: 'disabled' },
-  { id: 'fr-4', label: '开发者工具箱', icon: '', kind: 'disabled' },
+  { id: 'fr-1', label: '阮一峰的网络日志', icon: '', kind: 'external', href: 'https://www.ruanyifeng.com/blog/' },
+  { id: 'fr-2', label: 'Vite 官方博客', icon: '', kind: 'external', href: 'https://vite.dev/blog/' },
+  { id: 'fr-3', label: 'CSS-Tricks', icon: '', kind: 'external', href: 'https://css-tricks.com/' },
+  { id: 'fr-4', label: '掘金', icon: '', kind: 'external', href: 'https://juejin.cn/' },
 ] as const
 
 export const socialLinks: readonly SocialLink[] = [

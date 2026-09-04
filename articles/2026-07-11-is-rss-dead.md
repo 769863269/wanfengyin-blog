@@ -1,0 +1,18 @@
+---
+slug: is-rss-dead
+title: RSS-过时了吗
+excerpt: 大众不用 RSS，但你的核心读者在用。独立博客最后的「关注」通道，值得认真做。
+cover: linear-gradient(135deg,#fa709a,#fee140)
+publishedAt: 2026-07-11
+views: 742
+commentCount: 14
+tags: [随笔]
+featured: false
+---
+
+常有人说 RSS 死了。大众用户确实不用，但这话对独立博客不成立。
+## 为什么做
+博客没有推送算法，读者看完走了大概率不再回来。RSS 是唯一让读者「订阅」你的机制，订阅者属于你的域名，不经过任何平台。
+> 平台的粉丝是租的，RSS 订阅者是自己的。
+## 做法
+构建时从文章数据自动生成 feed.xml，新文章自动进流。零维护成本，被动收益。
