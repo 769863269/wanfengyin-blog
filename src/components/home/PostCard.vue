@@ -55,8 +55,8 @@ const viewCount = computed(() => formatCount(post.views))
 <style scoped>
 .post-card {
   position: relative;
-  padding-bottom: 35px;
-  margin-bottom: 35px;
+  padding-bottom: 30px;
+  margin-bottom: 32px;
 }
 
 .post-card__link {
@@ -130,32 +130,27 @@ const viewCount = computed(() => formatCount(post.views))
   color: var(--text-secondary);
 }
 
-/* 波浪分隔线：站点的标志性细节 */
+/* 波浪分隔线：站点的标志性细节。
+   用 SVG 波纹线而非 emoji（〰️ 在 Windows 上走彩色 emoji 字体，
+   渐变裁剪失效，观感像贴纸与文章行脱节）；
+   间距上紧贴所属卡片（行尾 10px），与下一行留出大间隙，读作「行的一部分」。 */
 .post-card::after {
-  content: '〰️ 〰️ 〰️ 〰️ 〰️';
+  content: '';
   position: absolute;
-  bottom: 4px;
+  bottom: 10px;
   left: 0;
   width: 100%;
-  font-size: 20px;
-  letter-spacing: 6px;
-  text-align: center;
-  opacity: 0.7;
-  background: linear-gradient(90deg, #d4c5b9, #8b7355, #d4c5b9);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  transition: all var(--duration-slow) ease;
+  height: 6px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='6' viewBox='0 0 36 6'%3E%3Cpath d='M0 3 Q9 0.4 18 3 T36 3' fill='none' stroke='%23c9b6a4' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E")
+    repeat-x left center;
+  opacity: 0.75;
+  transition: opacity var(--duration-slow) var(--ease-standard);
 }
 
 .post-card:hover::after {
   opacity: 1;
-  font-size: 22px;
-  letter-spacing: 8px;
-  background: linear-gradient(90deg, #8b7355, #d4c5b9, #8b7355);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='6' viewBox='0 0 36 6'%3E%3Cpath d='M0 3 Q9 0.4 18 3 T36 3' fill='none' stroke='%238b7355' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
 /* 最后一张卡片不显示分隔线 */

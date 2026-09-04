@@ -5,11 +5,27 @@
  * 数据全部从 sortedPosts 派生，新文章自动进入归档，无需维护。
  */
 import { computed } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import { sortedPosts, postPlainText } from '@/data/posts'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { siteConfig } from '@/config/site'
 import { estimateReadingTime } from '@/utils/format'
+
+/**
+ * 返回上一页。
+ *
+ * 站内跳转进来的（有浏览历史）→ router.back()，回到来源页；
+ * 直接打开归档页的（无历史）→ 兜底回首页，避免死胡同。
+ */
+const router = useRouter()
+
+function goBack(): void {
+  if (router.options.history.state.back !== null) {
+    router.back()
+  } else {
+    void router.push({ name: 'home' })
+  }
+}
 
 useSeoMeta({
   title: `归档 - ${siteConfig.name}`,
@@ -53,6 +69,11 @@ const totalPosts = computed(() => sortedPosts.length)
 <template>
   <div class="archive layout__main">
     <div class="card archive-card">
+      <button class="archive__back" type="button" @click="goBack">
+        <span aria-hidden="true">←</span>
+        返回上一页
+      </button>
+
       <header class="archive__header">
         <h1 class="archive__title">文章归档</h1>
         <p class="archive__summary">共 {{ totalPosts }} 篇文章</p>
@@ -85,6 +106,31 @@ const totalPosts = computed(() => sortedPosts.length)
 <style scoped>
 .archive-card {
   padding: 32px 36px;
+}
+
+/* 返回按钮：与文章详情页同款胶囊样式 */
+.archive__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 18px;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition:
+    color var(--duration-base) var(--ease-standard),
+    border-color var(--duration-base) var(--ease-standard),
+    background-color var(--duration-base) var(--ease-standard);
+}
+
+.archive__back:hover {
+  color: var(--brand);
+  border-color: var(--brand);
+  background: var(--brand-soft);
 }
 
 .archive__header {
