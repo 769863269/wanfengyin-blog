@@ -2,7 +2,7 @@
 slug: vite8-rolldown-migration
 title: vite8-rolldown-迁移实录
 excerpt: Vite 8 换用 Rolldown 构建引擎，冷启动和构建速度的变化，以及 manualChunks 那个 breaking change。
-cover: linear-gradient(135deg,#c471f5,#fa71cd)
+cover: /images/covers/vite8-rolldown-migration.jpg
 publishedAt: 2026-08-30
 views: 1823
 commentCount: 23

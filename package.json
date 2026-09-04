@@ -21,7 +21,7 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "smoke": "vite build --config vite.config.smoke.ts && node scripts/smoke.mjs"
+    "smoke": "node scripts/clean-smoke.mjs && vite build --config vite.config.smoke.ts && node scripts/smoke.mjs"
   },
   "dependencies": {
     "vue": "^3.5.42",

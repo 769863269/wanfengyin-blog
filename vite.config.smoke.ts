@@ -19,7 +19,9 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist-smoke',
-    emptyOutDir: true,
+    // 清理由 scripts/clean-smoke.mjs 负责：本机 safe-delete 钩子会拦截
+    // emptyOutDir 的递归删除导致构建报错，这里关闭自动清空。
+    emptyOutDir: false,
     minify: false,
     rollupOptions: {
       output: {

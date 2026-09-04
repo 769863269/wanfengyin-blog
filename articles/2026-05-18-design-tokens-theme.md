@@ -2,7 +2,7 @@
 slug: design-tokens-theme
 title: 设计令牌与主题系统
 excerpt: 颜色、间距、圆角、动效全部收敛为 CSS 变量，夜间模式只需覆盖一份令牌。
-cover: linear-gradient(135deg,#a8edea,#fed6e3)
+cover: /images/covers/design-tokens-theme.jpg
 publishedAt: 2026-05-18
 views: 1447
 commentCount: 13

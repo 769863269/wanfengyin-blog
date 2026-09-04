@@ -12,7 +12,7 @@ title: 休息日 # 必填，文章标题
 excerpt: 摘要文字…… # 必填，列表页摘要
 publishedAt: 2026-09-02 # 必填，YYYY-MM-DD
 tags: [生活, 随笔] # 必填，数组
-cover: linear-gradient(135deg,#ff9a9e,#fad0c4) # 可选，封面（CSS 渐变或图片 URL）
+cover: /images/covers/my-cover.jpg # 可选，封面图。无图时删除本行，卡片不留占位
 views: 609 # 可选，展示用阅读数
 commentCount: 12 # 可选，展示用评论数
 featured: true # 可选，true 时进首页轮播

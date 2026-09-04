@@ -2,7 +2,6 @@
 slug: is-rss-dead
 title: RSS-过时了吗
 excerpt: 大众不用 RSS，但你的核心读者在用。独立博客最后的「关注」通道，值得认真做。
-cover: linear-gradient(135deg,#fa709a,#fee140)
 publishedAt: 2026-07-11
 views: 742
 commentCount: 14

@@ -2,7 +2,7 @@
 slug: blog-launch
 title: 博客开张
 excerpt: 折腾两个周末，博客总算开张了。从选型到上线，把踩的坑和做的决定都记录下来。
-cover: linear-gradient(135deg,#ff9a9e,#fad0c4)
+cover: /images/covers/blog-launch.jpg
 publishedAt: 2026-04-01
 views: 2461
 commentCount: 36

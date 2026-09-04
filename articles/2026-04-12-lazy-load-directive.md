@@ -2,7 +2,6 @@
 slug: lazy-load-directive
 title: 图片懒加载指令封装
 excerpt: 把 IntersectionObserver 封装成 v-lazy-bg 指令，一行指令搞定背景图懒加载。
-cover: linear-gradient(135deg,#a1c4fd,#c2e9fb)
 publishedAt: 2026-04-12
 views: 892
 commentCount: 6

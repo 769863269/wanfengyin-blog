@@ -2,7 +2,6 @@
 slug: github-actions-auto-deploy
 title: github-actions-自动部署
 excerpt: git push 之后的一切自动完成：类型检查、单测、构建、预渲染、发布。CI 配置逐行讲解。
-cover: linear-gradient(135deg,#13547a,#80d0c7)
 publishedAt: 2026-06-25
 views: 1268
 commentCount: 10

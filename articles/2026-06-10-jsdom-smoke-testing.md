@@ -2,7 +2,6 @@
 slug: jsdom-smoke-testing
 title: jsdom-冒烟测试实践
 excerpt: 不启浏览器、不依赖后端，20 项核心交互 3 分钟跑完。jsdom 冒烟测试的完整实践。
-cover: linear-gradient(135deg,#cfd9df,#e2ebf0)
 publishedAt: 2026-06-10
 views: 803
 commentCount: 5

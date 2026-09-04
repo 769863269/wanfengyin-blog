@@ -2,7 +2,7 @@
 slug: blog-rebuild-from-zero
 title: 博客重构-从零到一
 excerpt: 纯静态模板迁移到 Vite + Vue 3 + TS 的完整复盘：架构决策、迁移顺序、验证闭环。
-cover: linear-gradient(135deg,#ff6b6b,#feca57)
+cover: /images/covers/blog-rebuild-from-zero.jpg
 publishedAt: 2026-08-08
 views: 2310
 commentCount: 31

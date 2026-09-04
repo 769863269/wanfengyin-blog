@@ -2,7 +2,7 @@
 slug: markdown-workflow
 title: markdown-工作流设计
 excerpt: 发文成本决定博客寿命。设计了一套 Markdown + frontmatter 的发文流水线。
-cover: linear-gradient(135deg,#5ee7df,#b490ca)
+cover: /images/covers/markdown-workflow.jpg
 publishedAt: 2026-06-02
 views: 1122
 commentCount: 8

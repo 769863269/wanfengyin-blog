@@ -2,7 +2,6 @@
 slug: error-boundary
 title: 前端错误边界兜底
 excerpt: 一个组件报错不该拖垮整页。用 onErrorCaptured 给应用兜底，白屏问题从此绝迹。
-cover: linear-gradient(135deg,#f6d365,#fda085)
 publishedAt: 2026-05-26
 views: 954
 commentCount: 7

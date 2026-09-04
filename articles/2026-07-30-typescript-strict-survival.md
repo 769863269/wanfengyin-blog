@@ -2,7 +2,7 @@
 slug: typescript-strict-survival
 title: typescript-strict-生存指南
 excerpt: strict 全开 + noUncheckedIndexedAccess，编译器替你抓住的每一个坑都值得。
-cover: linear-gradient(135deg,#4facfe,#00f2fe)
+cover: /images/covers/typescript-strict-survival.jpg
 publishedAt: 2026-07-30
 views: 1754
 commentCount: 16

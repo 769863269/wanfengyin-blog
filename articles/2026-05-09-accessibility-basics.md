@@ -2,7 +2,6 @@
 slug: accessibility-basics
 title: 无障碍那点事
 excerpt: 键盘用户和读屏用户不是少数派幻想。给博客补无障碍细节的记录。
-cover: linear-gradient(135deg,#fdcbf1,#e6dee9)
 publishedAt: 2026-05-09
 views: 689
 commentCount: 4

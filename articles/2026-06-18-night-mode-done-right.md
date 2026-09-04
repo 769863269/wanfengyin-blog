@@ -2,7 +2,7 @@
 slug: night-mode-done-right
 title: 夜间模式的正确实现
 excerpt: 不做暗色分支判断，只换设计令牌。夜间模式从「全文件搜索替换」变成「覆盖一份变量表」。
-cover: linear-gradient(135deg,#232526,#414345)
+cover: /images/covers/night-mode-done-right.jpg
 publishedAt: 2026-06-18
 views: 1687
 commentCount: 21

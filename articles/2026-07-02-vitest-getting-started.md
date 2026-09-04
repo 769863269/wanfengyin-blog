@@ -2,7 +2,7 @@
 slug: vitest-getting-started
 title: vitest-单测入门
 excerpt: 纯函数是最好的单测对象。时间格式化、搜索、Markdown 转换器，33 个用例的思路拆解。
-cover: linear-gradient(135deg,#43e97b,#38f9d7)
+cover: /images/covers/vitest-getting-started.jpg
 publishedAt: 2026-07-02
 views: 934
 commentCount: 6

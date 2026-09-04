@@ -2,7 +2,6 @@
 slug: scrollbehavior-notes
 title: scrollbehavior-踩坑记录
 excerpt: scrollBehavior 写了 savedPosition 却不生效？查了一晚上，凶手是页面过渡动画。
-cover: linear-gradient(135deg,#fbc2eb,#a6c1ee)
 publishedAt: 2026-04-30
 views: 1076
 commentCount: 9

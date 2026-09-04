@@ -2,7 +2,7 @@
 slug: lazy-load-and-intersectionobserver
 title: 懒加载与-intersectionobserver
 excerpt: 从监听 scroll 到 IntersectionObserver，图片懒加载的演进史与兼容性兜底方案。
-cover: linear-gradient(135deg,#667eea,#764ba2)
+cover: /images/covers/lazy-load-and-intersectionobserver.jpg
 publishedAt: 2026-07-24
 views: 879
 commentCount: 7

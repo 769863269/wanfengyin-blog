@@ -2,7 +2,7 @@
 slug: css-grid-82-layout
 title: css-grid-八二布局
 excerpt: 主内容 8 份、侧栏 2 份的经典博客布局，用 Grid 三行搞定，附响应式收窄方案。
-cover: linear-gradient(135deg,#89f7fe,#66a6ff)
+cover: /images/covers/css-grid-82-layout.jpg
 publishedAt: 2026-08-15
 views: 986
 commentCount: 9

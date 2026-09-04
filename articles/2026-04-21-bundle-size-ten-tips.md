@@ -2,7 +2,6 @@
 slug: bundle-size-ten-tips
 title: 打包体积优化十连
 excerpt: 首屏 JS 从 380KB 压到 55KB 的完整记录：分包、懒加载、按需引入，十招全部实战验证。
-cover: linear-gradient(135deg,#84fab0,#8fd3f4)
 publishedAt: 2026-04-21
 views: 1593
 commentCount: 17

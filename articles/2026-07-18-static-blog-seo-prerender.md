@@ -2,7 +2,7 @@
 slug: static-blog-seo-prerender
 title: 静态博客-seo-预渲染
 excerpt: 百度不执行 JS，SPA 等于对搜索引擎隐身。构建时预渲染每篇文章，收录问题一次解决。
-cover: linear-gradient(135deg,#30cfd0,#330867)
+cover: /images/covers/static-blog-seo-prerender.jpg
 publishedAt: 2026-07-18
 views: 1315
 commentCount: 12

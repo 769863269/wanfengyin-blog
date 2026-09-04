@@ -24,8 +24,14 @@ export const sortedPosts: readonly Post[] = [...posts].sort(
   (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
 )
 
-/** 轮播展示的精选文章 */
-export const featuredPosts: readonly Post[] = sortedPosts.filter((post) => post.featured === true)
+/**
+ * 轮播展示的精选文章。
+ * 额外要求有封面图：轮播以大图为背景，没图的文章放进来只会露灰底，
+ * 所以 featured 且有 cover 的才进轮播。
+ */
+export const featuredPosts: readonly Post[] = sortedPosts.filter(
+  (post) => post.featured === true && post.cover !== '',
+)
 
 /** 侧栏热门文章：按阅读量取前 4 */
 export const hotPosts: readonly HotPost[] = [...sortedPosts]
