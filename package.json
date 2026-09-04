@@ -9,6 +9,8 @@
   },
   "scripts": {
     "posts": "node scripts/build-posts.mjs",
+    "new": "node scripts/new-post.mjs",
+    "pub": "node scripts/publish.mjs",
     "predev": "npm run posts",
     "dev": "vite",
     "prebuild": "npm run posts",
