@@ -2,7 +2,7 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { sortedPosts } from './src/data/posts'
-import { domain } from './src/config/site'
+import { domain, siteConfig } from './src/config/site'
 
 /**
  * 构建时生成 sitemap.xml
@@ -39,8 +39,69 @@ function sitemapPlugin(): Plugin {
   }
 }
 
+/** XML 特殊字符转义 */
+function xmlEscape(text: string) {
+  return text
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+}
+
+/**
+ * 构建时生成 feed.xml（RSS 2.0）
+ *
+ * 与 sitemap 同一数据源：新增文章自动进入订阅流，无需维护。
+ * fullContent = false 时 item 只带摘要，避免全文抓取纠纷。
+ */
+function rssPlugin({ fullContent = false } = {}): Plugin {
+  return {
+    name: 'generate-rss',
+    apply: 'build',
+    generateBundle() {
+      const items = sortedPosts
+        .map((post) => {
+          const link = `${domain}/post/${post.slug}`
+          const description = fullContent
+            ? `<description><![CDATA[${post.body.map((b) => ('text' in b ? b.text : '')).join(' ')}]]></description>`
+            : `<description>${xmlEscape(post.excerpt)}</description>`
+
+          return [
+            '    <item>',
+            `      <title>${xmlEscape(post.title)}</title>`,
+            `      <link>${link}</link>`,
+            `      <guid isPermaLink="true">${link}</guid>`,
+            `      <pubDate>${new Date(post.publishedAt).toUTCString()}</pubDate>`,
+            `      <category>${xmlEscape(post.tags.join(' / '))}</category>`,
+            description,
+            '    </item>',
+          ].join('\n')
+        })
+        .join('\n')
+
+      const xml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
+        '  <channel>',
+        `    <title>${xmlEscape(siteConfig.fullName)}</title>`,
+        `    <link>${domain}/</link>`,
+        `    <description>${xmlEscape(siteConfig.description)}</description>`,
+        `    <language>zh-CN</language>`,
+        `    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>`,
+        `    <atom:link href="${domain}/feed.xml" rel="self" type="application/rss+xml" />`,
+        items,
+        '  </channel>',
+        '</rss>',
+        '',
+      ].join('\n')
+
+      this.emitFile({ type: 'asset', fileName: 'feed.xml', source: xml })
+    },
+  }
+}
+
 export default defineConfig({
-  plugins: [vue(), sitemapPlugin()],
+  plugins: [vue(), sitemapPlugin(), rssPlugin()],
 
   resolve: {
     alias: {

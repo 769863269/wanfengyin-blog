@@ -21,6 +21,11 @@ const routes: RouteRecordRaw[] = [
     props: true,
   },
   {
+    path: '/archives',
+    name: 'archive',
+    component: () => import('@/views/ArchiveView.vue'),
+  },
+  {
     path: '/random',
     name: 'random',
     // 随机跳转：每次访问随机抽一篇文章

@@ -24,6 +24,7 @@
   "include": [
     "vite.config.ts",
     "src/data/posts.ts",
+    "src/data/posts.generated.ts",
     "src/config/site.ts",
     "src/types/index.ts"
   ]

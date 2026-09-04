@@ -50,7 +50,7 @@ export const mobileExtraNav: readonly NavItem[] = [
   { id: 'whisper', label: '微语', icon: '🌐', kind: 'disabled', showOnMobile: true },
   { id: 'neighbors', label: '邻居', icon: '🔗', kind: 'disabled', showOnMobile: true },
   { id: 'gallery', label: '相册', icon: '🖼', kind: 'disabled', showOnMobile: true },
-  { id: 'archive', label: '归档', icon: '🗂', kind: 'disabled', showOnMobile: true },
+  { id: 'archive', label: '归档', icon: '🗂', kind: 'route', to: 'archive', showOnMobile: true },
 ] as const
 
 export const drawerNav: readonly NavItem[] = [...mainNav, ...mobileExtraNav]
