@@ -17,3 +17,6 @@ pnpm-debug.log*
 !.vscode/extensions.json
 !.vscode/settings.json
 *.tsbuildinfo
+
+# 临时 jsdom 验证脚本
+.check-*.mjs
