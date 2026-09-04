@@ -14,11 +14,21 @@ import SearchModal from '@/components/common/SearchModal.vue'
 import { useTheme } from '@/composables/useTheme'
 import { useDrawer } from '@/composables/useDrawer'
 import { useSearch } from '@/composables/useSearch'
+import { takePendingScroll } from '@/router'
 
 // 三个全局状态在根组件统一挂载，子组件各自 useXxx() 取同一实例
 useTheme()
 const drawer = useDrawer()
 const search = useSearch()
+
+/**
+ * 页面过渡 enter 时恢复滚动位置（浏览器返回 / 前进）。
+ * out-in 过渡下，此刻新页面已挂载、布局高度就绪，恢复才不会被截断。
+ */
+function onPageEnter(): void {
+  const position = takePendingScroll()
+  if (position) window.scrollTo(position.left, position.top)
+}
 
 onErrorCaptured((err) => {
   console.error('[App error]', err)
@@ -34,7 +44,7 @@ onErrorCaptured((err) => {
   <MobileDrawer v-model:open="drawer.isOpen.value" />
   <main id="main" tabindex="-1">
     <RouterView v-slot="{ Component }">
-      <Transition name="page" mode="out-in">
+      <Transition name="page" mode="out-in" @enter="onPageEnter">
         <component :is="Component" />
       </Transition>
     </RouterView>

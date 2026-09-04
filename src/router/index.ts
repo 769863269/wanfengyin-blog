@@ -46,11 +46,33 @@ const routes: RouteRecordRaw[] = [
   },
 ]
 
+/**
+ * 待恢复的滚动位置（浏览器返回 / 前进时由 savedPosition 提供）。
+ *
+ * 页面切换用了 <Transition mode="out-in">：scrollBehavior 触发时新页面
+ * 还没挂载、旧页面即将离场，此刻直接滚动会被旧页面高度截断而失效
+ * （从文章详情返回首页时尤其明显——详情页比列表页矮）。
+ * 因此这里只记录位置并返回 false 跳过路由器的自动滚动，
+ * 由 App.vue 在新页面 enter 钩子里真正执行 window.scrollTo。
+ */
+let pendingRestore: { left: number; top: number } | undefined
+
+/** App.vue 在页面过渡 enter 时调用：取走待恢复位置并清空 */
+export function takePendingScroll(): { left: number; top: number } | undefined {
+  const position = pendingRestore
+  pendingRestore = undefined
+  return position
+}
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
   scrollBehavior(to, _from, savedPosition) {
-    if (savedPosition) return savedPosition
+    if (savedPosition) {
+      pendingRestore = savedPosition
+      // false = 本导航不自动滚动，交给 App.vue 在过渡后恢复
+      return false
+    }
     if (to.hash) return { el: to.hash, behavior: 'smooth' }
     return { top: 0, behavior: 'smooth' }
   },

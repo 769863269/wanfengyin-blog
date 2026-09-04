@@ -159,6 +159,9 @@ async function main() {
     click($$('.post-card__link')[0])
     await waitFor(() => window.location.pathname.startsWith('/post/'))
     await waitFor(() => $('.post-detail__title'))
+    // 返回时应恢复离开时的滚动位置（scrollBehavior savedPosition + 过渡后手动恢复）
+    const scrollCalls = []
+    window.scrollTo = (left, top) => scrollCalls.push([left, top])
     click($('.post-detail__back'))
     await waitFor(() => window.location.pathname === '/')
     await waitFor(() => $$('.post-card').length === expanded)
@@ -166,6 +169,11 @@ async function main() {
       '返回后加载进度保留',
       $$('.post-card').length === expanded,
       `展开 ${expanded}，返回后 ${$$('.post-card').length}`,
+    )
+    check(
+      '返回后执行滚动位置恢复',
+      scrollCalls.length > 0,
+      `scrollTo 调用: ${JSON.stringify(scrollCalls.slice(0, 3))}`,
     )
   } else {
     check('无加载更多按钮（文章不足时合法）', $$('.home__end').length > 0)
