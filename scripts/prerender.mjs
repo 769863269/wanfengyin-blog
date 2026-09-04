@@ -38,6 +38,9 @@ try {
 const siteSource = readFileSync(join(root, 'src', 'config', 'site.ts'), 'utf8')
 const domainMatch = siteSource.match(/export const domain = '([^']+)'/)
 const siteDomain = domainMatch ? domainMatch[1] : ''
+// 部署 base（如 /wanfengyin-blog/）：数据里的根路径资源（封面图）要拼上前缀，
+// 否则子路径部署下静态 HTML 里的 <img src="/images/..."> 会 404
+const basePath = siteDomain ? new URL(siteDomain).pathname.replace(/\/$/, '') : ''
 
 /* ---------- 从 articles/*.md 重建文章数据（与 build-posts.mjs 同源） ---------- */
 
@@ -91,7 +94,7 @@ function seoTags(title, description, path, image) {
 
 function renderArticle(post) {
   const cover = post.cover
-    ? `\n        <figure class="post-detail__cover"><img src="${escapeHtml(post.cover)}" alt="${escapeHtml(post.title)} 封面" decoding="async" /></figure>`
+    ? `\n        <figure class="post-detail__cover"><img src="${escapeHtml(basePath + post.cover)}" alt="${escapeHtml(post.title)} 封面" decoding="async" /></figure>`
     : ''
   // 文章目录：与 PostView 一致，2 个以上标题才渲染
   const headings = post.blocks.filter((block) => block.type === 'heading')

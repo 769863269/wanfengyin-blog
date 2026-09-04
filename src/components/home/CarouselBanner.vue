@@ -8,6 +8,7 @@
 import { RouterLink } from 'vue-router'
 import { CAROUSEL_INTERVAL } from '@/config/site'
 import { useCarousel } from '@/composables/useCarousel'
+import { withBase } from '@/utils/asset'
 import type { Post } from '@/types'
 
 const { slides } = defineProps<{ slides: readonly Post[] }>()
@@ -50,7 +51,7 @@ function handleKeydown(event: KeyboardEvent): void {
         :aria-hidden="index !== activeIndex"
         :tabindex="index === activeIndex ? 0 : -1"
       >
-        <div v-lazy-bg="post.cover" class="carousel__bg" />
+        <div v-lazy-bg="withBase(post.cover)" class="carousel__bg" />
         <div class="carousel__text">
           <h3 class="carousel__title">{{ post.title }}</h3>
           <p class="carousel__desc">{{ post.excerpt }}</p>

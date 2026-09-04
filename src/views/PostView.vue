@@ -14,6 +14,7 @@ import { domain, siteConfig } from '@/config/site'
 import { findPost, getNeighbors, postPlainText } from '@/data/posts'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { estimateReadingTime, formatCount, formatRelativeTime } from '@/utils/format'
+import { withBase } from '@/utils/asset'
 import NotFoundView from './NotFoundView.vue'
 
 const props = defineProps<{ slug: string }>()
@@ -100,7 +101,7 @@ useSeoMeta({
 
         <!-- 封面图：有图才显示，与列表页封面同源 -->
         <figure v-if="post.cover" class="post-detail__cover">
-          <img :src="post.cover" :alt="`${post.title} 封面`" decoding="async" />
+          <img :src="withBase(post.cover)" :alt="`${post.title} 封面`" decoding="async" />
         </figure>
 
         <!-- 文章目录：2 个以上标题才渲染 -->

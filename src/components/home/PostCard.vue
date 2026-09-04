@@ -9,11 +9,13 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { formatCount, formatRelativeTime } from '@/utils/format'
+import { withBase } from '@/utils/asset'
 import type { Post } from '@/types'
 
 const { post } = defineProps<{ post: Post }>()
 
 const hasThumb = computed(() => Boolean(post.cover))
+const thumbSrc = computed(() => withBase(post.cover))
 const relativeTime = computed(() => formatRelativeTime(post.publishedAt))
 const viewCount = computed(() => formatCount(post.views))
 </script>
@@ -27,7 +29,7 @@ const viewCount = computed(() => formatCount(post.views))
         <p class="post-card__excerpt">{{ post.excerpt }}</p>
         <div
           v-if="hasThumb"
-          v-lazy-bg="post.cover"
+          v-lazy-bg="thumbSrc"
           class="post-card__thumb"
           role="img"
           :aria-label="`${post.title} 封面`"
