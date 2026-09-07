@@ -519,10 +519,21 @@ onRoute('editor/*', function (file) {
           '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
             '<p class="mb-3 text-[13px] font-semibold text-[#6e6e73]">发布管理</p>' +
             field('状态', '<select id="eStatus" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]">' +
-              ['draft', 'review', 'published', 'offline'].map(function (s) {
-                var dis = (myRole === 'author' && (s === 'published' || s === 'offline')) ? ' disabled' : ''
-                return '<option value="' + s + '"' + (a.status === s ? ' selected' : '') + dis + '>' + STATUS_LABEL[s] + '</option>'
-              }).join('') + '</select>') +
+              (function () {
+                // 与后端状态机白名单一致：非法流转直接禁用，选不了就不会保存失败
+                var FLOW = {
+                  draft: ['review', 'published', 'offline'],
+                  review: ['published', 'draft', 'offline'],
+                  published: ['offline', 'draft'],
+                  offline: ['published', 'draft'],
+                }
+                var allowed = FLOW[a.status] || []
+                return ['draft', 'review', 'published', 'offline'].map(function (s) {
+                  var dis = (myRole === 'author' && (s === 'published' || s === 'offline')) ? ' disabled' : ''
+                  var illegal = s !== a.status && allowed.indexOf(s) === -1 ? ' disabled' : ''
+                  return '<option value="' + s + '"' + (a.status === s ? ' selected' : '') + dis + illegal + '>' + STATUS_LABEL[s] + '</option>'
+                }).join('')
+              })() + '</select>') +
             field('定时发布 publishAt', '<input id="ePublishAt" type="datetime-local" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]" value="' + esc(a.publishAt) + '" />', 'mt-3') +
             field('定时下线 offlineAt', '<input id="eOfflineAt" type="datetime-local" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]" value="' + esc(a.offlineAt) + '" />', 'mt-3') +
             '<div class="mt-4 flex gap-4">' +

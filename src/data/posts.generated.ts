@@ -8,6 +8,68 @@ import type { Post } from '@/types'
 
 export const generatedPosts: Post[] = [
   {
+    "slug": "cms-layer-test-945053-2",
+    "title": "CMS数据层测试",
+    "excerpt": "新摘要",
+    "cover": "",
+    "publishedAt": "2026-09-07",
+    "views": 0,
+    "commentCount": 0,
+    "tags": [
+      "测试标签"
+    ],
+    "featured": true,
+    "pinned": true,
+    "category": "测试分类",
+    "author": "周周",
+    "keywords": [
+      "kw1",
+      "kw2"
+    ],
+    "body": [
+      {
+        "type": "heading",
+        "id": "sec-1",
+        "text": "测试"
+      },
+      {
+        "type": "paragraph",
+        "text": "正文"
+      }
+    ]
+  },
+  {
+    "slug": "cms-layer-test-945053",
+    "title": "CMS数据层测试",
+    "excerpt": "（待补摘要）",
+    "cover": "",
+    "publishedAt": "2026-09-07",
+    "views": 0,
+    "commentCount": 0,
+    "tags": [
+      "测试标签"
+    ],
+    "featured": true,
+    "pinned": true,
+    "category": "测试分类",
+    "author": "周周",
+    "keywords": [
+      "kw1",
+      "kw2"
+    ],
+    "body": [
+      {
+        "type": "heading",
+        "id": "sec-1",
+        "text": "测试"
+      },
+      {
+        "type": "paragraph",
+        "text": "正文"
+      }
+    ]
+  },
+  {
     "slug": "vite8-rolldown-migration",
     "title": "vite8-rolldown-迁移实录",
     "excerpt": "Vite 8 换用 Rolldown 构建引擎，冷启动和构建速度的变化，以及 manualChunks 那个 breaking change。",

@@ -291,6 +291,14 @@ export function updateArticle(file, input) {
   const old = getArticle(file)
   if (!old) throw new Error('文章不存在')
 
+  // 状态变更必须走流转白名单，防止编辑器保存绕过状态机
+  if (input.status !== undefined && input.status !== old.status) {
+    if (!STATUSES.includes(input.status)) throw new Error(`未知状态：${input.status}`)
+    if (!TRANSITIONS[old.status]?.includes(input.status)) {
+      throw new Error(`不允许从「${STATUS_LABELS[old.status]}」变更为「${STATUS_LABELS[input.status]}」`)
+    }
+  }
+
   const merged = { ...old, ...pickEditable(input) }
   if (input.title !== undefined) {
     const t = String(input.title).trim()
@@ -335,6 +343,7 @@ export function changeStatus(file, to, _actor) {
   const article = getArticle(file)
   if (!article) throw new Error('文章不存在')
   if (!STATUSES.includes(to)) throw new Error(`未知状态：${to}`)
+  if (to === article.status) return { file, from: to, to, noop: true } // 批量操作里目标=现状属正常，不算失败
   if (!TRANSITIONS[article.status]?.includes(to)) {
     throw new Error(`不允许从「${STATUS_LABELS[article.status]}」变更为「${STATUS_LABELS[to]}」`)
   }
@@ -396,6 +405,7 @@ export function trashArticle(file, actor) {
   const ts = Date.now()
   const trashName = `${ts}-${file}`
   renameSync(articlePath(file), join(trashDir, trashName))
+  invalidateArticleCache()
   meta[trashName] = {
     originalFile: file,
     title: article.title,
@@ -508,6 +518,7 @@ export function renameTaxonomy(type, from, to) {
     changed.push(file)
   }
   if (!changed.length) throw new Error(`没有文章使用「${fromClean}」`)
+  invalidateArticleCache()
   return { changed }
 }
 

@@ -376,11 +376,15 @@ export function startStudio(port = 5199) {
               changeStatus(file, body.action)
               log(actor, 'batch:status', file, `→ ${STATUS_LABELS[body.action]}`)
             } else if (body.action === 'category') {
-              updateArticle(file, { category: String(body.value ?? '') })
-              log(actor, 'batch:category', file, `→ ${body.value}`)
+              const value = String(body.value ?? '').trim()
+              if (!value) return sendJson(res, 400, { ok: false, output: '分类名不能为空' })
+              updateArticle(file, { category: value })
+              log(actor, 'batch:category', file, `→ ${value}`)
             } else if (body.action === 'tag') {
+              const value = String(body.value ?? '').trim()
+              if (!value) return sendJson(res, 400, { ok: false, output: '标签名不能为空' })
               const article = getArticle(file)
-              const tags = [...new Set([...(article.tags ?? []), String(body.value ?? '').trim()].filter(Boolean))]
+              const tags = [...new Set([...(article.tags ?? []), value].filter(Boolean))]
               updateArticle(file, { tags })
               log(actor, 'batch:tag', file, `+ ${body.value}`)
             } else {

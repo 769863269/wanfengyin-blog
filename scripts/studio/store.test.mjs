@@ -92,6 +92,23 @@ const f2 = createArticle({ title: '定时测试', slug: S + '-sched', content: '
 const flipped = runSchedule()
 assert('定时发布翻转', flipped.some((x) => x.file === f2) && getArticle(f2).status === 'published')
 
+// 8b. 状态机与定时字段联动
+const f3 = createArticle({ title: '状态机测试', slug: S + '-flow', content: 'x'.repeat(10), status: 'draft', author: '周周', publishAt: '2030-01-01 09:00', offlineAt: '2020-06-01 00:00' }).file
+const same = changeStatus(f3, 'draft')
+assert('同状态流转为 no-op', same.noop === true)
+let threw = false
+try { updateArticle(f3, { status: 'review' }) } catch { threw = true }
+changeStatus(f3, 'review')
+threw = false
+try { updateArticle(f3, { status: 'published' }) } catch { threw = true }
+assert('编辑器保存受状态机白名单约束', threw)
+const pub = changeStatus(f3, 'published')
+const after = getArticle(f3)
+assert('上线清空 publishAt/offlineAt', pub.from === 'review' && !after.publishAt && !after.offlineAt && after.publishedAt)
+// offlineAt 已过期 + 重新上线 → 不应再被调度器踢回 offline
+const reflip = runSchedule()
+assert('重新上线不被过期 offlineAt 秒杀', !reflip.some((x) => x.file === f3) && getArticle(f3).status === 'published')
+
 // 9. 权限与作者
 assert('角色解析', roleOf('周周') === 'admin' && roleOf('不存在的人') === 'guest')
 
@@ -100,7 +117,7 @@ const counts = statusCounts()
 assert('计数包含测试文章', counts.all > 0 && counts.published > 0)
 
 // 清理：全部进回收站 + 彻底删除
-for (const file of [restored.file, f2]) {
+for (const file of [restored.file, f2, f3]) {
   const t = trashArticle(file, '测试清理')
   purgeTrash(t.trashName)
 }
