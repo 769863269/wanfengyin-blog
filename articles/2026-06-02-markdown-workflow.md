@@ -7,7 +7,9 @@ publishedAt: 2026-06-02
 views: 1122
 commentCount: 8
 tags: [工具, 随笔]
-featured: false
+featured: true
+status: published
+pinned: true
 ---
 
 很多博客死于一件事：发一篇文章的流程太痛苦。写正文只要半小时，改数据文件、调格式、对位置要一小时，第四次就会放弃。

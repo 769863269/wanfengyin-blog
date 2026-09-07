@@ -7,7 +7,6 @@ publishedAt: 2026-06-18
 views: 1687
 commentCount: 21
 tags: [CSS, Vue]
-featured: true
 status: published
 ---
 

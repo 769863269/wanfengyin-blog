@@ -7,9 +7,7 @@ publishedAt: 2026-07-30
 views: 1754
 commentCount: 16
 tags: [TypeScript]
-featured: false
 status: published
-pinned: true
 ---
 
 TS 开 strict 是痛一时爽一时的投资：开着难受，关了后悔。

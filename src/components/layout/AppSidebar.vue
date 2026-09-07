@@ -6,7 +6,7 @@
  */
 import { RouterLink } from 'vue-router'
 import SidebarPanel from '@/components/layout/SidebarPanel.vue'
-import { hotPosts, recentComments, tagCloud } from '@/data/posts'
+import { categoryCloud, hotPosts, recentComments, tagCloud } from '@/data/posts'
 import { siteConfig } from '@/config/site'
 </script>
 
@@ -32,6 +32,17 @@ import { siteConfig } from '@/config/site'
         <li v-for="comment in recentComments" :key="comment.id">
           <b>{{ comment.author }}</b>
           ：{{ comment.content }}
+        </li>
+      </ul>
+    </SidebarPanel>
+
+    <SidebarPanel v-if="categoryCloud.length" title="分类">
+      <ul class="cat-list">
+        <li v-for="cat in categoryCloud" :key="cat.name">
+          <RouterLink :to="{ name: 'home', query: { category: cat.name } }">
+            {{ cat.name }}
+          </RouterLink>
+          <small>{{ cat.count }}</small>
         </li>
       </ul>
     </SidebarPanel>
@@ -82,6 +93,27 @@ import { siteConfig } from '@/config/site'
 
 .comment-list b {
   color: var(--text-primary);
+}
+
+.cat-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.cat-list a {
+  color: var(--text-secondary);
+  transition: color var(--duration-base) var(--ease-standard);
+}
+
+.cat-list a:hover {
+  color: var(--brand);
+}
+
+.cat-list small {
+  color: var(--text-tertiary, var(--text-secondary));
 }
 
 .tag-cloud {

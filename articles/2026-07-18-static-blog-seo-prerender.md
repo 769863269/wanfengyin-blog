@@ -7,7 +7,7 @@ publishedAt: 2026-07-18
 views: 1315
 commentCount: 12
 tags: [SEO, 部署]
-featured: true
+status: published
 ---
 
 单页应用再漂亮，搜索引擎爬虫看到的只有一个空 div。对靠内容吃饭的个人博客来说这是致命伤。

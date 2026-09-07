@@ -23,21 +23,30 @@ const activeTag = computed(() => {
   return typeof tag === 'string' && tag.trim() ? tag.trim() : ''
 })
 
-const filteredPosts = computed(() =>
-  activeTag.value ? sortedPosts.filter((post) => post.tags.includes(activeTag.value)) : sortedPosts,
-)
+/** 从查询参数读取分类（Studio CMS 维护），可与标签叠加筛选 */
+const activeCategory = computed(() => {
+  const category = route.query.category
+  return typeof category === 'string' && category.trim() ? category.trim() : ''
+})
+
+const filteredPosts = computed(() => {
+  let list = sortedPosts
+  if (activeTag.value) list = list.filter((post) => post.tags.includes(activeTag.value))
+  if (activeCategory.value) list = list.filter((post) => post.category === activeCategory.value)
+  return list
+})
 
 const { visible, hasMore, remaining, loadMore, reset } = usePostList(filteredPosts, PAGE_SIZE)
 
-// 切换标签时回到第一页
-watch(activeTag, () => reset())
+// 切换标签 / 分类时回到第一页
+watch([activeTag, activeCategory], () => reset())
 
 useSeoMeta({
-  title: computed(() =>
-    activeTag.value
-      ? `${activeTag.value} · ${siteConfig.name}`
-      : `${siteConfig.fullName} —— ${siteConfig.tagline}`,
-  ),
+  title: computed(() => {
+    if (activeCategory.value) return `${activeCategory.value} · 分类 · ${siteConfig.name}`
+    if (activeTag.value) return `${activeTag.value} · ${siteConfig.name}`
+    return `${siteConfig.fullName} —— ${siteConfig.tagline}`
+  }),
   description: siteConfig.description,
 })
 </script>
@@ -45,13 +54,15 @@ useSeoMeta({
 <template>
   <div class="layout__main">
     <div class="layout__content">
-      <!-- 标签过滤时不展示轮播，避免与筛选结果语义冲突 -->
-      <CarouselBanner v-if="!activeTag" :slides="featuredPosts" />
+      <!-- 筛选状态（标签/分类）下不展示轮播，避免与筛选结果语义冲突 -->
+      <CarouselBanner v-if="!activeTag && !activeCategory" :slides="featuredPosts" />
 
-      <div v-if="activeTag" class="home__filter">
+      <div v-if="activeTag || activeCategory" class="home__filter">
         <span>
-          正在查看标签：
-          <b>{{ activeTag }}</b>
+          正在查看：
+          <b v-if="activeTag">标签「{{ activeTag }}」</b>
+          <b v-if="activeTag && activeCategory">＋</b>
+          <b v-if="activeCategory">分类「{{ activeCategory }}」</b>
         </span>
         <RouterLink class="home__filter-clear" :to="{ name: 'home' }">清除筛选</RouterLink>
       </div>
@@ -59,7 +70,7 @@ useSeoMeta({
       <div class="card">
         <PostCard v-for="post in visible" :key="post.slug" :post="post" />
 
-        <p v-if="!visible.length" class="home__empty">没有找到相关文章，换个标签试试。</p>
+        <p v-if="!visible.length" class="home__empty">没有找到相关文章，换个标签或分类试试。</p>
       </div>
 
       <button v-if="hasMore" class="load-more" type="button" @click="loadMore">

@@ -7,7 +7,6 @@ publishedAt: 2026-08-15
 views: 986
 commentCount: 9
 tags: [CSS]
-featured: true
 status: published
 ---
 

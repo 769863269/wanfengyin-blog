@@ -78,6 +78,7 @@ for (const file of files) {
     category: data.category ?? '',
     author: data.author ?? '',
     keywords: Array.isArray(data.keywords) ? data.keywords : [],
+    seoDescription: String(data.seoDescription ?? ''),
     body: markdownToBlocks(body_),
   })
 }

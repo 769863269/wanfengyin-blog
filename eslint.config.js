@@ -17,6 +17,7 @@ export default tseslint.config(
       '*.config.ts',
       'scripts/studio-assets/**',
       'scripts/**/*.tmp.mjs',
+      'scripts/studio/tailwind.config.cjs',
       '.studio/**',
     ],
   },

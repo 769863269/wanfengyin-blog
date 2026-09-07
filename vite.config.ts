@@ -1,5 +1,5 @@
 import { fileURLToPath, URL } from 'node:url'
-import { defineConfig, type Plugin } from 'vite'
+import { defineConfig, type Plugin } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
 import { sortedPosts } from './src/data/posts'
 import { domain, siteConfig } from './src/config/site'
@@ -101,6 +101,9 @@ function rssPlugin({ fullContent = false } = {}): Plugin {
 }
 
 export default defineConfig({
+  test: {
+    include: ['tests/**/*.test.ts'],
+  },
   plugins: [vue(), sitemapPlugin(), rssPlugin()],
 
   resolve: {

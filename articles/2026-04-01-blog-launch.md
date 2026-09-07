@@ -7,7 +7,7 @@ publishedAt: 2026-04-01
 views: 2461
 commentCount: 36
 tags: [随笔]
-featured: true
+status: published
 ---
 
 折腾两个周末，博客总算开张了。

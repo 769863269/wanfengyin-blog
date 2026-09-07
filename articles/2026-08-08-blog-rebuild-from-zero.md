@@ -7,7 +7,7 @@ publishedAt: 2026-08-08
 views: 2310
 commentCount: 31
 tags: [随笔, Vue]
-featured: true
+status: published
 ---
 
 重构不是推倒重来，是把散落的逻辑收拢到该在的位置。旧版是纯 HTML + CSS + JS 模板，能跑，但加功能全靠复制粘贴。

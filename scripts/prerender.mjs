@@ -62,6 +62,7 @@ const posts = files
       views: Number(data.views ?? 0),
       commentCount: Number(data.commentCount ?? 0),
       keywords: Array.isArray(data.keywords) ? data.keywords : [],
+      seoDescription: String(data.seoDescription ?? ''),
       // 与 build-posts.mjs 一致：无 status 视为已发布，其余状态不预渲染
       status: data.status ?? 'published',
       blocks: markdownToBlocks(body),
@@ -132,16 +133,17 @@ ${blocksToHtml(post.blocks)}
 function prerenderPost(post) {
   const path = `/post/${post.slug}`
   let html = shell
+  const description = post.seoDescription || post.excerpt
 
   // 1. 替换 title 与 description
   html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(post.title)}</title>`)
   html = html.replace(
     /(<meta\s+name="description"\s+content=")[^"]*(")/,
-    `$1${escapeHtml(post.excerpt)}$2`,
+    `$1${escapeHtml(description)}$2`,
   )
 
   // 2. 注入 canonical / og / keywords 标签
-  html = html.replace('</head>', `${seoTags(post.title, post.excerpt, path, post.cover, post.keywords)}\n  </head>`)
+  html = html.replace('</head>', `${seoTags(post.title, description, path, post.cover, post.keywords)}\n  </head>`)
 
   // 3. 注入静态正文（Vue 挂载后会整体接管 #app，此内容仅供爬虫与首屏）
   html = html.replace('<div id="app"></div>', `<div id="app">${renderArticle(post)}</div>`)

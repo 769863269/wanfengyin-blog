@@ -7,7 +7,7 @@ publishedAt: 2026-08-30
 views: 1823
 commentCount: 23
 tags: [Vite, 构建]
-featured: true
+status: published
 ---
 
 Vite 8 底层换成了 Rolldown（Rust 写的打包器），性能提升是真实的：冷启动肉眼可见地快，生产构建时间近乎减半。

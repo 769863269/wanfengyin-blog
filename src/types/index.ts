@@ -42,6 +42,8 @@ export interface Post {
   author?: string
   /** SEO 关键词（预渲染 meta keywords 用） */
   keywords?: string[]
+  /** SEO 描述（Studio CMS 维护，留空用 excerpt） */
+  seoDescription?: string
 }
 
 /** 列表项：不含正文，减轻列表渲染负担 */

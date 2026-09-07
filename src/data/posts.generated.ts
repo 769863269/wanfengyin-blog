@@ -19,11 +19,12 @@ export const generatedPosts: Post[] = [
       "Vite",
       "构建"
     ],
-    "featured": true,
+    "featured": false,
     "pinned": false,
     "category": "",
     "author": "",
     "keywords": [],
+    "seoDescription": "",
     "body": [
       {
         "type": "paragraph",
@@ -110,6 +111,7 @@ export const generatedPosts: Post[] = [
     "category": "",
     "author": "",
     "keywords": [],
+    "seoDescription": "",
     "body": [
       {
         "type": "paragraph",
@@ -188,11 +190,12 @@ export const generatedPosts: Post[] = [
     "tags": [
       "CSS"
     ],
-    "featured": true,
+    "featured": false,
     "pinned": false,
     "category": "",
     "author": "",
     "keywords": [],
+    "seoDescription": "",
     "body": [
       {
         "type": "paragraph",
@@ -269,11 +272,12 @@ export const generatedPosts: Post[] = [
       "随笔",
       "Vue"
     ],
-    "featured": true,
+    "featured": false,
     "pinned": false,
     "category": "",
     "author": "",
     "keywords": [],
+    "seoDescription": "",
     "body": [
       {
         "type": "paragraph",
@@ -353,10 +357,11 @@ export const generatedPosts: Post[] = [
       "TypeScript"
     ],
     "featured": false,
-    "pinned": true,
+    "pinned": false,
     "category": "",
     "author": "",
     "keywords": [],
+    "seoDescription": "",
     "body": [
       {
         "type": "paragraph",
@@ -450,6 +455,7 @@ export const generatedPosts: Post[] = [
     "category": "",
     "author": "",
     "keywords": [],
+    "seoDescription": "",
     "body": [
       {
         "type": "paragraph",
@@ -549,11 +555,12 @@ export const generatedPosts: Post[] = [
       "SEO",
       "部署"
     ],
-    "featured": true,
+    "featured": false,
     "pinned": false,
     "category": "",
     "author": "",
     "keywords": [],
+    "seoDescription": "",
     "body": [
       {
         "type": "paragraph",
@@ -637,6 +644,7 @@ export const generatedPosts: Post[] = [
     "category": "",
     "author": "",
     "keywords": [],
+    "seoDescription": "",
     "body": [
       {
         "type": "paragraph",
@@ -721,6 +729,7 @@ export const generatedPosts: Post[] = [
     "category": "",
     "author": "",
     "keywords": [],
+    "seoDescription": "",
     "body": [
       {
         "type": "paragraph",
@@ -797,6 +806,7 @@ export const generatedPosts: Post[] = [
     "category": "",
     "author": "",
     "keywords": [],
+    "seoDescription": "",
     "body": [
       {
         "type": "paragraph",
@@ -870,11 +880,12 @@ export const generatedPosts: Post[] = [
       "CSS",
       "Vue"
     ],
-    "featured": true,
+    "featured": false,
     "pinned": false,
     "category": "",
     "author": "",
     "keywords": [],
+    "seoDescription": "",
     "body": [
       {
         "type": "paragraph",
@@ -974,6 +985,7 @@ export const generatedPosts: Post[] = [
     "category": "",
     "author": "",
     "keywords": [],
+    "seoDescription": "",
     "body": [
       {
         "type": "paragraph",
@@ -1059,11 +1071,12 @@ export const generatedPosts: Post[] = [
       "工具",
       "随笔"
     ],
-    "featured": false,
-    "pinned": false,
+    "featured": true,
+    "pinned": true,
     "category": "",
     "author": "",
     "keywords": [],
+    "seoDescription": "",
     "body": [
       {
         "type": "paragraph",
@@ -1147,6 +1160,7 @@ export const generatedPosts: Post[] = [
     "category": "",
     "author": "",
     "keywords": [],
+    "seoDescription": "",
     "body": [
       {
         "type": "paragraph",
@@ -1227,6 +1241,7 @@ export const generatedPosts: Post[] = [
     "category": "",
     "author": "",
     "keywords": [],
+    "seoDescription": "",
     "body": [
       {
         "type": "paragraph",
@@ -1308,6 +1323,7 @@ export const generatedPosts: Post[] = [
     "category": "",
     "author": "",
     "keywords": [],
+    "seoDescription": "",
     "body": [
       {
         "type": "paragraph",
@@ -1388,6 +1404,7 @@ export const generatedPosts: Post[] = [
     "category": "",
     "author": "",
     "keywords": [],
+    "seoDescription": "",
     "body": [
       {
         "type": "paragraph",
@@ -1468,6 +1485,7 @@ export const generatedPosts: Post[] = [
     "category": "",
     "author": "",
     "keywords": [],
+    "seoDescription": "",
     "body": [
       {
         "type": "paragraph",
@@ -1548,6 +1566,7 @@ export const generatedPosts: Post[] = [
     "category": "",
     "author": "",
     "keywords": [],
+    "seoDescription": "",
     "body": [
       {
         "type": "paragraph",
@@ -1617,11 +1636,12 @@ export const generatedPosts: Post[] = [
     "tags": [
       "随笔"
     ],
-    "featured": true,
+    "featured": false,
     "pinned": false,
     "category": "",
     "author": "",
     "keywords": [],
+    "seoDescription": "",
     "body": [
       {
         "type": "paragraph",

@@ -58,7 +58,7 @@ useSeoMeta({
   title: computed(() =>
     post.value ? `${post.value.title} · ${siteConfig.name}` : siteConfig.name,
   ),
-  description: computed(() => post.value?.excerpt ?? siteConfig.description),
+  description: computed(() => post.value?.seoDescription || post.value?.excerpt || siteConfig.description),
   type: 'article',
   url: canonicalUrl,
   // og:image 必须是绝对 URL，本地封面路径拼上域名
@@ -80,6 +80,16 @@ useSeoMeta({
         <header class="post-detail__header">
           <h1 class="post-detail__title">{{ post.title }}</h1>
           <div class="post-detail__meta">
+            <span v-if="post.category">
+              <RouterLink class="post-detail__cat" :to="{ name: 'home', query: { category: post.category } }">
+                <span aria-hidden="true">📂</span>
+                {{ post.category }}
+              </RouterLink>
+            </span>
+            <span v-if="post.author">
+              <span aria-hidden="true">✍️</span>
+              {{ post.author }}
+            </span>
             <span>
               <span aria-hidden="true">🕒</span>
               <time :datetime="post.publishedAt">{{ formatRelativeTime(post.publishedAt) }}</time>
@@ -117,6 +127,13 @@ useSeoMeta({
         <ArticleBody :blocks="post.body" />
 
         <footer class="post-detail__tags">
+          <RouterLink
+            v-if="post.category"
+            class="tag-chip"
+            :to="{ name: 'home', query: { category: post.category } }"
+          >
+            📂 {{ post.category }}
+          </RouterLink>
           <RouterLink
             v-for="tag in post.tags"
             :key="tag"
@@ -248,6 +265,14 @@ useSeoMeta({
   gap: 20px;
   font-size: 13px;
   color: var(--text-secondary);
+}
+
+.post-detail__meta a {
+  color: inherit;
+}
+
+.post-detail__meta a:hover {
+  color: var(--brand);
 }
 
 .post-detail__tags {
