@@ -7,7 +7,8 @@
  * 写入 articles/*.md（规范命名）→ 保存图片到 public/images/covers/ →
  * 复用 scripts/publish.mjs 提交推送 → CI 部署上线。
  *
- * 仅监听 127.0.0.1，无外部依赖（Node 内置 http）。
+ * 样式：Tailwind CSS（scripts/studio-assets/tailwind.js 本地伺服，离线可用）。
+ * 仅监听 127.0.0.1，运行时零外部依赖（Node 内置 http）。
  */
 import { createServer } from 'node:http'
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'node:fs'
@@ -19,6 +20,7 @@ import { parseFrontmatter } from './lib/markdown.mjs'
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const articlesDir = join(root, 'articles')
 const coversDir = join(root, 'public', 'images', 'covers')
+const tailwindJs = readFileSync(join(root, 'scripts', 'studio-assets', 'tailwind.js'), 'utf8')
 const PORT = 5199
 
 /* ---------------- 工具 ---------------- */
@@ -138,6 +140,15 @@ const server = createServer(async (req, res) => {
       return
     }
 
+    if (req.method === 'GET' && req.url === '/tailwind.js') {
+      res.writeHead(200, {
+        'Content-Type': 'text/javascript; charset=utf-8',
+        'Cache-Control': 'public, max-age=86400',
+      })
+      res.end(tailwindJs)
+      return
+    }
+
     if (req.method === 'GET' && req.url === '/api/articles') {
       sendJson(res, 200, { ok: true, articles: listArticles() })
       return
@@ -209,7 +220,7 @@ const server = createServer(async (req, res) => {
   }
 })
 
-/* ---------------- 页面 ---------------- */
+/* ---------------- 页面（Tailwind CSS） ---------------- */
 
 function page() {
   return `<!DOCTYPE html>
@@ -218,115 +229,77 @@ function page() {
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>晚风吟 · 发布后台</title>
+<script src="/tailwind.js"></script>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: -apple-system, "SF Pro Text", "Segoe UI", "Microsoft YaHei", sans-serif;
-    background: #f5f5f7; color: #1d1d1f; min-height: 100vh; padding: 40px 20px;
+  body { font-family: -apple-system, "SF Pro Text", "Segoe UI", "Microsoft YaHei", sans-serif; }
+  input[type=file]::file-selector-button {
+    border: 0; border-radius: 980px; padding: 6px 16px; margin-right: 12px;
+    background: #e8e8ed; color: #1d1d1f; font-size: 13px; cursor: pointer;
   }
-  .wrap { max-width: 860px; margin: 0 auto; }
-  h1 { font-size: 28px; font-weight: 600; margin-bottom: 6px; }
-  .sub { color: #6e6e73; font-size: 14px; margin-bottom: 28px; }
-  .sub a { color: #0071e3; text-decoration: none; }
-  .card {
-    background: #fff; border-radius: 18px; padding: 28px 32px; margin-bottom: 20px;
-    box-shadow: 0 2px 12px rgba(0,0,0,.06);
-  }
-  label { display: block; font-size: 13px; font-weight: 600; color: #6e6e73; margin: 18px 0 6px; }
-  label:first-child { margin-top: 0; }
-  input[type=text], input[type=date], textarea {
-    width: 100%; border: 1px solid #d2d2d7; border-radius: 10px; padding: 10px 14px;
-    font-size: 15px; font-family: inherit; outline: none; transition: border-color .2s;
-  }
-  textarea { resize: vertical; }
-  textarea:focus, input:focus { border-color: #0071e3; }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .body-area { font-family: ui-monospace, Consolas, monospace; font-size: 13.5px; min-height: 320px; line-height: 1.6; }
-  .cover-row { display: flex; align-items: center; gap: 14px; }
-  .cover-preview { width: 160px; height: 90px; border-radius: 10px; background: #f5f5f7 center/cover no-repeat; display: none; }
-  .btn {
-    border: none; border-radius: 980px; padding: 12px 32px; font-size: 15px; font-weight: 600;
-    cursor: pointer; background: #0071e3; color: #fff; transition: opacity .2s;
-  }
-  .btn:disabled { opacity: .5; cursor: not-allowed; }
-  .btn-ghost { background: #e8e8ed; color: #1d1d1f; }
-  .actions { display: flex; gap: 12px; align-items: center; margin-top: 24px; }
-  .check { font-size: 13px; color: #6e6e73; display: flex; align-items: center; gap: 6px; }
-  #log {
-    display: none; margin-top: 20px; background: #1d1d1f; color: #a8f0b8; border-radius: 12px;
-    padding: 16px; font-family: ui-monospace, Consolas, monospace; font-size: 12.5px;
-    white-space: pre-wrap; line-height: 1.7; max-height: 260px; overflow: auto;
-  }
-  #log.err { color: #ffb0b0; }
-  #live { display: none; margin-top: 14px; font-size: 14px; }
-  #live a { color: #0071e3; }
-  details { margin-top: 8px; }
-  summary { cursor: pointer; font-size: 13px; color: #6e6e73; }
-  .art-list { list-style: none; }
-  .art-list li {
-    display: flex; justify-content: space-between; gap: 12px; padding: 10px 0;
-    border-bottom: 1px solid #f0f0f2; font-size: 14px;
-  }
-  .art-list .date { color: #86868b; min-width: 90px; }
-  .art-list .slug { color: #86868b; font-size: 12px; }
-  .hint { font-size: 12px; color: #86868b; margin-top: 4px; }
 </style>
 </head>
-<body>
-<div class="wrap">
-  <h1>晚风吟 · 发布后台</h1>
-  <p class="sub">填写 → 点发布 → 自动上线。本地预览：<a href="http://127.0.0.1:5173/" target="_blank">127.0.0.1:5173</a></p>
+<body class="min-h-screen bg-[#f5f5f7] px-5 py-10 text-[#1d1d1f] antialiased">
+<div class="mx-auto max-w-[860px]">
+  <h1 class="text-[28px] font-semibold tracking-tight">晚风吟 · 发布后台</h1>
+  <p class="mt-1.5 mb-7 text-sm text-[#6e6e73]">
+    填写 → 点发布 → 自动上线。本地预览：<a href="http://127.0.0.1:5173/" target="_blank" class="text-[#0071e3] hover:underline">127.0.0.1:5173</a>
+  </p>
 
-  <div class="card">
-    <label>标题 *</label>
-    <input type="text" id="title" placeholder="文章标题" />
+  <div class="mb-5 rounded-[18px] bg-white px-8 py-7 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
+    <label class="mb-1.5 block text-[13px] font-semibold text-[#6e6e73]">标题 *</label>
+    <input type="text" id="title" placeholder="文章标题"
+      class="w-full rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[15px] outline-none transition-colors focus:border-[#0071e3]" />
 
-    <div class="row">
+    <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div>
-        <label>slug（网址名，留空自动生成）</label>
-        <input type="text" id="slug" placeholder="my-first-post" />
-        <p class="hint">只允许小写字母、数字、中划线</p>
+        <label class="mb-1.5 block text-[13px] font-semibold text-[#6e6e73]">slug（网址名，留空自动生成）</label>
+        <input type="text" id="slug" placeholder="my-first-post"
+          class="w-full rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[15px] outline-none transition-colors focus:border-[#0071e3]" />
+        <p class="mt-1 text-xs text-[#86868b]">只允许小写字母、数字、中划线</p>
       </div>
       <div>
-        <label>标签（逗号分隔）</label>
-        <input type="text" id="tags" placeholder="前端, Vue" />
-      </div>
-    </div>
-
-    <label>摘要（显示在列表和搜索里）</label>
-    <textarea id="excerpt" rows="2" placeholder="一两句话说清这篇文章讲了什么"></textarea>
-
-    <label>封面图（可选）</label>
-    <div class="cover-row">
-      <input type="file" id="cover" accept="image/*" />
-      <div class="cover-preview" id="coverPreview"></div>
-    </div>
-
-    <div class="row">
-      <div>
-        <label>发布日期</label>
-        <input type="date" id="date" />
+        <label class="mb-1.5 block text-[13px] font-semibold text-[#6e6e73]">标签（逗号分隔）</label>
+        <input type="text" id="tags" placeholder="前端, Vue"
+          class="w-full rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[15px] outline-none transition-colors focus:border-[#0071e3]" />
       </div>
     </div>
 
-    <label>正文（Markdown，## 是小节标题，\`\`\`ts 是代码块）*</label>
-    <textarea id="content" class="body-area" placeholder="## 第一个小节
+    <label class="mb-1.5 mt-5 block text-[13px] font-semibold text-[#6e6e73]">摘要（显示在列表和搜索里）</label>
+    <textarea id="excerpt" rows="2" placeholder="一两句话说清这篇文章讲了什么"
+      class="w-full resize-y rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[15px] outline-none transition-colors focus:border-[#0071e3]"></textarea>
 
-正文直接写 Markdown。"></textarea>
-
-    <div class="actions">
-      <button class="btn" id="publish">发布</button>
-      <label class="check"><input type="checkbox" id="dryRun" /> 预演（只生成文件，不推送）</label>
+    <label class="mb-1.5 mt-5 block text-[13px] font-semibold text-[#6e6e73]">封面图（可选）</label>
+    <div class="flex items-center gap-3.5">
+      <input type="file" id="cover" accept="image/*" class="text-sm" />
+      <div id="coverPreview" class="hidden h-[90px] w-40 rounded-[10px] bg-[#f5f5f7] bg-center bg-no-repeat [background-size:cover]"></div>
     </div>
 
-    <pre id="log"></pre>
-    <p id="live"></p>
+    <label class="mb-1.5 mt-5 block text-[13px] font-semibold text-[#6e6e73]">发布日期</label>
+    <input type="date" id="date"
+      class="rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[15px] outline-none transition-colors focus:border-[#0071e3]" />
+
+    <label class="mb-1.5 mt-5 block text-[13px] font-semibold text-[#6e6e73]">正文（Markdown，## 是小节标题，\`\`\`ts 是代码块）*</label>
+    <textarea id="content" placeholder="## 第一个小节
+
+正文直接写 Markdown。"
+      class="min-h-[320px] w-full resize-y rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 font-mono text-[13.5px] leading-relaxed outline-none transition-colors focus:border-[#0071e3]"></textarea>
+
+    <div class="mt-6 flex flex-wrap items-center gap-3">
+      <button id="publish"
+        class="rounded-full bg-[#0071e3] px-8 py-3 text-[15px] font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50">发布</button>
+      <label class="flex cursor-pointer items-center gap-1.5 text-[13px] text-[#6e6e73]">
+        <input type="checkbox" id="dryRun" class="accent-[#0071e3]" /> 预演（只生成文件，不推送）
+      </label>
+    </div>
+
+    <pre id="log" class="mt-5 hidden max-h-[260px] overflow-auto whitespace-pre-wrap rounded-xl bg-[#1d1d1f] p-4 font-mono text-[12.5px] leading-relaxed text-[#a8f0b8]"></pre>
+    <p id="live" class="mt-3.5 hidden text-sm"></p>
   </div>
 
-  <div class="card">
+  <div class="rounded-[18px] bg-white px-8 py-7 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
     <details open>
-      <summary>已发布文章（<span id="artCount">…</span>）</summary>
-      <ul class="art-list" id="artList"></ul>
+      <summary class="cursor-pointer text-[13px] text-[#6e6e73]">已发布文章（<span id="artCount">…</span>）</summary>
+      <ul id="artList" class="mt-2 list-none"></ul>
     </details>
   </div>
 </div>
@@ -346,22 +319,26 @@ let coverFile = null
 $('cover').addEventListener('change', () => {
   coverFile = $('cover').files[0] || null
   const p = $('coverPreview')
-  if (!coverFile) { p.style.display = 'none'; return }
+  if (!coverFile) { p.classList.add('hidden'); return }
   const reader = new FileReader()
   reader.onload = () => {
     p.style.backgroundImage = 'url(' + reader.result + ')'
-    p.style.display = 'block'
+    p.classList.remove('hidden')
   }
   reader.readAsDataURL(coverFile)
 })
 
+function artRow(a) {
+  return '<li class="flex items-center gap-3 border-b border-[#f0f0f2] py-2.5 text-sm last:border-0">' +
+    '<span class="min-w-[90px] text-[#86868b]">' + a.date + '</span>' +
+    '<span class="flex-1">' + a.title + '</span>' +
+    '<span class="text-xs text-[#86868b]">' + a.slug + '</span></li>'
+}
+
 async function loadArticles() {
   const { articles } = await (await fetch('/api/articles')).json()
   $('artCount').textContent = articles.length + ' 篇'
-  $('artList').innerHTML = articles
-    .map((a) => '<li><span class="date">' + a.date + '</span><span style="flex:1">' + a.title +
-      '</span><span class="slug">' + a.slug + '</span></li>')
-    .join('')
+  $('artList').innerHTML = articles.map(artRow).join('')
 }
 loadArticles()
 
@@ -370,10 +347,10 @@ $('publish').addEventListener('click', async () => {
   const log = $('log')
   btn.disabled = true
   btn.textContent = '发布中…'
-  log.className = ''
-  log.style.display = 'block'
+  log.classList.remove('hidden', 'text-[#ffb0b8]')
+  log.classList.add('text-[#a8f0b8]')
   log.textContent = '正在写入文章并推送，推送遇网络抖动会自动重试，请稍候…'
-  $('live').style.display = 'none'
+  $('live').classList.add('hidden')
   try {
     let coverFileName = ''
     if (coverFile) {
@@ -406,24 +383,24 @@ $('publish').addEventListener('click', async () => {
       }),
     })
     const data = await resp.json()
-    log.className = data.ok ? '' : 'err'
+    if (!data.ok) log.classList.replace('text-[#a8f0b8]', 'text-[#ffb0b0]')
     log.textContent = data.output || (data.ok ? '完成' : '失败')
     if (data.ok && data.liveUrl) {
-      $('live').style.display = 'block'
-      $('live').innerHTML = '✅ 已上线：<a href="' + data.liveUrl + '" target="_blank">' + data.liveUrl + '</a>（CI 构建 ~1 分钟后可访问）'
+      $('live').classList.remove('hidden')
+      $('live').innerHTML = '✅ 已上线：<a href="' + data.liveUrl + '" target="_blank" class="text-[#0071e3] hover:underline">' + data.liveUrl + '</a>（CI 构建 ~1 分钟后可访问）'
       $('content').value = ''
       $('title').value = ''
       $('excerpt').value = ''
       coverFile = null
       $('cover').value = ''
-      $('coverPreview').style.display = 'none'
+      $('coverPreview').classList.add('hidden')
       loadArticles()
     } else if (data.ok && data.fileName) {
-      $('live').style.display = 'block'
+      $('live').classList.remove('hidden')
       $('live').innerHTML = '📝 预演完成，已生成 articles/' + data.fileName + '（未推送）'
     }
   } catch (err) {
-    log.className = 'err'
+    log.classList.replace('text-[#a8f0b8]', 'text-[#ffb0b0]')
     log.textContent = '出错：' + (err.message || err)
   } finally {
     btn.disabled = false
