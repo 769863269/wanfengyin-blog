@@ -35,10 +35,18 @@ if (!files.length) {
 
 const posts = []
 const seenSlugs = new Set()
+let skipped = 0
 
 for (const file of files) {
   const raw = readFileSync(join(articlesDir, file), 'utf8')
   const { data, body } = parseFrontmatter(raw)
+
+  // Studio CMS 状态机：只编译已发布的文章（无 status 字段的旧文视为已发布）
+  const status = data.status ?? 'published'
+  if (status !== 'published') {
+    skipped++
+    continue
+  }
 
   for (const field of REQUIRED) {
     if (!data[field]) fail(file, `frontmatter 缺少必填字段 "${field}"`)
@@ -66,6 +74,10 @@ for (const file of files) {
     commentCount: Number(data.commentCount ?? 0),
     tags,
     featured: data.featured === true || data.featured === 'true',
+    pinned: data.pinned === true || data.pinned === 'true',
+    category: data.category ?? '',
+    author: data.author ?? '',
+    keywords: Array.isArray(data.keywords) ? data.keywords : [],
     body: markdownToBlocks(body_),
   })
 }
@@ -104,5 +116,6 @@ writeFileSync(outputFile, banner + JSON.stringify(posts, null, 2) + '\n', 'utf8'
 
 console.log(
   `[posts] ${posts.length} 篇文章编译完成 → src/data/posts.generated.ts` +
+    (skipped ? `（跳过未发布 ${skipped} 篇）` : '') +
     (highlighted || degraded ? `（代码块高亮 ${highlighted}，降级 ${degraded}）` : ''),
 )

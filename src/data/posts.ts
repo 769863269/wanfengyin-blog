@@ -17,12 +17,14 @@ import { generatedPosts } from './posts.generated'
 export const posts: readonly Post[] = generatedPosts
 
 /**
- * 按发布时间倒序（新 → 旧）。
+ * 按发布时间倒序（新 → 旧），置顶文章（Studio CMS 的 pinned）排最前。
  * 数据源无需手工维护顺序，避免新增文章时忘记插入位置。
  */
-export const sortedPosts: readonly Post[] = [...posts].sort(
-  (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
-)
+export const sortedPosts: readonly Post[] = [...posts]
+  .sort((a, b) => {
+    if (Boolean(b.pinned) !== Boolean(a.pinned)) return Number(Boolean(b.pinned)) - Number(Boolean(a.pinned))
+    return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+  })
 
 /**
  * 轮播展示的精选文章。

@@ -8,6 +8,78 @@ import type { Post } from '@/types'
 
 export const generatedPosts: Post[] = [
   {
+    "slug": "post-20260907",
+    "title": "冰箱选择那种制冷方式好？",
+    "excerpt": "风冷 vs 直冷冰箱哪个好，没有绝对更好，看你的使用场景",
+    "cover": "",
+    "publishedAt": "2026-09-07",
+    "views": 0,
+    "commentCount": 0,
+    "tags": [
+      "家电",
+      "冰箱"
+    ],
+    "featured": false,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
+    "body": [
+      {
+        "type": "heading",
+        "id": "sec-1",
+        "text": "风冷 vs 直冷冰箱哪个好"
+      },
+      {
+        "type": "paragraph",
+        "text": "**没有绝对更好，看你的使用场景**"
+      },
+      {
+        "type": "heading",
+        "id": "sec-2",
+        "text": "直冷（有霜冰箱）"
+      },
+      {
+        "type": "paragraph",
+        "text": "✅优点 1. 价格便宜，同容量更省钱 2. 结构简单，故障率低，耗电略低 3. 湿度高，蔬菜水果不容易风干脱水 ❌缺点 1. **会结霜**，冷冻室需要手动定期除霜，很麻烦 2. 箱内温度不均匀，靠近制冷管温度更低"
+      },
+      {
+        "type": "paragraph",
+        "text": "适合：租房、预算有限、存放蔬菜水果多，能接受手动除霜。"
+      },
+      {
+        "type": "heading",
+        "id": "sec-3",
+        "text": "风冷（无霜冰箱）"
+      },
+      {
+        "type": "paragraph",
+        "text": "✅优点 1. **自动除霜，不结厚霜**，不用手动铲冰 2. 冷气循环，温度均匀，冷冻效果稳定 ❌缺点 1. 价格更高；风扇吹风，**食物容易风干**，肉菜一定要密封保鲜 2. 结构复杂，故障率、耗电量一般略高于直冷"
+      },
+      {
+        "type": "paragraph",
+        "text": "适合：家用主力冰箱，不想手动除霜，经常冷冻肉类。"
+      },
+      {
+        "type": "paragraph",
+        "text": "---"
+      },
+      {
+        "type": "heading",
+        "id": "sec-4",
+        "text": "简单选法"
+      },
+      {
+        "type": "paragraph",
+        "text": "- 讨厌除霜 → **选风冷**，食物务必密封装袋 - 预算低、多放果蔬，不怕除霜 → **选直冷**"
+      },
+      {
+        "type": "quote",
+        "text": "补充：现在还有**风直冷混合**：冷藏室直冷保湿，冷冻室风冷无霜，兼顾两者优点，预算充足优先这款。"
+      }
+    ]
+  },
+  {
     "slug": "vite8-rolldown-migration",
     "title": "vite8-rolldown-迁移实录",
     "excerpt": "Vite 8 换用 Rolldown 构建引擎，冷启动和构建速度的变化，以及 manualChunks 那个 breaking change。",
@@ -20,6 +92,10 @@ export const generatedPosts: Post[] = [
       "构建"
     ],
     "featured": true,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
     "body": [
       {
         "type": "paragraph",
@@ -102,6 +178,10 @@ export const generatedPosts: Post[] = [
       "TypeScript"
     ],
     "featured": false,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
     "body": [
       {
         "type": "paragraph",
@@ -181,6 +261,10 @@ export const generatedPosts: Post[] = [
       "CSS"
     ],
     "featured": false,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
     "body": [
       {
         "type": "paragraph",
@@ -258,6 +342,10 @@ export const generatedPosts: Post[] = [
       "Vue"
     ],
     "featured": true,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
     "body": [
       {
         "type": "paragraph",
@@ -337,6 +425,10 @@ export const generatedPosts: Post[] = [
       "TypeScript"
     ],
     "featured": false,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
     "body": [
       {
         "type": "paragraph",
@@ -426,6 +518,10 @@ export const generatedPosts: Post[] = [
       "性能优化"
     ],
     "featured": false,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
     "body": [
       {
         "type": "paragraph",
@@ -526,6 +622,10 @@ export const generatedPosts: Post[] = [
       "部署"
     ],
     "featured": true,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
     "body": [
       {
         "type": "paragraph",
@@ -605,6 +705,10 @@ export const generatedPosts: Post[] = [
       "随笔"
     ],
     "featured": false,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
     "body": [
       {
         "type": "paragraph",
@@ -685,6 +789,10 @@ export const generatedPosts: Post[] = [
       "工具"
     ],
     "featured": false,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
     "body": [
       {
         "type": "paragraph",
@@ -757,6 +865,10 @@ export const generatedPosts: Post[] = [
       "工具"
     ],
     "featured": false,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
     "body": [
       {
         "type": "paragraph",
@@ -831,6 +943,10 @@ export const generatedPosts: Post[] = [
       "Vue"
     ],
     "featured": true,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
     "body": [
       {
         "type": "paragraph",
@@ -926,6 +1042,10 @@ export const generatedPosts: Post[] = [
       "测试"
     ],
     "featured": false,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
     "body": [
       {
         "type": "paragraph",
@@ -1012,6 +1132,10 @@ export const generatedPosts: Post[] = [
       "随笔"
     ],
     "featured": false,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
     "body": [
       {
         "type": "paragraph",
@@ -1091,6 +1215,10 @@ export const generatedPosts: Post[] = [
       "Vue"
     ],
     "featured": false,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
     "body": [
       {
         "type": "paragraph",
@@ -1167,6 +1295,10 @@ export const generatedPosts: Post[] = [
       "CSS"
     ],
     "featured": false,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
     "body": [
       {
         "type": "paragraph",
@@ -1244,6 +1376,10 @@ export const generatedPosts: Post[] = [
       "CSS"
     ],
     "featured": false,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
     "body": [
       {
         "type": "paragraph",
@@ -1320,6 +1456,10 @@ export const generatedPosts: Post[] = [
       "Vue"
     ],
     "featured": false,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
     "body": [
       {
         "type": "paragraph",
@@ -1396,6 +1536,10 @@ export const generatedPosts: Post[] = [
       "构建"
     ],
     "featured": false,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
     "body": [
       {
         "type": "paragraph",
@@ -1472,6 +1616,10 @@ export const generatedPosts: Post[] = [
       "性能优化"
     ],
     "featured": false,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
     "body": [
       {
         "type": "paragraph",
@@ -1542,6 +1690,10 @@ export const generatedPosts: Post[] = [
       "随笔"
     ],
     "featured": true,
+    "pinned": false,
+    "category": "",
+    "author": "",
+    "keywords": [],
     "body": [
       {
         "type": "paragraph",

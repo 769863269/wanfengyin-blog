@@ -61,9 +61,13 @@ const posts = files
       publishedAt: data.publishedAt,
       views: Number(data.views ?? 0),
       commentCount: Number(data.commentCount ?? 0),
+      keywords: Array.isArray(data.keywords) ? data.keywords : [],
+      // 与 build-posts.mjs 一致：无 status 视为已发布，其余状态不预渲染
+      status: data.status ?? 'published',
       blocks: markdownToBlocks(body),
     }
   })
+  .filter((p) => p.status === 'published')
   .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
 
 // 代码块高亮与 build-posts.mjs 同步：静态 HTML 里的代码也带 Shiki 配色
@@ -79,16 +83,19 @@ for (const post of posts) {
 
 const shell = readFileSync(shellPath, 'utf8')
 
-function seoTags(title, description, path, image) {
+function seoTags(title, description, path, image, keywords) {
   const imageTag = image
     ? `\n    <meta property="og:image" content="${siteDomain}${image}" />`
+    : ''
+  const keywordsTag = keywords?.length
+    ? `\n    <meta name="keywords" content="${escapeHtml(keywords.join(', '))}" />`
     : ''
   return [
     `    <link rel="canonical" href="${siteDomain}${path}" />`,
     `    <meta property="og:title" content="${escapeHtml(title)}" />`,
     `    <meta property="og:type" content="article" />`,
     `    <meta property="og:description" content="${escapeHtml(description)}" />`,
-    `    <meta property="og:url" content="${siteDomain}${path}" />${imageTag}`,
+    `    <meta property="og:url" content="${siteDomain}${path}" />${imageTag}${keywordsTag}`,
   ].join('\n  ')
 }
 
@@ -133,8 +140,8 @@ function prerenderPost(post) {
     `$1${escapeHtml(post.excerpt)}$2`,
   )
 
-  // 2. 注入 canonical / og 标签
-  html = html.replace('</head>', `${seoTags(post.title, post.excerpt, path, post.cover)}\n  </head>`)
+  // 2. 注入 canonical / og / keywords 标签
+  html = html.replace('</head>', `${seoTags(post.title, post.excerpt, path, post.cover, post.keywords)}\n  </head>`)
 
   // 3. 注入静态正文（Vue 挂载后会整体接管 #app，此内容仅供爬虫与首屏）
   html = html.replace('<div id="app"></div>', `<div id="app">${renderArticle(post)}</div>`)

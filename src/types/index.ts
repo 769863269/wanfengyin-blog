@@ -34,6 +34,14 @@ export interface Post {
   body: ArticleBlock[]
   /** 是否置顶轮播 */
   featured?: boolean
+  /** 是否列表置顶（Studio CMS，置顶文章排在列表最前） */
+  pinned?: boolean
+  /** 分类（单分类体系，Studio CMS 维护） */
+  category?: string
+  /** 作者（Studio CMS 维护） */
+  author?: string
+  /** SEO 关键词（预渲染 meta keywords 用） */
+  keywords?: string[]
 }
 
 /** 列表项：不含正文，减轻列表渲染负担 */

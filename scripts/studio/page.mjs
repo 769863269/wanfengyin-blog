@@ -1,0 +1,801 @@
+/**
+ * Studio CMS 管理界面 —— 单文件 SPA（Tailwind 浏览器构建，hash 路由）
+ *
+ * 视图：内容列表（按状态）/ 编辑器 / 回收站 / 分类与标签 / 作者与权限 / 操作日志
+ * 身份：右上角切换当前作者（存 localStorage），请求带 x-studio-actor 头。
+ */
+export function page() {
+  return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>晚风吟 · 内容管理</title>
+<script src="/tailwind.js"></script>
+<style>
+  body { font-family: -apple-system, "SF Pro Text", "Segoe UI", "Microsoft YaHei", sans-serif; }
+  input[type=file]::file-selector-button { border:0; border-radius:980px; padding:6px 16px; margin-right:12px; background:#e8e8ed; color:#1d1d1f; font-size:13px; cursor:pointer; }
+  .spin { animation: spin .9s linear infinite; } @keyframes spin { to { transform: rotate(360deg); } }
+  .fade-in { animation: fadein .2s ease-out; } @keyframes fadein { from { opacity:0; transform:translateY(4px);} to { opacity:1; transform:none; } }
+  .nav-item.active { background:#e8f1fd; color:#0071e3; font-weight:600; }
+  ::-webkit-scrollbar { width:8px; height:8px; } ::-webkit-scrollbar-thumb { background:#d2d2d7; border-radius:4px; }
+</style>
+</head>
+<body class="min-h-screen bg-[#f5f5f7] text-[#1d1d1f] antialiased">
+
+<div class="flex min-h-screen">
+  <!-- 侧边栏 -->
+  <aside class="fixed inset-y-0 left-0 z-20 flex w-[228px] flex-col border-r border-black/5 bg-white px-3 py-5">
+    <div class="mb-6 flex items-center gap-2.5 px-2">
+      <div class="flex h-9 w-9 items-center justify-center rounded-[10px] bg-gradient-to-b from-[#3a8ffe] to-[#0071e3] text-[16px] font-bold text-white shadow-[0_3px_10px_rgba(0,113,227,0.35)]">风</div>
+      <div>
+        <div class="text-[15px] font-semibold leading-tight">晚风吟 CMS</div>
+        <div class="text-[11px] text-[#86868b]">内容全生命周期管理</div>
+      </div>
+    </div>
+
+    <nav id="nav" class="flex-1 space-y-0.5 overflow-y-auto">
+      <p class="px-3 pb-1 pt-2 text-[11px] font-semibold text-[#a1a1a6]">内容管理</p>
+      <a href="#/list/all"      data-nav="list/all"      class="nav-item flex items-center justify-between rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]"><span>📋 全部文章</span><span data-count="all"      class="text-xs text-[#86868b]"></span></a>
+      <a href="#/list/published" data-nav="list/published" class="nav-item flex items-center justify-between rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]"><span>✅ 已发布</span><span data-count="published" class="text-xs text-[#86868b]"></span></a>
+      <a href="#/list/draft"    data-nav="list/draft"    class="nav-item flex items-center justify-between rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]"><span>📝 草稿</span><span data-count="draft"    class="text-xs text-[#86868b]"></span></a>
+      <a href="#/list/review"   data-nav="list/review"   class="nav-item flex items-center justify-between rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]"><span>👁 审核中</span><span data-count="review"   class="text-xs text-[#86868b]"></span></a>
+      <a href="#/list/offline"  data-nav="list/offline"  class="nav-item flex items-center justify-between rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]"><span>⏸ 已下线</span><span data-count="offline"  class="text-xs text-[#86868b]"></span></a>
+      <p class="px-3 pb-1 pt-3 text-[11px] font-semibold text-[#a1a1a6]">系统</p>
+      <a href="#/trash"    data-nav="trash"    class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">🗑 回收站</a>
+      <a href="#/taxonomy" data-nav="taxonomy" class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">🏷 分类与标签</a>
+      <a href="#/authors"  data-nav="authors"  class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">👥 作者与权限</a>
+      <a href="#/logs"     data-nav="logs"     class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">📜 操作日志</a>
+    </nav>
+
+    <div class="space-y-2 border-t border-[#f0f0f2] pt-3">
+      <button id="syncBtn" class="flex w-full items-center justify-center gap-1.5 rounded-full bg-[#0071e3] px-4 py-2 text-[13px] font-semibold text-white transition-all hover:bg-[#0077ed] active:scale-[0.98] disabled:opacity-50">
+        <svg id="syncSpin" class="spin hidden h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.25" stroke-width="3"/><path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+        推送上线 <span id="pendingBadge" class="hidden rounded-full bg-white/25 px-1.5 text-[11px]"></span>
+      </button>
+      <a href="http://127.0.0.1:5173/" target="_blank" class="block rounded-full border border-[#d2d2d7] px-4 py-1.5 text-center text-[13px] font-medium hover:bg-[#f5f5f7]">预览博客 ↗</a>
+      <div class="flex items-center gap-2 px-1 pt-1">
+        <label class="text-[11px] text-[#86868b]">当前身份</label>
+        <select id="meSelect" class="flex-1 rounded-lg border border-[#d2d2d7] px-2 py-1.5 text-[12.5px] outline-none focus:border-[#0071e3]"></select>
+      </div>
+      <div id="meRole" class="px-1 text-[11px] text-[#a1a1a6]"></div>
+    </div>
+  </aside>
+
+  <!-- 主区 -->
+  <main class="ml-[228px] flex-1 px-8 py-7">
+    <div id="view" class="mx-auto max-w-[1000px]"></div>
+  </main>
+</div>
+
+<!-- 推送任务浮层 -->
+<div id="syncPanel" class="fade-in fixed bottom-5 right-5 z-40 hidden w-[420px] rounded-2xl border border-black/10 bg-white p-4 shadow-[0_12px_40px_rgba(0,0,0,0.18)]">
+  <div class="mb-2 flex items-center justify-between">
+    <span class="text-[13px] font-semibold">推送进度</span>
+    <button onclick="document.getElementById('syncPanel').classList.add('hidden')" class="text-xs text-[#86868b] hover:text-[#1d1d1f]">关闭</button>
+  </div>
+  <pre id="syncLog" class="max-h-[200px] overflow-auto whitespace-pre-wrap rounded-xl bg-[#1d1d1f] p-3 font-mono text-[11.5px] leading-relaxed text-[#7ee29a]"></pre>
+  <div id="syncBanner" class="mt-2.5 hidden rounded-lg px-3 py-2 text-[12.5px]"></div>
+</div>
+
+<!-- 确认对话框 -->
+<div id="modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40">
+  <div class="w-[380px] rounded-2xl bg-white p-6 shadow-2xl">
+    <p id="modalText" class="text-[15px] font-medium"></p>
+    <p id="modalSub" class="mt-1.5 text-[13px] text-[#86868b]"></p>
+    <div class="mt-5 flex justify-end gap-2.5">
+      <button id="modalCancel" class="rounded-full border border-[#d2d2d7] px-5 py-2 text-[13.5px] font-medium hover:bg-[#f5f5f7]">取消</button>
+      <button id="modalOk" class="rounded-full bg-[#0071e3] px-5 py-2 text-[13.5px] font-semibold text-white hover:bg-[#0077ed]">确定</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="pointer-events-none fixed left-1/2 top-6 z-50 hidden -translate-x-1/2 rounded-full bg-[#1d1d1f] px-5 py-2.5 text-[13px] text-white shadow-lg"></div>
+
+<script>
+/* ================= 基础设施 ================= */
+var $ = function (id) { return document.getElementById(id) }
+var view = $('view')
+var me = localStorage.getItem('wf-actor') || '周周'
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
+function api(path, opts) {
+  opts = opts || {}
+  opts.headers = Object.assign({ 'x-studio-actor': encodeURIComponent(me) }, opts.headers || {})
+  if (opts.body && typeof opts.body !== 'string') {
+    opts.headers['Content-Type'] = 'application/json'
+    opts.body = JSON.stringify(opts.body)
+  }
+  return fetch(path, opts).then(function (r) { return r.json() })
+    .then(function (d) {
+      if (!d.ok) throw new Error(d.output || '操作失败')
+      return d
+    })
+}
+
+var toastTimer = null
+function toast(msg, bad) {
+  var t = $('toast')
+  t.textContent = msg
+  t.classList.remove('hidden')
+  t.style.background = bad ? '#c0392b' : '#1d1d1f'
+  clearTimeout(toastTimer)
+  toastTimer = setTimeout(function () { t.classList.add('hidden') }, 2600)
+}
+
+var modalCb = null
+function confirmBox(text, sub, cb) {
+  $('modalText').textContent = text
+  $('modalSub').textContent = sub || ''
+  modalCb = cb
+  $('modal').classList.remove('hidden')
+  $('modal').classList.add('flex')
+}
+$('modalCancel').onclick = function () { $('modal').classList.add('hidden'); $('modal').classList.remove('flex'); modalCb = null }
+$('modalOk').onclick = function () {
+  $('modal').classList.add('hidden'); $('modal').classList.remove('flex')
+  if (modalCb) modalCb()
+  modalCb = null
+}
+
+var STATUS_STYLE = {
+  draft:     'bg-[#f0f0f2] text-[#6e6e73]',
+  review:    'bg-[#fff4e0] text-[#b25e02]',
+  published: 'bg-[#e8f6ec] text-[#1d7a35]',
+  offline:   'bg-[#fdecec] text-[#c0392b]',
+}
+var STATUS_LABEL = { draft: '草稿', review: '审核中', published: '已发布', offline: '已下线' }
+var ROLE_LABEL = { admin: '管理员', editor: '编辑', author: '作者', guest: '访客(只读)' }
+var myRole = 'guest'
+
+/* ================= 元信息 ================= */
+function loadMeta() {
+  return api('/api/meta').then(function (d) {
+    myRole = d.me.role
+    $('meRole').textContent = '角色：' + (ROLE_LABEL[myRole] || myRole) + (myRole === 'guest' ? '（切换为名单内身份才能操作）' : '')
+    var sel = $('meSelect')
+    if (sel.options.length === 0) {
+      d.authors.forEach(function (a) {
+        var o = document.createElement('option')
+        o.value = a.name; o.textContent = a.name + ' · ' + ROLE_LABEL[a.role]
+        sel.appendChild(o)
+      })
+      sel.value = d.authors.some(function (a) { return a.name === me }) ? me : (d.authors[0] ? d.authors[0].name : '')
+      me = sel.value
+      localStorage.setItem('wf-actor', me)
+    }
+    Object.keys(d.counts).forEach(function (k) {
+      var el = document.querySelector('[data-count="' + k + '"]')
+      if (el) el.textContent = d.counts[k] || ''
+    })
+    var badge = $('pendingBadge')
+    if (d.pending > 0) { badge.textContent = d.pending; badge.classList.remove('hidden') }
+    else badge.classList.add('hidden')
+    return d
+  })
+}
+
+$('meSelect').addEventListener('change', function () {
+  me = $('meSelect').value
+  localStorage.setItem('wf-actor', me)
+  location.reload()
+})
+
+/* ================= 推送上线（流式任务） ================= */
+var syncTimer = null
+$('syncBtn').addEventListener('click', function () {
+  if (myRole === 'author' || myRole === 'guest') return toast('当前身份无权推送', true)
+  confirmBox('推送到 GitHub 并触发 Vercel 上线？', '工作区所有变更（文章/图片/改名）会一起提交', function () {
+    $('syncPanel').classList.remove('hidden')
+    $('syncBanner').classList.add('hidden')
+    $('syncLog').classList.remove('text-[#ffb0b0]')
+    $('syncLog').classList.add('text-[#7ee29a]')
+    $('syncLog').textContent = '正在启动推送任务…'
+    $('syncBtn').disabled = true
+    $('syncSpin').classList.remove('hidden')
+    api('/api/sync', { method: 'POST', body: {} }).then(function (d) {
+      pollSync(d.jobId)
+    }).catch(function (e) { syncFail(e.message) })
+  })
+})
+
+function pollSync(jobId) {
+  var last = 0
+  if (syncTimer) clearInterval(syncTimer)
+  syncTimer = setInterval(function () {
+    api('/api/jobs/' + jobId).then(function (job) {
+      if (job.lines.length > last) {
+        $('syncLog').textContent += (last ? '\\n' : '') + job.lines.slice(last).join('\\n')
+        $('syncLog').scrollTop = $('syncLog').scrollHeight
+        last = job.lines.length
+      }
+      if (job.status !== 'running') {
+        clearInterval(syncTimer); syncTimer = null
+        $('syncBtn').disabled = false
+        $('syncSpin').classList.add('hidden')
+        var b = $('syncBanner')
+        b.classList.remove('hidden')
+        if (job.status === 'success') {
+          b.className = 'mt-2.5 rounded-lg bg-[#e8f6ec] px-3 py-2 text-[12.5px] text-[#1d7a35]'
+          b.textContent = '✅ 推送成功，Vercel 约 1~2 分钟后上线'
+          loadMeta()
+        } else {
+          b.className = 'mt-2.5 rounded-lg bg-[#fdecec] px-3 py-2 text-[12.5px] text-[#c0392b]'
+          b.textContent = '❌ 推送失败，见上方日志（网络抖动可重试）'
+        }
+      }
+    }).catch(function () {})
+  }, 700)
+}
+function syncFail(msg) {
+  $('syncBtn').disabled = false
+  $('syncSpin').classList.add('hidden')
+  $('syncLog').classList.remove('text-[#7ee29a]')
+  $('syncLog').classList.add('text-[#ffb0b0]')
+  $('syncLog').textContent = msg
+}
+
+/* ================= 路由 ================= */
+var routes = {}
+var viewSeq = 0 // 视图代数：路由切换 +1，异步回调凭票操作 DOM，防止旧视图回填新视图
+
+function onRoute(pattern, fn) { routes[pattern] = fn }
+
+function navigate() {
+  var hash = location.hash.replace(/^#\\//, '') || 'list/all'
+  document.querySelectorAll('.nav-item').forEach(function (el) {
+    el.classList.toggle('active', el.dataset.nav === hash || (hash.indexOf('editor') === 0 && el.dataset.nav === 'list/all'))
+  })
+  var matched = null, arg = ''
+  for (var key in routes) {
+    if (hash === key) { matched = routes[key]; break }
+    if (key.endsWith('/*') && hash.indexOf(key.slice(0, -2)) === 0) {
+      matched = routes[key]; arg = hash.slice(key.length - 1); break
+    }
+  }
+  viewSeq++
+  if (matched) matched(arg)
+  else view.innerHTML = '<p class="text-sm text-[#86868b]">页面不存在</p>'
+}
+window.addEventListener('hashchange', navigate)
+
+/* ================= 视图：文章列表 ================= */
+var listState = { q: '', category: '', tag: '', sort: '', selected: new Set() }
+
+onRoute('list/*', function (status) {
+  status = status || 'all'
+  var seq = viewSeq
+  view.innerHTML =
+    '<div class="mb-5 flex flex-wrap items-center justify-between gap-3">' +
+      '<div><h2 class="text-[22px] font-semibold tracking-tight">文章管理</h2>' +
+      '<p class="mt-0.5 text-[13px] text-[#86868b]">状态、置顶、推荐、分类、SEO、定时上下线，全在这里</p></div>' +
+      '<a href="#/editor/new" class="rounded-full bg-[#0071e3] px-5 py-2 text-[13.5px] font-semibold text-white shadow-[0_2px_10px_rgba(0,113,227,0.3)] hover:bg-[#0077ed]">＋ 写新文章</a>' +
+    '</div>' +
+    '<div class="mb-4 flex flex-wrap items-center gap-2.5 rounded-2xl border border-black/5 bg-white p-3.5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+      '<input id="fq" placeholder="搜索标题 / 摘要 / 标签 / 关键词…" class="min-w-[220px] flex-1 rounded-lg border border-[#d2d2d7] px-3 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" value="' + esc(listState.q) + '" />' +
+      '<select id="fcat" class="rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]"><option value="">全部分类</option></select>' +
+      '<select id="ftag" class="rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]"><option value="">全部标签</option></select>' +
+      '<select id="fsort" class="rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]">' +
+        '<option value="">最新优先</option><option value="oldest">最早优先</option></select>' +
+    '</div>' +
+    '<div id="batchBar" class="mb-3 hidden flex-wrap items-center gap-2 rounded-xl bg-[#e8f1fd] px-4 py-2.5 text-[13px] text-[#0b62c4]"></div>' +
+    '<div class="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+      '<table class="w-full text-left text-[13.5px]"><thead id="thead" class="bg-[#fafafa] text-[12px] text-[#86868b]"></thead><tbody id="tbody"></tbody></table>' +
+    '</div>'
+
+  loadMeta().then(function (meta) {
+    if (seq !== viewSeq) return // 视图已切换，丢弃过期回调
+    var fill = function (sel, list) {
+      list.forEach(function (t) {
+        var o = document.createElement('option')
+        o.value = t.name || t; o.textContent = (t.name || t) + (t.count ? ' (' + t.count + ')' : '')
+        $(sel).appendChild(o)
+      })
+      $(sel).value = sel === 'fcat' ? listState.category : listState.tag
+    }
+    fill('fcat', meta.taxonomy.categories)
+    fill('ftag', meta.taxonomy.tags)
+    $('fsort').value = listState.sort
+  })
+
+  var timer = null
+  $('fq').addEventListener('input', function () {
+    listState.q = $('fq').value
+    clearTimeout(timer)
+    timer = setTimeout(function () { renderRows(status) }, 300)
+  })
+  ;['fcat', 'ftag', 'fsort'].forEach(function (id) {
+    $(id).addEventListener('change', function () {
+      listState.category = $('fcat').value
+      listState.tag = $('ftag').value
+      listState.sort = $('fsort').value
+      renderRows(status)
+    })
+  })
+  renderRows(status)
+})
+
+function statusFilterOf(hashStatus) { return hashStatus === 'all' ? '' : hashStatus }
+
+function renderRows(status) {
+  var seq = viewSeq
+  var params = new URLSearchParams()
+  var st = statusFilterOf(status)
+  if (st) params.set('status', st)
+  if (listState.q) params.set('q', listState.q)
+  if (listState.category) params.set('category', listState.category)
+  if (listState.tag) params.set('tag', listState.tag)
+  if (listState.sort) params.set('sort', listState.sort)
+
+  api('/api/articles?' + params.toString()).then(function (d) {
+    if (seq !== viewSeq) return // 视图已切换，丢弃过期回调
+    var arts = d.articles
+    $('thead').innerHTML = '<tr>' +
+      '<th class="w-10 px-4 py-2.5"><input type="checkbox" id="checkAll" class="accent-[#0071e3]" /></th>' +
+      '<th class="px-3 py-2.5">标题</th><th class="hidden px-3 py-2.5 md:table-cell">作者</th>' +
+      '<th class="hidden px-3 py-2.5 lg:table-cell">分类 / 标签</th>' +
+      '<th class="hidden px-3 py-2.5 sm:table-cell">日期</th><th class="px-3 py-2.5">状态</th>' +
+      '<th class="px-4 py-2.5 text-right">操作</th></tr>'
+
+    if (!arts.length) {
+      $('tbody').innerHTML = '<tr><td colspan="7" class="px-4 py-14 text-center text-sm text-[#a1a1a6]">这里空空如也</td></tr>'
+      updateBatchBar()
+      return
+    }
+
+    $('tbody').innerHTML = arts.map(function (a) {
+      var canEdit = myRole === 'admin' || myRole === 'editor' || (myRole === 'author' && a.author === me)
+      var ops = '<div class="flex justify-end gap-1.5">' +
+        '<a href="#/editor/' + encodeURIComponent(a.file) + '" class="rounded-full border border-[#d2d2d7] px-3 py-1 text-[12px] hover:bg-[#f5f5f7]">编辑</a>'
+      if (myRole === 'admin' || myRole === 'editor') {
+        ops += flagBtn(a, 'pinned', '📌', '置顶') + flagBtn(a, 'featured', '⭐', '推荐')
+        if (a.status === 'published') ops += '<button data-act="offline" data-file="' + esc(a.file) + '" class="rounded-full border border-[#d2d2d7] px-3 py-1 text-[12px] hover:bg-[#f5f5f7]">下线</button>'
+        if (a.status !== 'published') ops += '<button data-act="published" data-file="' + esc(a.file) + '" class="rounded-full border border-[#0071e3] px-3 py-1 text-[12px] text-[#0071e3] hover:bg-[#e8f1fd]">发布</button>'
+        ops += '<button data-act="delete" data-file="' + esc(a.file) + '" class="rounded-full border border-[#f0d0d0] px-3 py-1 text-[12px] text-[#c0392b] hover:bg-[#fdecec]">删除</button>'
+      } else if (canEdit && a.status === 'draft') {
+        ops += '<button data-act="review" data-file="' + esc(a.file) + '" class="rounded-full border border-[#0071e3] px-3 py-1 text-[12px] text-[#0071e3] hover:bg-[#e8f1fd]">提交审核</button>'
+      }
+      ops += '</div>'
+      return '<tr class="border-t border-[#f0f0f2] hover:bg-[#fafafa]">' +
+        '<td class="px-4 py-3"><input type="checkbox" data-check="' + esc(a.file) + '" class="row-check accent-[#0071e3]" ' + (listState.selected.has(a.file) ? 'checked' : '') + ' /></td>' +
+        '<td class="max-w-[320px] px-3 py-3"><div class="flex items-center gap-1.5">' +
+          (a.pinned ? '<span title="置顶">📌</span>' : '') + (a.featured ? '<span title="推荐">⭐</span>' : '') +
+          '<span class="truncate font-medium">' + esc(a.title) + '</span>' +
+          (a.publishAt && a.status !== 'published' ? '<span title="定时发布 ' + esc(a.publishAt) + '" class="shrink-0 text-[11px]">⏰</span>' : '') +
+          (a.offlineAt && a.status === 'published' ? '<span title="定时下线 ' + esc(a.offlineAt) + '" class="shrink-0 text-[11px]">⏳</span>' : '') +
+        '</div><div class="mt-0.5 truncate text-[11.5px] text-[#a1a1a6]">' + esc(a.slug) + '</div></td>' +
+        '<td class="hidden px-3 py-3 text-[#6e6e73] md:table-cell">' + esc(a.author || '—') + '</td>' +
+        '<td class="hidden px-3 py-3 lg:table-cell"><div class="flex flex-wrap gap-1">' +
+          (a.category ? '<span class="rounded-full bg-[#e8f1fd] px-2 py-0.5 text-[11px] text-[#0b62c4]">' + esc(a.category) + '</span>' : '') +
+          a.tags.slice(0, 3).map(function (t) { return '<span class="rounded-full bg-[#f0f0f2] px-2 py-0.5 text-[11px] text-[#6e6e73]">' + esc(t) + '</span>' }).join('') +
+        '</div></td>' +
+        '<td class="hidden whitespace-nowrap px-3 py-3 text-[#86868b] sm:table-cell">' + esc(a.publishedAt) + '</td>' +
+        '<td class="px-3 py-3"><span class="whitespace-nowrap rounded-full px-2.5 py-1 text-[11.5px] font-medium ' + STATUS_STYLE[a.status] + '">' + STATUS_LABEL[a.status] + '</span></td>' +
+        '<td class="px-4 py-3">' + ops + '</td></tr>'
+    }).join('')
+
+    $('checkAll').addEventListener('change', function () {
+      var on = $('checkAll').checked
+      arts.forEach(function (a) { if (on) listState.selected.add(a.file); else listState.selected.delete(a.file) })
+      document.querySelectorAll('.row-check').forEach(function (c) { c.checked = on })
+      updateBatchBar()
+    })
+    document.querySelectorAll('.row-check').forEach(function (c) {
+      c.addEventListener('change', function () {
+        if (c.checked) listState.selected.add(c.dataset.check)
+        else listState.selected.delete(c.dataset.check)
+        updateBatchBar()
+      })
+    })
+    document.querySelectorAll('[data-act]').forEach(function (btn) {
+      btn.addEventListener('click', function () { rowAction(btn.dataset.act, btn.dataset.file) })
+    })
+    document.querySelectorAll('[data-flag]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var f = btn.dataset.flag
+        var patch = {}; patch[f] = btn.dataset.on !== 'true'
+        api('/api/article/' + encodeURIComponent(btn.dataset.file) + '/flags', { method: 'POST', body: patch })
+          .then(function () { toast(f === 'pinned' ? '置顶已更新' : '推荐已更新'); loadMeta(); renderRows(status) })
+          .catch(function (e) { toast(e.message, true) })
+      })
+    })
+    updateBatchBar()
+  })
+}
+
+function flagBtn(a, key, icon, label) {
+  var on = a[key]
+  return '<button data-flag="' + key + '" data-on="' + on + '" data-file="' + esc(a.file) + '" title="' + label + '" class="rounded-full border px-2.5 py-1 text-[12px] ' +
+    (on ? 'border-[#f5c542] bg-[#fff8e0]' : 'border-[#d2d2d7] hover:bg-[#f5f5f7]') + '">' + icon + '</button>'
+}
+
+function rowAction(act, file) {
+  if (act === 'delete') {
+    confirmBox('删除「' + file + '」？', '会移入回收站，可随时恢复', function () {
+      api('/api/article/' + encodeURIComponent(file), { method: 'DELETE' })
+        .then(function () { toast('已移入回收站'); loadMeta(); navigate() })
+        .catch(function (e) { toast(e.message, true) })
+    })
+    return
+  }
+  var labels = { published: '发布', offline: '下线', review: '提交审核', draft: '转为草稿' }
+  api('/api/article/' + encodeURIComponent(file) + '/status', { method: 'POST', body: { to: act } })
+    .then(function () { toast(labels[act] + '成功'); loadMeta(); navigate() })
+    .catch(function (e) { toast(e.message, true) })
+}
+
+function updateBatchBar() {
+  var bar = $('batchBar')
+  if (!bar) return
+  var n = listState.selected.size
+  if (!n) { bar.classList.add('hidden'); return }
+  bar.classList.remove('hidden')
+  var btn = function (act, label, cls) {
+    return '<button data-batch="' + act + '" class="rounded-full px-3.5 py-1.5 text-[12.5px] font-medium ' + (cls || 'bg-white text-[#0b62c4] border border-[#bcd8f7] hover:bg-[#f0f7ff]') + '">' + label + '</button>'
+  }
+  var isAdmin = myRole === 'admin' || myRole === 'editor'
+  bar.innerHTML = '<span class="font-semibold">已选 ' + n + ' 篇：</span>' +
+    (isAdmin ? btn('published', '批量发布') + btn('offline', '批量下线') + btn('draft', '转为草稿') : '') +
+    (isAdmin ? btn('delete', '批量删除', 'bg-white text-[#c0392b] border border-[#f0d0d0] hover:bg-[#fdecec]') : '') +
+    '<button data-batch="clear" class="ml-auto text-[12px] text-[#86868b] hover:text-[#1d1d1f]">取消选择</button>'
+
+  bar.querySelectorAll('[data-batch]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var act = b.dataset.batch
+      if (act === 'clear') { listState.selected.clear(); navigate(); return }
+      var files = Array.from(listState.selected)
+      if (act === 'delete') {
+        confirmBox('批量删除 ' + files.length + ' 篇？', '移入回收站，可恢复', function () { doBatch(act, files, '') })
+      } else {
+        doBatch(act, files, '')
+      }
+    })
+  })
+}
+
+function doBatch(action, files, value) {
+  api('/api/batch', { method: 'POST', body: { files: files, action: action, value: value } })
+    .then(function (d) {
+      var msg = '完成 ' + d.done.length + ' 篇' + (d.failed.length ? '，失败 ' + d.failed.length + ' 篇：' + d.failed[0].reason : '')
+      toast(msg, d.failed.length > 0)
+      listState.selected.clear()
+      loadMeta(); navigate()
+    })
+    .catch(function (e) { toast(e.message, true) })
+}
+
+/* ================= 视图：编辑器 ================= */
+onRoute('editor/*', function (file) {
+  var isNew = file === 'new'
+  var load = isNew ? Promise.resolve({ article: blankArticle() })
+    : api('/api/article/' + encodeURIComponent(file))
+
+  load.then(function (d) {
+    var a = d.article
+    var canEdit = myRole === 'admin' || myRole === 'editor' || (myRole === 'author' && a.author === me && (isNew || a.status === 'draft'))
+
+    view.innerHTML =
+      '<div class="mb-5 flex flex-wrap items-center justify-between gap-3">' +
+        '<div class="flex items-center gap-3"><a href="#/list/all" class="rounded-full border border-[#d2d2d7] bg-white px-3.5 py-1.5 text-[12.5px] hover:bg-[#f5f5f7]">← 返回</a>' +
+        '<h2 class="text-[20px] font-semibold tracking-tight">' + (isNew ? '写新文章' : '编辑文章') + '</h2>' +
+        (isNew ? '' : '<span class="rounded-full px-2.5 py-1 text-[11.5px] font-medium ' + STATUS_STYLE[a.status] + '">' + STATUS_LABEL[a.status] + '</span>') + '</div>' +
+      '</div>' +
+
+      '<div class="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_300px]">' +
+        '<div class="space-y-5">' +
+          '<div class="rounded-2xl border border-black/5 bg-white p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+            field('标题 *', '<input id="eTitle" class="w-full rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[15px] outline-none focus:border-[#0071e3] focus:ring-4 focus:ring-[#0071e3]/10" value="' + esc(a.title) + '" />') +
+            '<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">' +
+              field('slug *（网址名）', '<input id="eSlug" class="w-full rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[14px] outline-none focus:border-[#0071e3]" value="' + esc(a.slug) + '" placeholder="my-post" />') +
+              field('发布日期', '<input id="eDate" type="date" class="w-full rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[14px] outline-none focus:border-[#0071e3]" value="' + esc(a.publishedAt || new Date().toISOString().slice(0, 10)) + '" />') +
+            '</div>' +
+            field('摘要（列表与 SEO description）', '<textarea id="eExcerpt" rows="2" class="w-full resize-y rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[14px] outline-none focus:border-[#0071e3]">' + esc(a.excerpt) + '</textarea>', 'mt-4') +
+            field('正文（Markdown）*', '<textarea id="eContent" rows="18" class="w-full resize-y rounded-[10px] border border-[#d2d2d7] px-3.5 py-3 font-mono text-[13px] leading-relaxed outline-none focus:border-[#0071e3]">' + esc(a.body) + '</textarea>', 'mt-4') +
+          '</div>' +
+        '</div>' +
+
+        '<div class="space-y-5">' +
+          '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+            '<p class="mb-3 text-[13px] font-semibold text-[#6e6e73]">发布管理</p>' +
+            field('状态', '<select id="eStatus" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]">' +
+              ['draft', 'review', 'published', 'offline'].map(function (s) {
+                var dis = (myRole === 'author' && (s === 'published' || s === 'offline')) ? ' disabled' : ''
+                return '<option value="' + s + '"' + (a.status === s ? ' selected' : '') + dis + '>' + STATUS_LABEL[s] + '</option>'
+              }).join('') + '</select>') +
+            field('定时发布 publishAt', '<input id="ePublishAt" type="datetime-local" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]" value="' + esc(a.publishAt) + '" />', 'mt-3') +
+            field('定时下线 offlineAt', '<input id="eOfflineAt" type="datetime-local" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]" value="' + esc(a.offlineAt) + '" />', 'mt-3') +
+            '<div class="mt-4 flex gap-4">' +
+              '<label class="flex cursor-pointer items-center gap-1.5 text-[13px]"><input id="ePinned" type="checkbox" class="accent-[#0071e3]" ' + (a.pinned ? 'checked' : '') + (myRole === 'author' ? ' disabled' : '') + ' /> 📌 置顶</label>' +
+              '<label class="flex cursor-pointer items-center gap-1.5 text-[13px]"><input id="eFeatured" type="checkbox" class="accent-[#0071e3]" ' + (a.featured ? 'checked' : '') + (myRole === 'author' ? ' disabled' : '') + ' /> ⭐ 推荐</label>' +
+            '</div>' +
+            '<p class="mt-2.5 text-[11.5px] leading-relaxed text-[#a1a1a6]">定时任务由本机 Studio 每 30 秒扫描执行，到点自动切换状态并推送上线（需 Studio 保持运行）。</p>' +
+          '</div>' +
+
+          '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+            '<p class="mb-3 text-[13px] font-semibold text-[#6e6e73]">分类 / 标签 / SEO</p>' +
+            field('分类（单选）', '<input id="eCategory" list="catList" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" value="' + esc(a.category) + '" /><datalist id="catList"></datalist>') +
+            field('标签（逗号分隔）', '<input id="eTags" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" value="' + esc(a.tags.join(', ')) + '" />', 'mt-3') +
+            field('SEO 关键词（逗号分隔）', '<input id="eKeywords" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" value="' + esc(a.keywords.join(', ')) + '" />', 'mt-3') +
+            field('SEO 描述（留空用摘要）', '<textarea id="eSeoDesc" rows="2" class="w-full resize-y rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]">' + esc(a.seoDescription) + '</textarea>', 'mt-3') +
+            field('作者', '<select id="eAuthor" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"></select>', 'mt-3') +
+          '</div>' +
+
+          '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+            '<p class="mb-3 text-[13px] font-semibold text-[#6e6e73]">封面图</p>' +
+            '<input type="file" id="eCover" accept="image/*" class="text-[13px]" />' +
+            '<div id="eCoverPreview" class="mt-3 hidden h-[110px] w-full rounded-[10px] bg-[#f5f5f7] bg-center bg-no-repeat [background-size:cover]"></div>' +
+            '<p class="mt-2 text-[11.5px] text-[#a1a1a6]">' + esc(a.cover || '未设置') + '</p>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="sticky bottom-4 z-10 mt-5 flex flex-wrap items-center gap-3 rounded-2xl border border-black/5 bg-white/95 px-5 py-3.5 shadow-[0_4px_24px_rgba(0,0,0,0.1)] backdrop-blur">' +
+        '<span id="eMsg" class="text-[13px] text-[#1d7a35]"></span>' +
+        '<div class="ml-auto flex flex-wrap gap-2.5">' +
+          '<button id="eSave" class="rounded-full bg-[#1d1d1f] px-6 py-2.5 text-[13.5px] font-semibold text-white hover:opacity-85 disabled:opacity-50">保存</button>' +
+          ((myRole === 'admin' || myRole === 'editor') ?
+            '<button id="eSavePub" class="rounded-full bg-[#0071e3] px-6 py-2.5 text-[13.5px] font-semibold text-white shadow-[0_2px_10px_rgba(0,113,227,0.3)] hover:bg-[#0077ed] disabled:opacity-50">保存并发布上线</button>' :
+            (isNew || a.status === 'draft') && myRole === 'author' ?
+            '<button id="eSaveReview" class="rounded-full bg-[#0071e3] px-6 py-2.5 text-[13.5px] font-semibold text-white hover:bg-[#0077ed] disabled:opacity-50">保存并提交审核</button>' : '') +
+        '</div>' +
+      '</div>'
+
+    var seq = viewSeq // 编辑器视图代数，异步回调凭票操作
+    loadMeta().then(function (meta) {
+      if (seq !== viewSeq) return
+      var cat = $('catList')
+      meta.taxonomy.categories.forEach(function (c) {
+        var o = document.createElement('option'); o.value = c.name; cat.appendChild(o)
+      })
+      var sel = $('eAuthor')
+      meta.authors.forEach(function (au) {
+        var o = document.createElement('option')
+        o.value = au.name; o.textContent = au.name + ' · ' + ROLE_LABEL[au.role]
+        sel.appendChild(o)
+      })
+      sel.value = a.author || me
+      if (myRole === 'author') sel.disabled = true
+    })
+
+    var slugTouched = !isNew
+    $('eTitle').addEventListener('input', function () {
+      if (slugTouched) return
+      var s = $('eTitle').value.toLowerCase().match(/[a-z0-9]+/g)
+      $('eSlug').value = s ? s.join('-') : ''
+    })
+    $('eSlug').addEventListener('input', function () { slugTouched = true })
+    var coverNew = null
+    $('eCover').addEventListener('change', function () {
+      coverNew = $('eCover').files[0] || null
+      if (!coverNew) return
+      var r = new FileReader()
+      r.onload = function () {
+        $('eCoverPreview').style.backgroundImage = 'url(' + r.result + ')'
+        $('eCoverPreview').classList.remove('hidden')
+      }
+      r.readAsDataURL(coverNew)
+    })
+
+    function collect() {
+      return {
+        title: $('eTitle').value.trim(),
+        slug: $('eSlug').value.trim(),
+        publishedAt: $('eDate').value,
+        excerpt: $('eExcerpt').value.trim(),
+        content: $('eContent').value,
+        status: $('eStatus').value,
+        pinned: $('ePinned').checked,
+        featured: $('eFeatured').checked,
+        category: $('eCategory').value.trim(),
+        tags: $('eTags').value.split(/[,，]/).map(function (t) { return t.trim() }).filter(Boolean),
+        keywords: $('eKeywords').value.split(/[,，]/).map(function (t) { return t.trim() }).filter(Boolean),
+        seoDescription: $('eSeoDesc').value.trim(),
+        author: $('eAuthor').value,
+        publishAt: $('ePublishAt').value.replace('T', ' '),
+        offlineAt: $('eOfflineAt').value.replace('T', ' '),
+        cover: a.cover,
+      }
+    }
+
+    function save(patch, then) {
+      if (seq !== viewSeq) return // 视图已切换
+      var data = collect()
+      Object.assign(data, patch || {})
+      if (!data.title) return toast('标题不能为空', true)
+      if (!data.content.trim()) return toast('正文不能为空', true)
+      $('eSave').disabled = true
+      var finishUpload = coverNew
+        ? new Promise(function (ok2, bad) {
+            var r = new FileReader()
+            r.onload = function () { ok2(r.result) }; r.onerror = bad
+            r.readAsDataURL(coverNew)
+          }).then(function (b64) {
+            return api('/api/upload', { method: 'POST', body: { name: coverNew.name, dataBase64: b64, slug: data.slug || 'cover' } })
+          }).then(function (up) { data.cover = '/images/covers/' + up.fileName })
+        : Promise.resolve()
+
+      finishUpload.then(function () {
+        var req = isNew
+          ? api('/api/articles', { method: 'POST', body: data })
+          : api('/api/article/' + encodeURIComponent(a.file), { method: 'PUT', body: data })
+        return req.then(function (d2) {
+          $('eMsg').textContent = '✓ 已保存 ' + new Date().toLocaleTimeString()
+          toast('保存成功')
+          if (d2.file) a.file = d2.file
+          if (isNew) location.hash = '#/editor/' + encodeURIComponent(d2.file)
+          if (then) then(d2)
+        })
+      }).catch(function (e) { toast(e.message, true) })
+        .finally(function () { $('eSave').disabled = false })
+    }
+
+    $('eSave').addEventListener('click', function () { save() })
+    var pub = $('eSavePub')
+    if (pub) pub.addEventListener('click', function () {
+      save({ status: 'published' }, function () {
+        confirmBox('已保存为已发布，现在推送到线上？', 'git commit + push，Vercel 自动构建', function () {
+          $('syncPanel').classList.remove('hidden')
+          $('syncLog').textContent = '正在启动推送任务…'
+          api('/api/sync', { method: 'POST', body: {} }).then(function (d) { pollSync(d.jobId) }).catch(function (e) { syncFail(e.message) })
+        })
+      })
+    })
+    var rev = $('eSaveReview')
+    if (rev) rev.addEventListener('click', function () { save({ status: 'review' }) })
+  }).catch(function (e) {
+    view.innerHTML = '<p class="text-sm text-[#c0392b]">加载失败：' + esc(e.message) + '</p>'
+  })
+})
+
+function blankArticle() {
+  return {
+    file: '', slug: '', title: '', excerpt: '', publishedAt: new Date().toISOString().slice(0, 10),
+    tags: [], category: '', author: me, status: 'draft', pinned: false, featured: false,
+    keywords: [], seoDescription: '', publishAt: '', offlineAt: '', cover: '', body: '',
+  }
+}
+
+function field(label, control, extra) {
+  return '<div class="' + (extra || '') + '"><label class="mb-1.5 block text-[13px] font-semibold text-[#6e6e73]">' + label + '</label>' + control + '</div>'
+}
+
+/* ================= 视图：回收站 ================= */
+onRoute('trash', function () {
+  api('/api/trash').then(function (d) {
+    view.innerHTML = '<h2 class="mb-1 text-[22px] font-semibold tracking-tight">回收站</h2>' +
+      '<p class="mb-5 text-[13px] text-[#86868b]">删除的文章在这里，可恢复；彻底删除不可恢复（仅管理员）</p>' +
+      '<div class="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]"><table class="w-full text-left text-[13.5px]"><tbody>' +
+      (d.trash.length ? d.trash.map(function (t) {
+        return '<tr class="border-b border-[#f0f0f2] last:border-0">' +
+          '<td class="px-5 py-3.5"><div class="font-medium">' + esc(t.title) + '</div>' +
+          '<div class="text-[11.5px] text-[#a1a1a6]">删除于 ' + esc(t.deletedAt.slice(0, 16).replace('T', ' ')) + ' · 由 ' + esc(t.deletedBy) + ' · 原状态：' + (STATUS_LABEL[t.status] || t.status) + '</div></td>' +
+          '<td class="px-5 py-3.5 text-right"><div class="flex justify-end gap-2">' +
+          '<button data-restore="' + esc(t.trashName) + '" class="rounded-full border border-[#0071e3] px-3.5 py-1 text-[12px] text-[#0071e3] hover:bg-[#e8f1fd]">恢复</button>' +
+          (myRole === 'admin' ? '<button data-purge="' + esc(t.trashName) + '" class="rounded-full border border-[#f0d0d0] px-3.5 py-1 text-[12px] text-[#c0392b] hover:bg-[#fdecec]">彻底删除</button>' : '') +
+          '</div></td></tr>'
+      }).join('') : '<tr><td class="px-5 py-14 text-center text-sm text-[#a1a1a6]">回收站是空的</td></tr>') +
+      '</tbody></table></div>'
+
+    d.trash.forEach(function (t) {
+      var r = document.querySelector('[data-restore="' + t.trashName + '"]')
+      if (r) r.onclick = function () {
+        api('/api/trash/restore', { method: 'POST', body: { trashName: t.trashName } })
+          .then(function () { toast('已恢复'); loadMeta(); navigate() })
+          .catch(function (e) { toast(e.message, true) })
+      }
+      var p = document.querySelector('[data-purge="' + t.trashName + '"]')
+      if (p) p.onclick = function () {
+        confirmBox('彻底删除「' + t.title + '」？', '不可恢复，谨慎操作', function () {
+          api('/api/trash/' + encodeURIComponent(t.trashName), { method: 'DELETE' })
+            .then(function () { toast('已彻底删除'); navigate() })
+            .catch(function (e) { toast(e.message, true) })
+        })
+      }
+    })
+  })
+})
+
+/* ================= 视图：分类与标签 ================= */
+onRoute('taxonomy', function () {
+  loadMeta().then(function (meta) {
+    var block = function (title, type, list) {
+      return '<div class="rounded-2xl border border-black/5 bg-white p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+        '<p class="mb-3 text-[15px] font-semibold">' + title + '</p><div class="space-y-1.5">' +
+        (list.length ? list.map(function (t) {
+          var editable = myRole === 'admin' || myRole === 'editor'
+          return '<div class="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-[#f5f5f7]">' +
+            '<span class="flex-1 text-[13.5px]">' + esc(t.name) + '</span>' +
+            '<span class="text-xs text-[#a1a1a6]">' + t.count + ' 篇</span>' +
+            (editable ? '<button data-rename="' + type + '" data-from="' + esc(t.name) + '" class="rounded-full border border-[#d2d2d7] px-2.5 py-0.5 text-[11.5px] hover:bg-white">重命名</button>' : '') +
+            '</div>'
+        }).join('') : '<p class="py-4 text-center text-[13px] text-[#a1a1a6]">暂无</p>') +
+        '</div></div>'
+    }
+    view.innerHTML = '<h2 class="mb-1 text-[22px] font-semibold tracking-tight">分类与标签</h2>' +
+      '<p class="mb-5 text-[13px] text-[#86868b]">重命名会全站同步更新所有文章</p>' +
+      '<div class="grid grid-cols-1 gap-5 md:grid-cols-2">' +
+      block('分类（单分类体系）', 'category', meta.taxonomy.categories) +
+      block('标签（多标签体系）', 'tag', meta.taxonomy.tags) + '</div>'
+
+    view.querySelectorAll('[data-rename]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var to = prompt('重命名为：', b.dataset.from)
+        if (!to || to === b.dataset.from) return
+        api('/api/taxonomy/rename', { method: 'POST', body: { type: b.dataset.rename, from: b.dataset.from, to: to } })
+          .then(function (d2) { toast('已重命名，' + d2.changed.length + ' 篇文章同步更新'); navigate() })
+          .catch(function (e) { toast(e.message, true) })
+      })
+    })
+  })
+})
+
+/* ================= 视图：作者与权限 ================= */
+onRoute('authors', function () {
+  api('/api/authors').then(function (d) {
+    var isAdmin = d.me.role === 'admin'
+    view.innerHTML = '<h2 class="mb-1 text-[22px] font-semibold tracking-tight">作者与权限</h2>' +
+      '<p class="mb-5 text-[13px] text-[#86868b]">本地工具无登录体系，身份用于操作授权与日志追溯（管理员 / 编辑 / 作者）</p>' +
+      '<div class="rounded-2xl border border-black/5 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]"><table class="w-full text-left text-[13.5px]"><thead class="bg-[#fafafa] text-[12px] text-[#86868b]"><tr>' +
+      '<th class="px-5 py-2.5">作者</th><th class="px-3 py-2.5">角色</th><th class="px-3 py-2.5">权限说明</th><th class="px-5 py-2.5 text-right">操作</th></tr></thead><tbody>' +
+      d.authors.map(function (a) {
+        var perm = { admin: '全部操作 + 作者管理 + 彻底删除', editor: '发布/编辑/下线/回收站/批量/推送', author: '只能编辑自己的文章，提交审核' }[a.role]
+        return '<tr class="border-t border-[#f0f0f2]">' +
+          '<td class="px-5 py-3 font-medium">' + esc(a.name) + '</td>' +
+          '<td class="px-3 py-3"><span class="rounded-full bg-[#f0f0f2] px-2.5 py-1 text-[11.5px]">' + ROLE_LABEL[a.role] + '</span></td>' +
+          '<td class="px-3 py-3 text-[12.5px] text-[#6e6e73]">' + perm + '</td>' +
+          '<td class="px-5 py-3 text-right">' + (isAdmin && a.role !== 'admin' ? '<button data-del="' + esc(a.name) + '" class="rounded-full border border-[#f0d0d0] px-3 py-1 text-[12px] text-[#c0392b] hover:bg-[#fdecec]">移除</button>' : '') + '</td></tr>'
+      }).join('') + '</tbody></table></div>' +
+      (isAdmin ?
+        '<div class="mt-5 flex flex-wrap items-end gap-3 rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+        '<div><label class="mb-1 block text-[12.5px] font-semibold text-[#6e6e73]">作者名</label><input id="aName" class="rounded-lg border border-[#d2d2d7] px-3 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" /></div>' +
+        '<div><label class="mb-1 block text-[12.5px] font-semibold text-[#6e6e73]">角色</label><select id="aRole" class="rounded-lg border border-[#d2d2d7] px-3 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"><option value="author">作者</option><option value="editor">编辑</option><option value="admin">管理员</option></select></div>' +
+        '<button id="aAdd" class="rounded-full bg-[#0071e3] px-5 py-2 text-[13.5px] font-semibold text-white hover:bg-[#0077ed]">添加</button></div>' : '')
+
+    var add = $('aAdd')
+    if (add) add.addEventListener('click', function () {
+      api('/api/authors', { method: 'POST', body: { name: $('aName').value.trim(), role: $('aRole').value } })
+        .then(function () { toast('已添加'); navigate() })
+        .catch(function (e) { toast(e.message, true) })
+    })
+    view.querySelectorAll('[data-del]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        confirmBox('移除作者「' + b.dataset.del + '」？', '其文章不受影响，只是无法再以此身份操作', function () {
+          api('/api/authors/' + encodeURIComponent(b.dataset.del), { method: 'DELETE' })
+            .then(function () { toast('已移除'); navigate() })
+            .catch(function (e) { toast(e.message, true) })
+        })
+      })
+    })
+  })
+})
+
+/* ================= 视图：操作日志 ================= */
+onRoute('logs', function () {
+  api('/api/logs?limit=300').then(function (d) {
+    view.innerHTML = '<h2 class="mb-1 text-[22px] font-semibold tracking-tight">操作日志</h2>' +
+      '<p class="mb-5 text-[13px] text-[#86868b]">最近 ' + d.logs.length + ' 条，新到旧；jsonl 追加存储于 .studio/logs.jsonl</p>' +
+      '<div class="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]"><table class="w-full text-left text-[12.5px]"><thead class="bg-[#fafafa] text-[11.5px] text-[#86868b]"><tr>' +
+      '<th class="px-5 py-2.5">时间</th><th class="px-3 py-2.5">身份</th><th class="px-3 py-2.5">动作</th><th class="px-3 py-2.5">对象</th><th class="px-5 py-2.5">详情</th></tr></thead><tbody>' +
+      (d.logs.length ? d.logs.map(function (l) {
+        return '<tr class="border-t border-[#f0f0f2]">' +
+          '<td class="whitespace-nowrap px-5 py-2.5 text-[#86868b]">' + esc(l.ts.slice(5, 16).replace('T', ' ')) + '</td>' +
+          '<td class="px-3 py-2.5">' + esc(l.actor) + '</td>' +
+          '<td class="px-3 py-2.5"><span class="rounded-full bg-[#f0f0f2] px-2 py-0.5 font-mono text-[11px]">' + esc(l.action) + '</span></td>' +
+          '<td class="max-w-[220px] truncate px-3 py-2.5 font-mono text-[11.5px]">' + esc(l.target) + '</td>' +
+          '<td class="px-5 py-2.5 text-[#6e6e73]">' + esc(l.detail) + '</td></tr>'
+      }).join('') : '<tr><td colspan="5" class="px-5 py-14 text-center text-sm text-[#a1a1a6]">还没有操作记录</td></tr>') +
+      '</tbody></table></div>'
+  }).catch(function (e) {
+    view.innerHTML = '<p class="text-sm text-[#c0392b]">' + esc(e.message) + '</p>'
+  })
+})
+
+/* ================= 启动 ================= */
+loadMeta().then(navigate)
+</script>
+</body>
+</html>`
+}

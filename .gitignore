@@ -19,3 +19,9 @@ pnpm-debug.log*
 
 # 临时 jsdom 验证脚本
 .check-*.mjs
+
+# Studio 本地运营数据（回收站/操作日志/作者名单）
+.studio/
+
+# Studio 临时冒烟脚本（依赖本机 jsdom，不入库）
+scripts/**/*.tmp.mjs

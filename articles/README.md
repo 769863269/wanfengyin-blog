@@ -16,6 +16,14 @@ cover: /images/covers/my-cover.jpg # 可选，封面图。无图时删除本行�
 views: 609 # 可选，展示用阅读数
 commentCount: 12 # 可选，展示用评论数
 featured: true # 可选，true 时进首页轮播
+status: published # 可选（Studio CMS）：draft 草稿 / review 审核中 / published 已发布 / offline 已下线；缺省视为已发布
+category: 技术 # 可选（Studio CMS）：分类（单选）
+author: 周周 # 可选（Studio CMS）：作者
+pinned: true # 可选（Studio CMS）：列表置顶
+keywords: [vite, 构建] # 可选（Studio CMS）：SEO 关键词，预渲染 meta keywords
+seoDescription: 自定义 SEO 描述 # 可选（Studio CMS）：留空用 excerpt
+publishAt: 2026-09-08 09:00 # 可选（Studio CMS）：定时发布，到点自动上线（需 Studio 运行）
+offlineAt: 2026-10-01 00:00 # 可选（Studio CMS）：定时下线
 ---
 ```
 
@@ -25,6 +33,12 @@ featured: true # 可选，true 时进首页轮播
 - `> 引文` — 引用块
 - `![说明](图片地址)` — 图片（独占一行）
 - 空行分段，其余就是普通文字
+
+## 状态与生命周期（Studio CMS）
+
+- 只有 `status: published`（或缺省）的文章会进构建；draft / review / offline 只存在于仓库，不出现在线上
+- 状态机：draft → review → published → offline（可回到 draft / 重新上线）
+- 推荐用发布后台管理（npm run studio）：可视化状态切换、置顶/推荐、定时上下线、回收站、操作日志
 
 ## 发布
 
