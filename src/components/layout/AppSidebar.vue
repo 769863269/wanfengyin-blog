@@ -6,7 +6,7 @@
  */
 import { RouterLink } from 'vue-router'
 import SidebarPanel from '@/components/layout/SidebarPanel.vue'
-import { categoryCloud, hotPosts, recentComments, tagCloud } from '@/data/posts'
+import { categoryCloud, featuredPosts, hotPosts, tagCloud } from '@/data/posts'
 import { siteConfig } from '@/config/site'
 </script>
 
@@ -27,11 +27,13 @@ import { siteConfig } from '@/config/site'
       </ul>
     </SidebarPanel>
 
-    <SidebarPanel title="最新评论">
-      <ul class="comment-list">
-        <li v-for="comment in recentComments" :key="comment.id">
-          <b>{{ comment.author }}</b>
-          ：{{ comment.content }}
+    <SidebarPanel v-if="featuredPosts.length" title="推荐阅读">
+      <ul class="pick-list">
+        <li v-for="post in featuredPosts" :key="post.slug">
+          <RouterLink :to="{ name: 'post', params: { slug: post.slug } }">
+            <span class="pick-list__mark" aria-hidden="true">荐</span>
+            {{ post.title }}
+          </RouterLink>
         </li>
       </ul>
     </SidebarPanel>
@@ -84,15 +86,31 @@ import { siteConfig } from '@/config/site'
   color: var(--brand);
 }
 
-.comment-list li {
+.pick-list li {
   margin-bottom: 10px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
-  color: var(--text-secondary);
 }
 
-.comment-list b {
-  color: var(--text-primary);
+.pick-list a {
+  color: var(--text-secondary);
+  transition: color var(--duration-base) var(--ease-standard);
+}
+
+.pick-list a:hover {
+  color: var(--brand);
+}
+
+.pick-list__mark {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #8b5a2b;
+  background: rgb(201 182 164 / 28%);
+  border: 1px solid rgb(139 115 85 / 45%);
+  border-radius: var(--radius-pill);
 }
 
 .cat-list li {

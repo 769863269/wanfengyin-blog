@@ -23,7 +23,11 @@ const viewCount = computed(() => formatCount(post.views))
 <template>
   <article class="post-card">
     <RouterLink class="post-card__link" :to="{ name: 'post', params: { slug: post.slug } }">
-      <h2 class="post-card__title">{{ post.title }}</h2>
+      <h2 class="post-card__title">
+        <span v-if="post.pinned" class="post-card__flag post-card__flag--pin" title="站长置顶">置顶</span>
+        <span v-if="post.featured" class="post-card__flag post-card__flag--featured" title="站长推荐">荐</span>
+        {{ post.title }}
+      </h2>
 
       <div class="post-card__preview" :class="{ 'post-card__preview--nothumb': !hasThumb }">
         <p class="post-card__excerpt">{{ post.excerpt }}</p>
@@ -74,6 +78,31 @@ const viewCount = computed(() => formatCount(post.views))
 
 .post-card__link:hover .post-card__title {
   color: var(--brand);
+}
+
+/* 置顶 / 推荐徽章（Studio CMS pinned / featured 的前台可见标识） */
+.post-card__flag {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 2px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.6;
+  vertical-align: 3px;
+  letter-spacing: 1px;
+  border-radius: var(--radius-pill);
+  transform: translateY(-1px);
+}
+
+.post-card__flag--pin {
+  color: var(--brand-contrast, #fff);
+  background: var(--brand);
+}
+
+.post-card__flag--featured {
+  color: #8b5a2b;
+  background: rgb(201 182 164 / 28%);
+  border: 1px solid rgb(139 115 85 / 45%);
 }
 
 .post-card__preview {

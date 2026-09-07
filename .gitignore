@@ -25,3 +25,6 @@ pnpm-debug.log*
 
 # Studio 临时冒烟脚本（依赖本机 jsdom，不入库）
 scripts/**/*.tmp.mjs
+
+# 本机 safe-delete 拦截删除的临时文件隔离区
+scripts/.trash-tmp/

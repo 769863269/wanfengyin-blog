@@ -57,12 +57,6 @@ export interface HotPost {
   title: string
 }
 
-export interface RecentComment {
-  id: string
-  author: string
-  content: string
-}
-
 export type TagName = string
 
 /* ===================== 导航 ===================== */

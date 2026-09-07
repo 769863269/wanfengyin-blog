@@ -51,8 +51,11 @@ function handleKeydown(event: KeyboardEvent): void {
         :aria-hidden="index !== activeIndex"
         :tabindex="index === activeIndex ? 0 : -1"
       >
-        <div v-lazy-bg="withBase(post.cover)" class="carousel__bg" />
+        <div v-if="post.cover" v-lazy-bg="withBase(post.cover)" class="carousel__bg" />
+        <!-- 无封面推荐位：品牌渐变底兜底，不让推荐文章因缺图被埋没 -->
+        <div v-else class="carousel__bg carousel__bg--nocover" />
         <div class="carousel__text">
+          <span class="carousel__badge">精选</span>
           <h3 class="carousel__title">{{ post.title }}</h3>
           <p class="carousel__desc">{{ post.excerpt }}</p>
         </div>
@@ -109,6 +112,11 @@ function handleKeydown(event: KeyboardEvent): void {
   background-position: center;
 }
 
+/* 无封面推荐位：暖色品牌渐变（与站点波浪线同色系） */
+.carousel__bg--nocover {
+  background: linear-gradient(135deg, #d9c4ae 0%, #b98d6f 55%, #8b7355 100%);
+}
+
 .carousel__text {
   position: absolute;
   right: 0;
@@ -122,6 +130,18 @@ function handleKeydown(event: KeyboardEvent): void {
 .carousel__title {
   margin-bottom: 6px;
   font-size: 22px;
+}
+
+.carousel__badge {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 3px 12px;
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--text-on-gradient);
+  background: rgb(0 0 0 / 35%);
+  border: 1px solid rgb(255 255 255 / 45%);
+  border-radius: var(--radius-pill);
 }
 
 .carousel__desc {

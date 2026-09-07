@@ -1,4 +1,4 @@
-import type { HotPost, Post, PostNeighbor, RecentComment, TagName } from '@/types'
+import type { HotPost, Post, PostNeighbor, TagName } from '@/types'
 import { generatedPosts } from './posts.generated'
 
 /**
@@ -27,13 +27,11 @@ export const sortedPosts: readonly Post[] = [...posts]
   })
 
 /**
- * 轮播展示的精选文章。
- * 额外要求有封面图：轮播以大图为背景，没图的文章放进来只会露灰底，
- * 所以 featured 且有 cover 的才进轮播。
+ * 轮播展示的精选文章（Studio CMS 的 featured）。
+ * 无封面的文章也进轮播——CarouselBanner 对无图文章降级为品牌渐变底，
+ * 否则「推荐了没效果」（旧版会静默过滤掉没封面的推荐文章）。
  */
-export const featuredPosts: readonly Post[] = sortedPosts.filter(
-  (post) => post.featured === true && post.cover !== '',
-)
+export const featuredPosts: readonly Post[] = sortedPosts.filter((post) => post.featured === true)
 
 /** 侧栏热门文章：按阅读量取前 4 */
 export const hotPosts: readonly HotPost[] = [...sortedPosts]
@@ -61,14 +59,6 @@ export const categoryCloud: readonly { name: string; count: number }[] = (() => 
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
 })()
-
-export const recentComments: readonly RecentComment[] = [
-  { id: 'c1', author: '阿豪', content: 'Rolldown 迁移这篇太顶了，构建速度肉眼可见地快' },
-  { id: 'c2', author: 'Nina', content: '夜间模式那篇收藏了，令牌方案学到了' },
-  { id: 'c3', author: '老王', content: 'scrollBehavior 的坑我也踩过，看到过渡动画那段泪目' },
-  { id: 'c4', author: '小鱼', content: '从开张篇追到现在，二十篇了，respect' },
-  { id: 'c5', author: 'Tony', content: '友链已加，常来串门' },
-]
 
 /** 按 slug 查找文章。返回 undefined 而非抛错，由调用方决定 404 处理。 */
 export function findPost(slug: string): Post | undefined {
