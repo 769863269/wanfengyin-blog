@@ -172,19 +172,36 @@ export function normalizeArticle(data, body, file) {
   }
 }
 
-/** 列出全部文章（含未发布的）；不读正文 body，列表轻量 */
+/**
+ * 列出全部文章（含未发布的）；不读正文 body，列表轻量。
+ * 性能：带 1.5 秒 TTL 缓存 + 写操作主动失效。一次页面导航会触发
+ * meta(statusCounts+taxonomy) + articles 多次全量读取，不缓存会反复扫盘解析。
+ */
+let articleCache = { at: 0, items: null }
+const ARTICLE_CACHE_TTL = 1500
+
+export function invalidateArticleCache() {
+  articleCache = { at: 0, items: null }
+}
+
 export function listArticles() {
-  if (!existsSync(articlesDir)) return []
-  return readdirSync(articlesDir)
-    .filter(isArticleFile)
-    .map((file) => {
-      try {
-        const { data } = parseFrontmatter(readFileSync(articlePath(file), 'utf8'))
-        return normalizeArticle(data, '', file)
-      } catch {
-        return normalizeArticle({ title: file, slug: '' }, '', file)
-      }
-    })
+  if (articleCache.items && Date.now() - articleCache.at < ARTICLE_CACHE_TTL) {
+    return articleCache.items
+  }
+  const items = existsSync(articlesDir)
+    ? readdirSync(articlesDir)
+        .filter(isArticleFile)
+        .map((file) => {
+          try {
+            const { data } = parseFrontmatter(readFileSync(articlePath(file), 'utf8'))
+            return normalizeArticle(data, '', file)
+          } catch {
+            return normalizeArticle({ title: file, slug: '' }, '', file)
+          }
+        })
+    : []
+  articleCache = { at: Date.now(), items }
+  return items
 }
 
 export function getArticle(file) {
@@ -265,6 +282,7 @@ export function createArticle(input) {
 
   const file = `${article.publishedAt}-${slug}.md`
   writeArticleFile(file, orderedData(article), body)
+  invalidateArticleCache()
   return { file }
 }
 
@@ -439,6 +457,7 @@ export function purgeTrash(trashName) {
   unlinkSync(src)
   delete meta[trashName]
   writeTrashMeta(meta)
+  invalidateArticleCache()
   return { purged: trashName }
 }
 

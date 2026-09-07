@@ -78,7 +78,7 @@ assert('恢复', Boolean(getArticle(restored.file)))
 // 7. taxonomy 重命名（只影响测试文章）
 const rn = renameTaxonomy('category', '测试分类', '测试分类改')
 assert('分类重命名', rn.changed.includes(restored.file) && getArticle(restored.file).category === '测试分类改')
-const rnTag = renameTaxonomy('tag', '测试标签', '测试标签改')
+renameTaxonomy('tag', '测试标签', '测试标签改')
 assert('标签重命名', getArticle(restored.file).tags.includes('测试标签改'))
 
 // 8. 定时调度（publishAt 在过去 → draft 直接翻 published）

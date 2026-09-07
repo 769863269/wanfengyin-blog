@@ -11,7 +11,7 @@ export function page() {
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>晚风吟 · 内容管理</title>
-<script src="/tailwind.js"></script>
+<link rel="stylesheet" href="/studio.css" />
 <style>
   body { font-family: -apple-system, "SF Pro Text", "Segoe UI", "Microsoft YaHei", sans-serif; }
   input[type=file]::file-selector-button { border:0; border-radius:980px; padding:6px 16px; margin-right:12px; background:#e8e8ed; color:#1d1d1f; font-size:13px; cursor:pointer; }

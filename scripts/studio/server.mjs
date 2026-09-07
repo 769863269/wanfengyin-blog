@@ -8,7 +8,6 @@ import { createServer } from 'node:http'
 import { spawn } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { execSync } from 'node:child_process'
 import { join, extname } from 'node:path'
 import {
   ROOT,
@@ -23,7 +22,9 @@ import {
 import { page } from './page.mjs'
 
 const coversDir = join(ROOT, 'public', 'images', 'covers')
-const tailwindJs = readFileSync(join(ROOT, 'scripts', 'studio-assets', 'tailwind.js'), 'utf8')
+// 预编译静态 CSS（构建期由 tailwind.config.cjs 生成），运行时零编译开销；
+// 原 451KB 浏览器版构建（tailwind.js）已退役——MutationObserver 每次DOM变更全量重编译，是页面卡顿元凶之一
+const studioCss = readFileSync(join(ROOT, 'scripts', 'studio-assets', 'studio.css'), 'utf8')
 
 /* ---------------- 发布同步任务（复用上一版流式机制） ---------------- */
 
@@ -58,22 +59,44 @@ function startSyncJob(message, actor) {
     job.status = code === 0 ? 'success' : 'error'
     job.endedAt = Date.now()
     log(actor, code === 0 ? 'sync:success' : 'sync:fail', 'git push', `exit=${code}`)
+    refreshPending() // 推送完立刻刷新角标
   })
   return id
 }
 
-/** git 工作区里未推送的文章变更数（推送按钮角标） */
+/**
+ * git 工作区里未推送的文章变更数（推送按钮角标）。
+ *
+ * 性能关键：这台机器上 git status 子进程要 ~3 秒，绝不能 execSync 阻塞事件循环
+ * （之前 meta 接口被它拖到 2.5~3s，前端每次导航都调 meta → 页面每点一下卡 3 秒）。
+ * 改为异步 spawn + 15 秒缓存：meta 立即返回上次结果，过期则在后台刷新。
+ */
+const pendingCache = { value: 0, at: 0, inflight: false }
+
+function refreshPending() {
+  if (pendingCache.inflight) return
+  pendingCache.inflight = true
+  const child = spawn('git', ['-c', 'core.quotepath=false', 'status', '--porcelain'], {
+    cwd: ROOT,
+    windowsHide: true,
+  })
+  let out = ''
+  child.stdout.on('data', (b) => (out += b.toString('utf8')))
+  child.on('error', () => {
+    pendingCache.inflight = false
+  })
+  child.on('close', (code) => {
+    if (code === 0) {
+      pendingCache.value = out.split('\n').filter((l) => l.trim()).length
+      pendingCache.at = Date.now()
+    }
+    pendingCache.inflight = false
+  })
+}
+
 function pendingChanges() {
-  try {
-    const out = execSync('git -c core.quotepath=false status --porcelain', {
-      cwd: ROOT,
-      encoding: 'utf8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-    })
-    return out.split('\n').filter((l) => l.trim()).length
-  } catch {
-    return 0
-  }
+  if (Date.now() - pendingCache.at > 15_000) refreshPending() // 过期就后台刷新，不阻塞当前请求
+  return pendingCache.value
 }
 
 /* ---------------- 调度器：定时上下线 ---------------- */
@@ -104,6 +127,7 @@ function tickSchedule() {
 /* ---------------- HTTP 工具 ---------------- */
 
 function sendJson(res, code, data) {
+  if (res.headersSent) return
   res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' })
   res.end(JSON.stringify(data))
 }
@@ -160,12 +184,12 @@ export function startStudio(port = 5199) {
         res.end(page())
         return
       }
-      if (req.method === 'GET' && path === '/tailwind.js') {
+      if (req.method === 'GET' && path === '/studio.css') {
         res.writeHead(200, {
-          'Content-Type': 'text/javascript; charset=utf-8',
+          'Content-Type': 'text/css; charset=utf-8',
           'Cache-Control': 'public, max-age=86400',
         })
-        res.end(tailwindJs)
+        res.end(studioCss)
         return
       }
 
@@ -423,7 +447,10 @@ export function startStudio(port = 5199) {
 
       sendJson(res, 404, { ok: false, output: 'not found' })
     } catch (err) {
-      sendJson(res, 400, { ok: false, output: String(err.message || err) })
+      // 响应已发出后再出错只能记日志，绝不能再写响应（会把进程炸掉）
+      console.error(`[studio] ${req.method} ${path} 处理异常：`, err.stack || err.message || err)
+      if (!res.headersSent) sendJson(res, 400, { ok: false, output: String(err.message || err) })
+      else res.end()
     }
   })
 
