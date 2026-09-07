@@ -350,6 +350,7 @@ export function changeStatus(file, to, _actor) {
   const data = { status: to }
   if (to === 'published') {
     data.publishAt = '' // 已正式发布，清掉定时
+    data.offlineAt = '' // 重新上线必须清掉过期 offlineAt，否则调度器 30 秒内又把文章踢回 offline
     if (!article.publishedAt) data.publishedAt = new Date().toISOString().slice(0, 10)
   }
   const p = articlePath(file)
@@ -359,6 +360,7 @@ export function changeStatus(file, to, _actor) {
   if (data.publishAt === '') delete merged.publishAt
   if (data.offlineAt === '') delete merged.offlineAt
   writeArticleFile(file, merged, body)
+  invalidateArticleCache()
   return { file, from: article.status, to }
 }
 
@@ -376,6 +378,7 @@ export function setFlags(file, { pinned, featured }) {
   if (!next.pinned) delete merged.pinned
   if (!next.featured) delete merged.featured
   writeArticleFile(file, merged, body)
+  invalidateArticleCache()
   return { file, pinned: next.pinned, featured: next.featured }
 }
 
@@ -461,7 +464,9 @@ export function restoreFromTrash(trashName, _actor) {
   renameSync(src, join(articlesDir, fileName))
   delete meta[trashName]
   writeTrashMeta(meta)
-  return { file: fileName }
+  invalidateArticleCache()
+  // slug 已被现存文章占用时提醒（文件能恢复，但线上会出现 slug 冲突，编辑时需改名）
+  return { file: fileName, slugConflict: slugExistsIn(info.slug, fileName) }
 }
 
 export function purgeTrash(trashName) {

@@ -638,6 +638,8 @@ onRoute('editor/*', function (file) {
       if (seq !== viewSeq) return // 视图已切换
       var data = collect()
       Object.assign(data, patch || {})
+      // 主动发布时清掉定时发布时间，否则到点后调度器行为和预期不符
+      if (data.status === 'published' && a.status !== 'published') data.publishAt = ''
       if (!data.title) return toast('标题不能为空', true)
       if (!data.content.trim()) return toast('正文不能为空', true)
       $('eSave').disabled = true
@@ -717,7 +719,10 @@ onRoute('trash', function () {
       var r = document.querySelector('[data-restore="' + t.trashName + '"]')
       if (r) r.onclick = function () {
         api('/api/trash/restore', { method: 'POST', body: { trashName: t.trashName } })
-          .then(function () { toast('已恢复'); loadMeta(); navigate() })
+          .then(function (d) {
+            toast(d.slugConflict ? '已恢复，但 slug 与现有文章重复，编辑时请改名' : '已恢复', d.slugConflict)
+            loadMeta(); navigate()
+          })
           .catch(function (e) { toast(e.message, true) })
       }
       var p = document.querySelector('[data-purge="' + t.trashName + '"]')
