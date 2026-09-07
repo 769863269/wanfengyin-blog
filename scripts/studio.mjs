@@ -178,7 +178,7 @@ const server = createServer(async (req, res) => {
       sendJson(res, result.ok ? 200 : 500, {
         ...result,
         fileName,
-        liveUrl: result.ok && !body.dryRun ? `https://769863269.github.io/wanfengyin-blog/post/${slug}/` : null,
+        liveUrl: result.ok && !body.dryRun ? `https://wanfengyin-blog.vercel.app/post/${slug}/` : null,
       })
       return
     }

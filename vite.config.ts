@@ -100,14 +100,7 @@ function rssPlugin({ fullContent = false } = {}): Plugin {
   }
 }
 
-export default defineConfig(({ command }) => ({
-  /**
-   * GitHub Pages 项目页部署在子路径 /wanfengyin-blog/ 下，
-   * 资源引用必须带此前缀，否则线上 JS/CSS/图片全部 404。
-   * 仅生产构建生效：dev 保持根路径，本地访问 http://127.0.0.1:5173/ 不用带前缀。
-   * TODO: 以后绑定自定义域名（根路径部署）时改回 '/'。
-   */
-  base: command === 'build' ? '/wanfengyin-blog/' : '/',
+export default defineConfig({
   plugins: [vue(), sitemapPlugin(), rssPlugin()],
 
   resolve: {
@@ -141,4 +134,4 @@ export default defineConfig(({ command }) => ({
       },
     },
   },
-}))
+})

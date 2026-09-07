@@ -11,7 +11,7 @@ import type { GiscusConfig, NavItem, SocialLink } from '@/types'
  */
 
 /** TODO: 以后绑定自定义域名时替换（当前为 GitHub Pages 项目页地址，含子路径） */
-export const domain = 'https://769863269.github.io/wanfengyin-blog'
+export const domain = 'https://wanfengyin-blog.vercel.app'
 
 export const siteConfig = {
   name: '晚风吟',
