@@ -7,7 +7,7 @@
 import { createServer } from 'node:http'
 import { spawn } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, watch, writeFileSync } from 'node:fs'
 import { join, extname } from 'node:path'
 import {
   ROOT,
@@ -97,6 +97,64 @@ function refreshPending() {
 function pendingChanges() {
   if (Date.now() - pendingCache.at > 15_000) refreshPending() // 过期就后台刷新，不阻塞当前请求
   return pendingCache.value
+}
+
+/* ---------------- 博客数据自动同步：articles/covers 变动 → 重编译 posts.generated.ts ----------------
+ * 博客 dev server 只在启动时编译一次文章数据，后台里的增删改不会反映到 5173。
+ * 这里监听文章与封面目录，防抖 1.2 秒后跑 build-posts.mjs，vite HMR 让博客即时更新。
+ * 状态经 /api/meta 的 blog 字段暴露给前端展示。 */
+const blogBuild = { building: false, builtAt: '', pending: false, lastError: '' }
+let blogWatchTimer = null
+
+function runBlogBuild() {
+  if (blogBuild.building) {
+    blogBuild.pending = true
+    return
+  }
+  blogBuild.building = true
+  const child = spawn(process.execPath, ['scripts/build-posts.mjs'], { cwd: ROOT, windowsHide: true })
+  let tail = []
+  const onChunk = (b) => {
+    tail.push(...b.toString('utf8').split('\n').filter((l) => l.trim()))
+    tail = tail.slice(-5)
+  }
+  child.stdout.on('data', onChunk)
+  child.stderr.on('data', onChunk)
+  child.on('error', (err) => {
+    blogBuild.building = false
+    blogBuild.lastError = err.message
+  })
+  child.on('close', (code) => {
+    blogBuild.building = false
+    if (code === 0) {
+      blogBuild.builtAt = new Date().toISOString()
+      blogBuild.lastError = ''
+    } else {
+      blogBuild.lastError = tail.join(' | ').slice(-300)
+      console.error('[studio] 博客数据编译失败：', blogBuild.lastError)
+    }
+    if (blogBuild.pending) {
+      blogBuild.pending = false
+      runBlogBuild() // 构建期间又有新变动，补跑一次
+    }
+  })
+}
+
+function scheduleBlogBuild() {
+  clearTimeout(blogWatchTimer)
+  blogWatchTimer = setTimeout(runBlogBuild, 1200)
+}
+
+function startBlogWatcher() {
+  const targets = [join(ROOT, 'articles'), join(ROOT, 'public', 'images', 'covers')]
+  for (const dir of targets) {
+    try {
+      watch(dir, scheduleBlogBuild)
+    } catch (err) {
+      console.warn(`[studio] 监听目录失败（跳过）：${dir} → ${err.message}`)
+    }
+  }
+  runBlogBuild() // 启动即补编译，追上停机期间的改动
 }
 
 /* ---------------- 调度器：定时上下线 ---------------- */
@@ -203,6 +261,7 @@ export function startStudio(port = 5199) {
           taxonomy: taxonomy(),
           me: { name: actor || '(未选择身份)', role },
           pending: pendingChanges(),
+          blog: { building: blogBuild.building, builtAt: blogBuild.builtAt, lastError: blogBuild.lastError },
         })
         return
       }
@@ -457,6 +516,8 @@ export function startStudio(port = 5199) {
   // 启动即补跑一次错过的定时任务，之后每 30 秒扫描
   setTimeout(tickSchedule, 3000)
   setInterval(tickSchedule, 30_000)
+  // 启动博客数据监听：后台改动自动重编译 → 博客 5173 实时更新
+  startBlogWatcher()
 
   server.listen(port, '127.0.0.1', () => {
     console.log(`[studio] CMS 已启动 → http://127.0.0.1:${port}/`)

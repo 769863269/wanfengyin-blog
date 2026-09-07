@@ -54,6 +54,7 @@ export function page() {
         推送上线 <span id="pendingBadge" class="hidden rounded-full bg-white/25 px-1.5 text-[11px]"></span>
       </button>
       <a href="http://127.0.0.1:5173/" target="_blank" class="block rounded-full border border-[#d2d2d7] px-4 py-1.5 text-center text-[13px] font-medium hover:bg-[#f5f5f7]">预览博客 ↗</a>
+      <div id="blogSync" class="px-1 text-[11px] text-[#a1a1a6]"></div>
       <div class="flex items-center gap-2 px-1 pt-1">
         <label class="text-[11px] text-[#86868b]">当前身份</label>
         <select id="meSelect" class="flex-1 rounded-lg border border-[#d2d2d7] px-2 py-1.5 text-[12.5px] outline-none focus:border-[#0071e3]"></select>
@@ -150,6 +151,7 @@ var STATUS_STYLE = {
 var STATUS_LABEL = { draft: '草稿', review: '审核中', published: '已发布', offline: '已下线' }
 var ROLE_LABEL = { admin: '管理员', editor: '编辑', author: '作者', guest: '访客(只读)' }
 var myRole = 'guest'
+var BLOG_URL = 'http://' + location.hostname + ':5173'
 
 /* ================= 元信息 ================= */
 function loadMeta() {
@@ -174,6 +176,18 @@ function loadMeta() {
     var badge = $('pendingBadge')
     if (d.pending > 0) { badge.textContent = d.pending; badge.classList.remove('hidden') }
     else badge.classList.add('hidden')
+    var bs = $('blogSync')
+    if (bs && d.blog) {
+      if (d.blog.building) {
+        bs.innerHTML = '<span class="text-[#b25e02]">● 博客同步中…</span>'
+      } else if (d.blog.lastError) {
+        bs.innerHTML = '<span class="text-[#c0392b]" title="' + esc(d.blog.lastError) + '">● 博客同步失败</span>'
+      } else if (d.blog.builtAt) {
+        bs.textContent = '● 博客已同步 ' + d.blog.builtAt.slice(11, 16)
+      } else {
+        bs.textContent = '● 博客待同步'
+      }
+    }
     return d
   })
 }
@@ -350,6 +364,9 @@ function renderRows(status) {
       var canEdit = myRole === 'admin' || myRole === 'editor' || (myRole === 'author' && a.author === me)
       var ops = '<div class="flex justify-end gap-1.5">' +
         '<a href="#/editor/' + encodeURIComponent(a.file) + '" class="rounded-full border border-[#d2d2d7] px-3 py-1 text-[12px] hover:bg-[#f5f5f7]">编辑</a>'
+      if (a.status === 'published') {
+        ops += '<a href="' + BLOG_URL + '/post/' + encodeURIComponent(a.slug) + '" target="_blank" title="在博客中查看" class="rounded-full border border-[#d2d2d7] px-3 py-1 text-[12px] hover:bg-[#f5f5f7]">查看</a>'
+      }
       if (myRole === 'admin' || myRole === 'editor') {
         ops += flagBtn(a, 'pinned', '📌', '置顶') + flagBtn(a, 'featured', '⭐', '推荐')
         if (a.status === 'published') ops += '<button data-act="offline" data-file="' + esc(a.file) + '" class="rounded-full border border-[#d2d2d7] px-3 py-1 text-[12px] hover:bg-[#f5f5f7]">下线</button>'
@@ -481,7 +498,8 @@ onRoute('editor/*', function (file) {
       '<div class="mb-5 flex flex-wrap items-center justify-between gap-3">' +
         '<div class="flex items-center gap-3"><a href="#/list/all" class="rounded-full border border-[#d2d2d7] bg-white px-3.5 py-1.5 text-[12.5px] hover:bg-[#f5f5f7]">← 返回</a>' +
         '<h2 class="text-[20px] font-semibold tracking-tight">' + (isNew ? '写新文章' : '编辑文章') + '</h2>' +
-        (isNew ? '' : '<span class="rounded-full px-2.5 py-1 text-[11.5px] font-medium ' + STATUS_STYLE[a.status] + '">' + STATUS_LABEL[a.status] + '</span>') + '</div>' +
+        (isNew ? '' : '<span class="rounded-full px-2.5 py-1 text-[11.5px] font-medium ' + STATUS_STYLE[a.status] + '">' + STATUS_LABEL[a.status] + '</span>') +
+        (a.status === 'published' ? '<a id="eViewBlog" href="' + BLOG_URL + '/post/' + encodeURIComponent(a.slug) + '" target="_blank" class="text-[12.5px] text-[#0071e3] hover:underline">在博客预览 ↗</a>' : '') + '</div>' +
       '</div>' +
 
       '<div class="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_300px]">' +
@@ -567,6 +585,11 @@ onRoute('editor/*', function (file) {
       $('eSlug').value = s ? s.join('-') : ''
     })
     $('eSlug').addEventListener('input', function () { slugTouched = true })
+    var vb = $('eViewBlog')
+    if (vb) vb.addEventListener('click', function (ev) {
+      ev.preventDefault() // 按当前输入的 slug 打开，改了没保存也能看 dev 博客的实际渲染
+      window.open(BLOG_URL + '/post/' + encodeURIComponent($('eSlug').value.trim()), '_blank')
+    })
     var coverNew = null
     $('eCover').addEventListener('change', function () {
       coverNew = $('eCover').files[0] || null
