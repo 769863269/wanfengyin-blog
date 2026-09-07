@@ -7,7 +7,8 @@ publishedAt: 2026-08-15
 views: 986
 commentCount: 9
 tags: [CSS]
-featured: false
+featured: true
+status: published
 ---
 
 博客的 8:2 双栏布局，float 时代要写一堆清除，flex 时代要算比例，Grid 时代三行。

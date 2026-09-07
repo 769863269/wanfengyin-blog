@@ -8,6 +8,7 @@ views: 1687
 commentCount: 21
 tags: [CSS, Vue]
 featured: true
+status: published
 ---
 
 夜间模式最常见的实现是在组件里写一堆 .night 分支，结果样式文件比业务代码还难维护，每加一个组件都要把暗色判断抄一遍。

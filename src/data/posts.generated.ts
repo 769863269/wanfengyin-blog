@@ -188,7 +188,7 @@ export const generatedPosts: Post[] = [
     "tags": [
       "CSS"
     ],
-    "featured": false,
+    "featured": true,
     "pinned": false,
     "category": "",
     "author": "",

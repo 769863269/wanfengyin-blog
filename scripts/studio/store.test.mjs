@@ -55,6 +55,12 @@ changeStatus(f, 'published')
 setFlags(f, { pinned: true, featured: true })
 a = getArticle(f)
 assert('置顶+推荐', a.pinned === true && a.featured === true)
+setFlags(f, { pinned: false, featured: false })
+a = getArticle(f)
+assert('取消置顶+推荐', a.pinned === false && a.featured === false)
+setFlags(f, { pinned: true, featured: true })
+a = getArticle(f)
+assert('再置顶', a.pinned === true && a.featured === true)
 
 // 4. 更新 + 改名（slug 变更）
 const r = updateArticle(f, { slug: S + '-2', excerpt: '新摘要' })

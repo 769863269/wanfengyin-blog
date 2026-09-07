@@ -362,7 +362,11 @@ export function setFlags(file, { pinned, featured }) {
   const next = { ...article }
   if (pinned !== undefined) next.pinned = Boolean(pinned)
   if (featured !== undefined) next.featured = Boolean(featured)
-  writeArticleFile(file, { ...raw, ...orderedData(next) }, body)
+  // orderedData 对 false 值省略字段，必须从 raw 里删掉，否则旧值复活（取消置顶失效）
+  const merged = { ...raw, ...orderedData(next) }
+  if (!next.pinned) delete merged.pinned
+  if (!next.featured) delete merged.featured
+  writeArticleFile(file, merged, body)
   return { file, pinned: next.pinned, featured: next.featured }
 }
 
