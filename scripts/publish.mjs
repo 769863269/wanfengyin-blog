@@ -133,8 +133,8 @@ for (let i = 1; i <= 5; i++) {
 }
 
 if (pushed) {
-  console.log('[pub] 已推送，CI 构建约 1 分钟后上线：')
-  console.log('[pub] https://769863269.github.io/wanfengyin-blog/')
+  console.log('[pub] 已推送，Vercel 构建约 1~2 分钟后上线：')
+  console.log('[pub] https://wanfengyin-blog.vercel.app')
 } else {
   console.error('[pub] 连续 5 次推送失败，请检查网络后手动 git push。')
   process.exit(1)
