@@ -6,7 +6,8 @@ publishedAt: 2026-05-26
 views: 954
 commentCount: 7
 tags: [Vue]
-featured: false
+featured: true
+status: published
 ---
 
 线上见过最冤的白屏：某个边角组件抛了个错，整页跟着陪葬。用户视角里整站挂了，实际只是评论区挂了。

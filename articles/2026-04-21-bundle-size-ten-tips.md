@@ -6,7 +6,8 @@ publishedAt: 2026-04-21
 views: 1593
 commentCount: 17
 tags: [性能优化, 构建]
-featured: false
+featured: true
+status: published
 ---
 
 首屏 380KB JS，弱网下白屏三秒，忍不了。这次集中治理，完整记录每一步的收益。

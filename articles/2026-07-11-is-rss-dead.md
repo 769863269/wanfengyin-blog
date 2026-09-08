@@ -6,7 +6,7 @@ publishedAt: 2026-07-11
 views: 742
 commentCount: 14
 tags: [随笔]
-featured: false
+status: published
 ---
 
 常有人说 RSS 死了。大众用户确实不用，但这话对独立博客不成立。

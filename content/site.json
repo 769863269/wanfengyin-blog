@@ -7,7 +7,7 @@
     "author": "晚风吟",
     "since": 2025,
     "email": "hi@wanfengyin.com",
-    "icp": "粤ICP备 0000000 号",
+    "icp": "粤ICP备 0xxxxx0 号",
     "icpUrl": "https://beian.miit.gov.cn/",
     "about": "记录开发、生活与一点点技术碎碎念。",
     "footerDesc": "记录开发、生活与一点点技术碎碎念。"
@@ -39,13 +39,6 @@
       "showOnMobile": true
     },
     {
-      "label": "留言板",
-      "icon": "💬",
-      "kind": "disabled",
-      "target": "",
-      "showOnMobile": true
-    },
-    {
       "label": "随便看看",
       "icon": "🎲",
       "kind": "route",
@@ -55,8 +48,8 @@
     {
       "label": "Rss订阅",
       "icon": "📡",
-      "kind": "external",
-      "target": "/feed.xml",
+      "kind": "hidden",
+      "target": "",
       "showOnMobile": true
     },
     {
@@ -68,27 +61,6 @@
     }
   ],
   "mobileExtraNav": [
-    {
-      "label": "微语",
-      "icon": "🌐",
-      "kind": "disabled",
-      "target": "",
-      "showOnMobile": true
-    },
-    {
-      "label": "邻居",
-      "icon": "🔗",
-      "kind": "disabled",
-      "target": "",
-      "showOnMobile": true
-    },
-    {
-      "label": "相册",
-      "icon": "🖼",
-      "kind": "disabled",
-      "target": "",
-      "showOnMobile": true
-    },
     {
       "label": "归档",
       "icon": "🗂",

@@ -6,7 +6,7 @@ publishedAt: 2026-06-25
 views: 1268
 commentCount: 10
 tags: [部署, 工具]
-featured: false
+status: published
 ---
 
 部署这种事，手动做第三次就该写脚本了。

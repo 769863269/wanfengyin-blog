@@ -6,7 +6,8 @@ publishedAt: 2026-04-30
 views: 1076
 commentCount: 9
 tags: [Vue]
-featured: false
+featured: true
+status: published
 ---
 
 明明配置了 savedPosition 恢复，返回上一页却总是落在错误的位置。这个问题断断续续查了一晚上。

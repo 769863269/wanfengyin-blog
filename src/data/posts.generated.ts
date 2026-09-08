@@ -893,7 +893,7 @@ export const generatedPosts: Post[] = [
     "tags": [
       "测试"
     ],
-    "featured": false,
+    "featured": true,
     "pinned": false,
     "category": "",
     "author": "",
@@ -1068,7 +1068,7 @@ export const generatedPosts: Post[] = [
     "tags": [
       "Vue"
     ],
-    "featured": false,
+    "featured": true,
     "pinned": false,
     "category": "",
     "author": "",
@@ -1231,7 +1231,7 @@ export const generatedPosts: Post[] = [
       "随笔",
       "CSS"
     ],
-    "featured": false,
+    "featured": true,
     "pinned": false,
     "category": "",
     "author": "",
@@ -1312,7 +1312,7 @@ export const generatedPosts: Post[] = [
     "tags": [
       "Vue"
     ],
-    "featured": false,
+    "featured": true,
     "pinned": false,
     "category": "",
     "author": "",
@@ -1393,7 +1393,7 @@ export const generatedPosts: Post[] = [
       "性能优化",
       "构建"
     ],
-    "featured": false,
+    "featured": true,
     "pinned": false,
     "category": "",
     "author": "",
@@ -1474,7 +1474,7 @@ export const generatedPosts: Post[] = [
       "Vue",
       "性能优化"
     ],
-    "featured": false,
+    "featured": true,
     "pinned": false,
     "category": "",
     "author": "",
@@ -1549,7 +1549,7 @@ export const generatedPosts: Post[] = [
     "tags": [
       "随笔"
     ],
-    "featured": false,
+    "featured": true,
     "pinned": false,
     "category": "",
     "author": "",

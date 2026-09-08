@@ -6,7 +6,8 @@ publishedAt: 2026-05-09
 views: 689
 commentCount: 4
 tags: [随笔, CSS]
-featured: false
+featured: true
+status: published
 ---
 
 给博客过了一遍无障碍，改完之后整个产品的「完成度」上了一个台阶。

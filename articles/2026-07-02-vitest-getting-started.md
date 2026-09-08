@@ -7,7 +7,7 @@ publishedAt: 2026-07-02
 views: 934
 commentCount: 6
 tags: [测试, 工具]
-featured: false
+status: published
 ---
 
 单测不是仪式感，是给未来的自己留的回归保险。

@@ -8,6 +8,7 @@ views: 2461
 commentCount: 36
 tags: [随笔]
 status: published
+featured: true
 ---
 
 折腾两个周末，博客总算开张了。

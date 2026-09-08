@@ -7,7 +7,7 @@ publishedAt: 2026-07-24
 views: 879
 commentCount: 7
 tags: [性能优化]
-featured: false
+status: published
 ---
 
 懒加载的原理一句话：视口外的图不加载。难点全在「怎么知道进入了视口」。
