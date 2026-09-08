@@ -3,7 +3,7 @@ import type { HotPost, Post, PostNeighbor, TagName } from '@/types'
 import { generatedPosts } from './posts.generated'
 // 注意：本文件被 vite.config.ts（sitemap 插件）在 Node 侧引用，
 // 必须用相对路径导入——vite 打包 config 自身时不解析 @/ 别名
-import { totalViews } from '../utils/viewStats'
+import { localViews } from '../utils/viewStats'
 
 /**
  * 文章数据源
@@ -44,15 +44,19 @@ export const carouselPosts: readonly Post[] = [
 ].slice(0, 5)
 
 /**
- * 侧栏热门文章：frontmatter 基数 + 本机真实浏览量（viewStats），动态排序取前 4。
- * 访客每看一篇，榜单实时重排（响应式 computed，recordView 触发）。
+ * 侧栏热门文章：本机真实阅读驱动，不是固定榜单。
+ * 规则：读过的文章按阅读次数降序霸榜（看一篇涨一篇，实时重排）；
+ * 不足 4 篇用「置顶 → 时间新→旧」补位，保证面板不空。
+ * 不再按 frontmatter 演示基数排序——基数只用于展示，不参与排名。
  */
-export const hotPosts = computed<readonly HotPost[]>(() =>
-  [...posts]
-    .sort((a, b) => totalViews(b.views, b.slug) - totalViews(a.views, a.slug))
+export const hotPosts = computed<readonly HotPost[]>(() => {
+  const read = [...posts]
+    .filter((post) => localViews(post.slug) > 0)
+    .sort((a, b) => localViews(b.slug) - localViews(a.slug))
     .slice(0, 4)
-    .map(({ slug, title }) => ({ slug, title })),
-)
+  const rest = sortedPosts.filter((post) => !read.some((r) => r.slug === post.slug))
+  return [...read, ...rest].slice(0, 4).map(({ slug, title }) => ({ slug, title }))
+})
 
 /** 侧栏标签云：按出现次数降序去重 */
 export const tagCloud: readonly TagName[] = [...new Set(posts.flatMap((post) => post.tags))].sort(
