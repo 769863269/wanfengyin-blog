@@ -37,7 +37,7 @@ export const siteConfig = {
 type SiteNavItem = {
   label: string
   icon?: string
-  kind: 'route' | 'external' | 'disabled'
+  kind: 'route' | 'external' | 'disabled' | 'hidden'
   target: string
   showOnMobile?: boolean
 }
@@ -54,11 +54,15 @@ function toNavItems(list: readonly SiteNavItem[], prefix: string): NavItem[] {
   }))
 }
 
-/** web 顶栏主导航（H5 抽屉里勾选了「H5」的也会出现） */
-export const mainNav: readonly NavItem[] = toNavItems(siteData.mainNav as readonly SiteNavItem[], 'nav')
+/** web 顶栏主导航（hidden 项保留在配置里但不渲染；H5 抽屉里勾选了「H5」的也会出现） */
+export const mainNav: readonly NavItem[] = toNavItems(siteData.mainNav as readonly SiteNavItem[], 'nav').filter(
+  (item) => item.kind !== 'hidden',
+)
 
 /** H5 抽屉额外入口（仅移动端抽屉显示） */
-export const mobileExtraNav: readonly NavItem[] = toNavItems(siteData.mobileExtraNav as readonly SiteNavItem[], 'mnav')
+export const mobileExtraNav: readonly NavItem[] = toNavItems(siteData.mobileExtraNav as readonly SiteNavItem[], 'mnav').filter(
+  (item) => item.kind !== 'hidden',
+)
 
 /** 移动端抽屉：顶栏项（勾选 H5 的）+ 抽屉专属项 */
 export const drawerNav: readonly NavItem[] = [...mainNav, ...mobileExtraNav].filter(

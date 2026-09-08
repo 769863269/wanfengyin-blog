@@ -149,7 +149,7 @@ export function saveAuthors(authors) {
 export const SITE_TEXT_FIELDS = ['name', 'fullName', 'tagline', 'description', 'author', 'since', 'email', 'icp', 'icpUrl', 'about', 'footerDesc']
 
 /** 导航菜单可选类型与页面路由白名单（route kind 的 target 必须是其中之一） */
-export const NAV_KINDS = ['route', 'external', 'disabled']
+export const NAV_KINDS = ['route', 'external', 'disabled', 'hidden']
 export const NAV_ROUTES = ['home', 'archive', 'tags', 'about', 'random']
 
 function normalizeNavList(list, name) {
@@ -171,7 +171,7 @@ function normalizeNavList(list, name) {
       label,
       icon: String(item.icon ?? '').trim(),
       kind,
-      target: kind === 'disabled' ? '' : target,
+      target: kind === 'disabled' || kind === 'hidden' ? '' : target,
       showOnMobile: item.showOnMobile !== false,
     }
   })

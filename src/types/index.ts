@@ -67,7 +67,7 @@ export type TagName = string
  * - external 外链
  * - disabled 功能未上线，渲染为不可点击的占位（避免死链 href="#"）
  */
-export type NavItemKind = 'route' | 'external' | 'disabled'
+export type NavItemKind = 'route' | 'external' | 'disabled' | 'hidden'
 
 export interface NavItem {
   id: string
