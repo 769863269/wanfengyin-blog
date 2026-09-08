@@ -36,6 +36,7 @@ const MIME = {
   json: 'application/json; charset=utf-8',
   woff: 'font/woff', woff2: 'font/woff2', ttf: 'font/ttf',
   png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', svg: 'image/svg+xml',
+  webp: 'image/webp', avif: 'image/avif',
   mp3: 'audio/mpeg',
 }
 
@@ -275,6 +276,23 @@ export function startStudio(port = 5199) {
         res.writeHead(200, {
           'Content-Type': MIME[ext] ?? 'application/octet-stream',
           'Cache-Control': 'public, max-age=86400',
+        })
+        createReadStream(file).pipe(res)
+        return
+      }
+
+      /* 封面图预览（public/images/covers 本地伺服，后台编辑器预览用） */
+      if (req.method === 'GET' && path.startsWith('/covers/')) {
+        const rel = decodeURIComponent(path.slice('/covers/'.length))
+        const file = join(coversDir, rel)
+        if (rel.includes('..') || !file.startsWith(coversDir + sep) || !existsSync(file) || !statSync(file).isFile()) {
+          res.writeHead(404).end('not found')
+          return
+        }
+        const ext = extname(file).slice(1)
+        res.writeHead(200, {
+          'Content-Type': MIME[ext] ?? 'application/octet-stream',
+          'Cache-Control': 'no-cache',
         })
         createReadStream(file).pipe(res)
         return

@@ -573,9 +573,24 @@ onRoute('editor/*', function (file) {
 
           '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
             '<p class="mb-3 text-[13px] font-semibold text-[#6e6e73]">封面图</p>' +
-            '<input type="file" id="eCover" accept="image/*" class="text-[13px]" />' +
-            '<div id="eCoverPreview" class="mt-3 hidden h-[110px] w-full rounded-[10px] bg-[#f5f5f7] bg-center bg-no-repeat [background-size:cover]"></div>' +
-            '<p class="mt-2 text-[11.5px] text-[#a1a1a6]">' + esc(a.cover || '未设置') + '</p>' +
+            '<input type="file" id="eCover" accept="image/*" class="hidden" />' +
+            '<div id="eCoverPick" class="flex min-h-[132px] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-[12px] border-2 border-dashed border-[#d2d2d7] bg-[#f5f5f7]/60 px-4 py-6 text-center transition-colors hover:border-[#0071e3] hover:bg-[#f0f7ff]">' +
+              '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#0071e3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.6" cy="8.6" r="1.7"/><path d="M21 15.2 16 10.2 5.4 20.8"/></svg>' +
+              '<p class="text-[13px] font-medium text-[#1d1d1f]">点击选择图片，或拖拽到这里</p>' +
+              '<p class="text-[11.5px] leading-4 text-[#86868b]">支持 JPG / PNG / WebP / GIF / AVIF · 也可直接 Ctrl+V 粘贴截图</p>' +
+            '</div>' +
+            '<div id="eCoverCard" class="mt-3 hidden overflow-hidden rounded-[12px] border border-[#d2d2d7]">' +
+              '<div id="eCoverPreview" title="点击更换" class="h-[150px] w-full cursor-pointer bg-[#f5f5f7] bg-center bg-no-repeat [background-size:cover]"></div>' +
+              '<div class="flex items-center gap-2 border-t border-[#e8e8ed] bg-white px-3 py-2">' +
+                '<div class="min-w-0 flex-1">' +
+                  '<p id="eCoverName" class="truncate text-[12.5px] font-medium text-[#1d1d1f]"></p>' +
+                  '<p id="eCoverInfo" class="mt-0.5 text-[11px] text-[#86868b]"></p>' +
+                '</div>' +
+                '<button id="eCoverSwap" class="shrink-0 rounded-full border border-[#d2d2d7] px-3.5 py-1 text-[12px] text-[#1d1d1f] transition-colors hover:bg-[#f5f5f7]">更换</button>' +
+                '<button id="eCoverDel" class="shrink-0 rounded-full border border-[#ffd2cf] px-3.5 py-1 text-[12px] text-[#c0392b] transition-colors hover:bg-[#fff5f4]">移除</button>' +
+              '</div>' +
+            '</div>' +
+            '<p id="eCoverPath" class="mt-2 truncate text-[11.5px] text-[#a1a1a6]">未设置</p>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -624,17 +639,94 @@ onRoute('editor/*', function (file) {
       ev.preventDefault() // 按当前输入的 slug 打开，改了没保存也能看 dev 博客的实际渲染
       window.open(BLOG_URL + '/post/' + encodeURIComponent($('eSlug').value.trim()), '_blank')
     })
-    var coverNew = null
-    $('eCover').addEventListener('change', function () {
-      coverNew = $('eCover').files[0] || null
-      if (!coverNew) return
+    /* ---- 封面图组件：点击 / 拖拽 / Ctrl+V 粘贴，实时预览+信息+更换+移除 ---- */
+    var coverNew = null // 待上传的新图 File；null = 无新图
+    var coverDataUrl = '' // 新图本地预览 dataURL
+    var ALLOWED_COVER = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif']
+
+    function renderCover(dims) {
+      var has = Boolean(coverNew || a.cover)
+      $('eCoverCard').classList.toggle('hidden', !has)
+      $('eCoverPick').classList.toggle('hidden', has)
+      if (!has) { $('eCoverPath').textContent = '未设置'; return }
+      $('eCoverPath').textContent = coverNew
+        ? '新封面（点保存后上传生效）：' + coverNew.name
+        : (a.cover ? '当前封面：' + a.cover : '未设置')
+      if (coverNew) {
+        $('eCoverPreview').style.backgroundImage = 'url(' + coverDataUrl + ')'
+        $('eCoverName').textContent = coverNew.name
+        var kb = coverNew.size / 1024
+        $('eCoverInfo').textContent = (kb > 1024 ? (kb / 1024).toFixed(1) + ' MB' : Math.round(kb) + ' KB') + (dims ? ' · ' + dims : '') + ' · 待上传'
+      } else {
+        $('eCoverPreview').style.backgroundImage = 'url(/covers/' + encodeURIComponent(a.cover.split('/').pop()) + ')'
+        $('eCoverName').textContent = a.cover.split('/').pop()
+        $('eCoverInfo').textContent = '已在博客使用 · 更换或移除后点保存生效'
+      }
+    }
+    function setCoverFile(f) {
+      if (!f) return
+      var m = (f.name || '').match(/\.([a-z0-9]+)$/i)
+      var ext = m ? m[1].toLowerCase() : ''
+      if (ALLOWED_COVER.indexOf(ext) < 0) return toast('不支持的图片格式：.' + ext + '（支持 JPG/PNG/WebP/GIF/AVIF）', true)
+      if (f.size > 10 * 1024 * 1024) return toast('图片超过 10MB，先压缩一下再上传', true)
+      coverNew = f
       var r = new FileReader()
       r.onload = function () {
-        $('eCoverPreview').style.backgroundImage = 'url(' + r.result + ')'
-        $('eCoverPreview').classList.remove('hidden')
+        coverDataUrl = r.result
+        var img = new Image()
+        img.onload = function () { renderCover(img.naturalWidth + '×' + img.naturalHeight) }
+        img.onerror = function () { renderCover('') }
+        img.src = coverDataUrl
       }
-      r.readAsDataURL(coverNew)
+      r.readAsDataURL(f)
+    }
+    function clearCover() {
+      if (coverNew) { coverNew = null; coverDataUrl = '' // 只是撤掉还没保存的新图
+      } else { a.cover = '' } // 移除已有封面：保存后生效
+      renderCover()
+    }
+    function pickCover() { $('eCover').click() }
+    $('eCoverPick').addEventListener('click', pickCover)
+    $('eCoverPreview').addEventListener('click', pickCover)
+    $('eCoverSwap').addEventListener('click', pickCover)
+    $('eCoverDel').addEventListener('click', clearCover)
+    $('eCover').addEventListener('change', function () {
+      setCoverFile($('eCover').files[0])
+      $('eCover').value = '' // 允许重复选择同一文件
     })
+    // 拖拽：选择区和预览卡都接受放下换图
+    ;[ $('eCoverPick'), $('eCoverCard') ].forEach(function (zone) {
+      zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.style.borderColor = '#0071e3' })
+      zone.addEventListener('dragleave', function () { zone.style.borderColor = '' })
+      zone.addEventListener('drop', function (e) {
+        e.preventDefault()
+        zone.style.borderColor = ''
+        var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]
+        if (f) setCoverFile(f)
+      })
+    })
+    // Ctrl+V 粘贴截图：只在非输入焦点时接管（不干扰 Vditor 正文粘贴）
+    document.addEventListener('paste', function (e) {
+      if (seq !== viewSeq) return // 旧视图的监听直接作废
+      var t = e.target
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
+      var items = e.clipboardData && e.clipboardData.items
+      if (!items) return
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].kind === 'file' && /^image\//.test(items[i].type)) {
+          var f = items[i].getAsFile()
+          if (f) {
+            e.preventDefault()
+            if (!/\.[a-z0-9]+$/i.test(f.name || '')) {
+              f = new File([f], 'paste-' + Date.now() + '.png', { type: f.type }) // 剪贴板截图常无扩展名，补一个
+            }
+            setCoverFile(f)
+          }
+          return
+        }
+      }
+    })
+    renderCover()
 
     /* ---- 写作助手：Vditor 富文本编辑 / 统计 / 发布检查 / 本地草稿 ---- */
     var contentEl = $('eContent')
