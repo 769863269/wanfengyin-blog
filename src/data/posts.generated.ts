@@ -8,6 +8,45 @@ import type { Post } from '@/types'
 
 export const generatedPosts: Post[] = [
   {
+    "slug": "178885620641950",
+    "title": "阿里妈妈对公账户信息",
+    "excerpt": "阿里妈妈对公账户信息 公司名称：杭州阿里妈妈软件服务有限公司 税号：91330110311381883Y 地址：杭州市余杭区五常街道文一西路969号6幢2层201室",
+    "cover": "/images/covers/cover.png",
+    "publishedAt": "2026-09-08",
+    "views": 0,
+    "commentCount": 0,
+    "tags": [
+      "账户信息",
+      "阿里妈妈"
+    ],
+    "featured": false,
+    "pinned": false,
+    "category": "账户",
+    "author": "周周",
+    "keywords": [],
+    "seoDescription": "",
+    "body": [
+      {
+        "type": "heading",
+        "id": "sec-1",
+        "text": "阿里妈妈对公账户信息"
+      },
+      {
+        "type": "list",
+        "ordered": false,
+        "items": [
+          "公司名称：杭州阿里妈妈软件服务有限公司",
+          "税号：91330110311381883Y",
+          "地址：杭州市余杭区五常街道文一西路969号6幢2层201室",
+          "电话：0571-85022088",
+          "开户银行：招商杭州高新支行",
+          "账号：571907738910301",
+          "温馨提醒：目前不支持账户打款操作哦"
+        ]
+      }
+    ]
+  },
+  {
     "slug": "vue3.5-composition-api-notes",
     "title": "vue3.5-composition-api-心得",
     "excerpt": "用了一年组合式 API 的阶段性总结：状态放哪、逻辑怎么拆、什么情况下该抽 composable。",

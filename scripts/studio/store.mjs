@@ -317,7 +317,7 @@ export function slugExistsIn(slug, exceptFile = '') {
 
 /** 留空自动出号：时间戳+两位随机尾数，纯数字；撞车重抽，保证唯一 */
 function uniqueNumericSlug() {
-  let s = ''
+  let s
   do {
     s = String(Date.now()) + String(Math.floor(Math.random() * 100)).padStart(2, '0')
   } while (slugExistsIn(s))

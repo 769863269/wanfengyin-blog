@@ -9,6 +9,8 @@
  *   # / ## / ###      标题（统一渲染为 h2 语义）
  *   > 引文
  *   ![alt](src)       图片（独占一行）
+ *   * / - / + 条目    无序列表（连续行合并）
+ *   1. / 1) 条目      有序列表（连续行合并）
  *   ```lang 围栏代码块（``` 结束；未闭合时取到文末）
  *   普通段落
  *
@@ -141,6 +143,23 @@ export function markdownToBlocks(markdown) {
       continue
     }
 
+    // 列表：* / - / + 无序，1. / 1) 有序；连续列表行合并为一个 block
+    const listItem = line.match(/^([*+-]|\d+[.)])\s+(.+)$/)
+    if (listItem) {
+      flushParagraph()
+      const ordered = /\d/.test(listItem[1])
+      const items = [listItem[2].trim()]
+      while (i + 1 < lines.length) {
+        const next = lines[i + 1].trim()
+        const m2 = next.match(/^([*+-]|\d+[.)])\s+(.+)$/)
+        if (!m2 || /\d/.test(m2[1]) !== ordered) break
+        items.push(m2[2].trim())
+        i++
+      }
+      blocks.push({ type: 'list', ordered, items })
+      continue
+    }
+
     paragraphLines.push(line)
   }
 
@@ -161,6 +180,11 @@ export function blocksToHtml(blocks) {
           return `<blockquote class="article-body__quote">${escapeHtml(block.text)}</blockquote>`
         case 'image':
           return `<figure class="article-body__figure"><img src="${escapeHtml(block.src)}" alt="${escapeHtml(block.alt)}" loading="lazy" decoding="async" /></figure>`
+        case 'list': {
+          const tag = block.ordered ? 'ol' : 'ul'
+          const cls = block.ordered ? 'article-body__olist' : 'article-body__ulist'
+          return `<${tag} class="${cls}">${block.items.map((it) => `<li>${escapeHtml(it)}</li>`).join('')}</${tag}>`
+        }
         case 'code':
           // 构建期已高亮（block.codeHtml 为 Shiki 生成的 token span，构建产物可信）；
           // 未高亮的（语言不支持/降级）走纯文本转义

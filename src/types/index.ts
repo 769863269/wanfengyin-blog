@@ -14,6 +14,7 @@ export type ArticleBlock =
   | { type: 'heading'; id: string; text: string }
   | { type: 'quote'; text: string }
   | { type: 'image'; src: string; alt: string }
+  | { type: 'list'; ordered: boolean; items: string[] }
   | { type: 'code'; lang: string; text: string; /** 构建期 Shiki 高亮的 <code> 内部 HTML（可选，缺省走纯文本） */ codeHtml?: string }
 
 export interface Post {

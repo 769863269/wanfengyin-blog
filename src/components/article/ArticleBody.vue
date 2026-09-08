@@ -53,6 +53,14 @@ async function copyCode(block: Extract<ArticleBlock, { type: 'code' }>): Promise
         <img :src="block.src" :alt="block.alt" loading="lazy" decoding="async" />
       </figure>
 
+      <ul v-else-if="block.type === 'list' && !block.ordered" class="article-body__ulist">
+        <li v-for="(item, li) in block.items" :key="li">{{ item }}</li>
+      </ul>
+
+      <ol v-else-if="block.type === 'list' && block.ordered" class="article-body__olist">
+        <li v-for="(item, li) in block.items" :key="li">{{ item }}</li>
+      </ol>
+
       <div v-else-if="block.type === 'code'" class="article-body__codewrap">
         <!-- eslint-disable-next-line vue/no-v-html -- codeHtml 为构建期 Shiki 产物，token 内容已在构建时转义 -->
         <pre class="article-body__code" :data-lang="block.lang"><code v-if="block.codeHtml" v-html="block.codeHtml" /><code v-else>{{ block.text }}</code></pre>
@@ -105,6 +113,28 @@ async function copyCode(block: Extract<ArticleBlock, { type: 'code' }>): Promise
 .article-body__figure img {
   width: 100%;
   border-radius: var(--radius-md);
+}
+
+/* 列表：与段落节奏一致，项目符号用主题色 */
+.article-body__ulist,
+.article-body__olist {
+  margin: 0 0 18px;
+  padding-left: 26px;
+}
+
+.article-body__ulist li,
+.article-body__olist li {
+  margin-bottom: 6px;
+  line-height: 1.8;
+}
+
+.article-body__ulist li::marker {
+  color: var(--brand);
+}
+
+.article-body__olist li::marker {
+  color: var(--brand);
+  font-weight: 600;
 }
 
 /* 深色代码块：浅色主题下也保持深底，阅读代码更聚焦 */
