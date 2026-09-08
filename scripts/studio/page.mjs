@@ -494,8 +494,22 @@ onRoute('editor/*', function (file) {
   load.then(function (d) {
     var a = d.article
     var canEdit = myRole === 'admin' || myRole === 'editor' || (myRole === 'author' && a.author === me && (isNew || a.status === 'draft'))
+    var mdBar = [
+      ['bold', '<b>B</b>'], ['italic', 'I'], ['h2', 'H2'], ['h3', 'H3'],
+      ['link', '链接'], ['img', '图片'], ['code', '行内码'], ['fence', '代码块'],
+      ['ul', '列表'], ['ol', '数字列表'], ['quote', '引用'],
+    ].map(function (b) {
+      return '<button type="button" data-md="' + b[0] + '" title="' + b[0] + '" class="md-btn rounded-md border border-[#d2d2d7] px-2 py-0.5 text-[11.5px] text-[#6e6e73] hover:border-[#0071e3] hover:text-[#0071e3]">' + b[1] + '</button>'
+    }).join('')
 
     view.innerHTML =
+      '<div id="eDraftBar" class="mb-4 hidden flex-wrap items-center gap-3 rounded-xl border border-[#f0d78c] bg-[#fdf6ec] px-4 py-2.5 text-[13px] text-[#8a6d1a]">' +
+        '<span id="eDraftInfo"></span>' +
+        '<div class="ml-auto flex gap-2">' +
+          '<button id="eDraftRestore" class="rounded-full bg-[#1d1d1f] px-3.5 py-1 text-[12px] font-medium text-white">恢复草稿</button>' +
+          '<button id="eDraftDrop" class="rounded-full border border-[#d2d2d7] px-3.5 py-1 text-[12px] hover:bg-white">丢弃</button>' +
+        '</div>' +
+      '</div>' +
       '<div class="mb-5 flex flex-wrap items-center justify-between gap-3">' +
         '<div class="flex items-center gap-3"><a href="#/list/all" class="rounded-full border border-[#d2d2d7] bg-white px-3.5 py-1.5 text-[12.5px] hover:bg-[#f5f5f7]">← 返回</a>' +
         '<h2 class="text-[20px] font-semibold tracking-tight">' + (isNew ? '写新文章' : '编辑文章') + '</h2>' +
@@ -511,8 +525,15 @@ onRoute('editor/*', function (file) {
               field('slug *（网址名）', '<input id="eSlug" class="w-full rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[14px] outline-none focus:border-[#0071e3]" value="' + esc(a.slug) + '" placeholder="my-post" />') +
               field('发布日期', '<input id="eDate" type="date" class="w-full rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[14px] outline-none focus:border-[#0071e3]" value="' + esc(a.publishedAt || new Date().toISOString().slice(0, 10)) + '" />') +
             '</div>' +
-            field('摘要（列表与 SEO description）', '<textarea id="eExcerpt" rows="2" class="w-full resize-y rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[14px] outline-none focus:border-[#0071e3]">' + esc(a.excerpt) + '</textarea>', 'mt-4') +
-            field('正文（Markdown）*', '<textarea id="eContent" rows="18" class="w-full resize-y rounded-[10px] border border-[#d2d2d7] px-3.5 py-3 font-mono text-[13px] leading-relaxed outline-none focus:border-[#0071e3]">' + esc(a.body) + '</textarea>', 'mt-4') +
+            '<div class="mt-4"><div class="mb-1.5 flex items-center justify-between"><label class="text-[13px] font-semibold text-[#6e6e73]">摘要（列表与 SEO description）</label>' +
+              '<button type="button" id="eExcerptGen" class="rounded-md border border-[#d2d2d7] px-2 py-0.5 text-[11.5px] text-[#6e6e73] hover:border-[#0071e3] hover:text-[#0071e3]">✨ 一键取正文开头</button></div>' +
+              '<textarea id="eExcerpt" rows="2" class="w-full resize-y rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[14px] outline-none focus:border-[#0071e3]">' + esc(a.excerpt) + '</textarea></div>' +
+            '<div class="mt-4"><div class="mb-1.5 flex flex-wrap items-center justify-between gap-2"><label class="text-[13px] font-semibold text-[#6e6e73]">正文（Markdown）*</label>' +
+              '<div class="flex flex-wrap items-center gap-1.5">' + mdBar +
+              '<button type="button" id="ePreviewToggle" class="rounded-md bg-[#0071e3]/10 px-2.5 py-0.5 text-[11.5px] font-medium text-[#0071e3] hover:bg-[#0071e3]/20">👁 预览</button></div></div>' +
+              '<textarea id="eContent" rows="18" class="w-full resize-y rounded-[10px] border border-[#d2d2d7] px-3.5 py-3 font-mono text-[13px] leading-relaxed outline-none focus:border-[#0071e3]">' + esc(a.body) + '</textarea>' +
+              '<div id="ePreview" class="mt-2 hidden max-h-[560px] overflow-auto rounded-[10px] border border-[#d2d2d7] px-4 py-2 text-[13.5px] leading-relaxed"></div>' +
+              '<div id="eStats" class="mt-1.5 text-[11.5px] text-[#a1a1a6]"></div></div>' +
           '</div>' +
         '</div>' +
 
@@ -551,6 +572,11 @@ onRoute('editor/*', function (file) {
             field('SEO 关键词（逗号分隔）', '<input id="eKeywords" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" value="' + esc(a.keywords.join(', ')) + '" />', 'mt-3') +
             field('SEO 描述（留空用摘要）', '<textarea id="eSeoDesc" rows="2" class="w-full resize-y rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]">' + esc(a.seoDescription) + '</textarea>', 'mt-3') +
             field('作者', '<select id="eAuthor" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"></select>', 'mt-3') +
+          '</div>' +
+
+          '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+            '<p class="mb-3 text-[13px] font-semibold text-[#6e6e73]">发布前检查</p>' +
+            '<div id="eCheck" class="space-y-1.5 text-[12.5px]"></div>' +
           '</div>' +
 
           '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
@@ -618,6 +644,134 @@ onRoute('editor/*', function (file) {
       r.readAsDataURL(coverNew)
     })
 
+    /* ---- 写作助手：工具栏 / 预览 / 统计 / 发布检查 / 本地草稿 ---- */
+    var contentEl = $('eContent')
+    var MD_ACTS = {
+      bold: function (el) { insMd(el, '**', '**', '加粗文字') },
+      italic: function (el) { insMd(el, '*', '*', '斜体文字') },
+      h2: function (el) { linePrefix(el, '## ') },
+      h3: function (el) { linePrefix(el, '### ') },
+      link: function (el) { insMd(el, '[', '](https://)', '链接文字') },
+      img: function (el) { insMd(el, '![', '](/images/图名.png)', '图片描述') },
+      code: function (el) { insMd(el, '\`', '\`', '代码') },
+      fence: function (el) { insMd(el, '\\n\`\`\`js\\n', '\\n\`\`\`\\n', '代码内容') },
+      ul: function (el) { linePrefix(el, '- ') },
+      ol: function (el) { linePrefix(el, '1. ') },
+      quote: function (el) { linePrefix(el, '> ') },
+    }
+    view.querySelectorAll('.md-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () { MD_ACTS[btn.dataset.md](contentEl) })
+    })
+    var previewOn = false
+    $('ePreviewToggle').addEventListener('click', function () {
+      var pv = $('ePreview')
+      previewOn = !previewOn
+      if (previewOn) {
+        pv.innerHTML = mdRender(contentEl.value) || '<p style="color:#a1a1a6">（正文为空，先写点什么）</p>'
+        pv.classList.remove('hidden')
+        contentEl.classList.add('hidden')
+        this.textContent = '✏️ 返回编辑'
+      } else {
+        pv.classList.add('hidden')
+        contentEl.classList.remove('hidden')
+        this.textContent = '👁 预览'
+      }
+    })
+
+    function updateStats() {
+      var n = contentEl.value.trim().length
+      $('eStats').textContent = n + ' 字符 · 预计阅读 ' + (n ? Math.max(1, Math.round(n / 350)) : 0) + ' 分钟 · 预览为近似渲染，以博客实际样式为准'
+    }
+    function updateCheck() {
+      var rows = [
+        ['封面图（轮播位必需）', Boolean(a.cover || coverNew)],
+        ['摘要（列表卡与 SEO）', Boolean($('eExcerpt').value.trim())],
+        ['标签 ≥ 1', $('eTags').value.trim().length > 0],
+        ['分类', Boolean($('eCategory').value.trim())],
+        ['SEO 描述', Boolean($('eSeoDesc').value.trim())],
+        ['slug 规范（小写字母/数字/连字符）', /^[a-z0-9][a-z0-9-]*$/.test($('eSlug').value.trim())],
+      ]
+      $('eCheck').innerHTML = rows.map(function (r) {
+        return '<div class="flex items-center gap-2"><span>' + (r[1] ? '✅' : '⬜') + '</span><span class="' + (r[1] ? 'text-[#1d7a35]' : 'text-[#86868b]') + '">' + r[0] + '</span></div>'
+      }).join('')
+    }
+
+    var DKEY = 'studio-draft-new'
+    var draftTimer = null
+    function scheduleDraft() {
+      if (!isNew) return // 只对新建自动存草稿；编辑旧文以服务器为准
+      clearTimeout(draftTimer)
+      draftTimer = setTimeout(function () {
+        try {
+          localStorage.setItem(DKEY, JSON.stringify({
+            title: $('eTitle').value, slug: $('eSlug').value, publishedAt: $('eDate').value,
+            excerpt: $('eExcerpt').value, content: contentEl.value, category: $('eCategory').value,
+            tags: $('eTags').value, keywords: $('eKeywords').value, seoDescription: $('eSeoDesc').value, ts: Date.now(),
+          }))
+        } catch (e) { /* 隐私模式存不了就算了 */ }
+      }, 800)
+    }
+    function markDirty() {
+      editDirty = true
+      scheduleDraft()
+    }
+    ;['eTitle', 'eSlug', 'eDate', 'eExcerpt', 'eContent', 'eTags', 'eCategory', 'eKeywords', 'eSeoDesc'].forEach(function (id) {
+      var el = $(id)
+      el.addEventListener('input', function () { markDirty(); updateCheck() })
+    })
+    contentEl.addEventListener('input', updateStats)
+    updateStats()
+    updateCheck()
+
+    if (isNew) {
+      var draft = null
+      try { draft = JSON.parse(localStorage.getItem(DKEY) || 'null') } catch (e) { /* 忽略坏数据 */ }
+      if (draft && (draft.title || (draft.content || '').trim())) {
+        var dbar = $('eDraftBar')
+        dbar.classList.remove('hidden')
+        dbar.classList.add('flex')
+        $('eDraftInfo').textContent = '检测到 ' + new Date(draft.ts).toLocaleString() + ' 的本地草稿' + (draft.title ? '：「' + draft.title.slice(0, 30) + '」' : '')
+        $('eDraftRestore').addEventListener('click', function () {
+          $('eTitle').value = draft.title || ''
+          $('eSlug').value = draft.slug || ''
+          slugTouched = true
+          $('eDate').value = draft.publishedAt || $('eDate').value
+          $('eExcerpt').value = draft.excerpt || ''
+          contentEl.value = draft.content || ''
+          $('eCategory').value = draft.category || ''
+          $('eTags').value = draft.tags || ''
+          $('eKeywords').value = draft.keywords || ''
+          $('eSeoDesc').value = draft.seoDescription || ''
+          $('eDraftBar').classList.add('hidden')
+          updateStats()
+          updateCheck()
+          toast('草稿已恢复')
+        })
+        $('eDraftDrop').addEventListener('click', function () {
+          localStorage.removeItem(DKEY)
+          dbar.classList.remove('flex')
+          dbar.classList.add('hidden')
+          toast('草稿已丢弃')
+        })
+      }
+    }
+
+    $('eExcerptGen').addEventListener('click', function () {
+      var s = contentEl.value
+        .replace(/\`\`\`[\\s\\S]*?\`\`\`/g, ' ')
+        .replace(/!\\[[^\\]]*\\]\\([^)]*\\)/g, ' ')
+        .replace(/\\[([^\\]]+)\\]\\([^)]*\\)/g, '$1')
+        .replace(/^#{1,6}\\s+/gm, '')
+        .replace(/[*\`>_~-]/g, ' ')
+        .replace(/\\s+/g, ' ')
+        .trim()
+      if (!s) return toast('正文还是空的，写点内容再生成', true)
+      $('eExcerpt').value = s.slice(0, 90)
+      updateCheck()
+      markDirty()
+      toast('已按正文开头生成 90 字摘要，记得润色')
+    })
+
     function collect() {
       return {
         title: $('eTitle').value.trim(),
@@ -663,6 +817,8 @@ onRoute('editor/*', function (file) {
           ? api('/api/articles', { method: 'POST', body: data })
           : api('/api/article/' + encodeURIComponent(a.file), { method: 'PUT', body: data })
         return req.then(function (d2) {
+          editDirty = false
+          if (isNew) { try { localStorage.removeItem(DKEY) } catch (e) { /* 忽略 */ } }
           $('eMsg').textContent = '✓ 已保存 ' + new Date().toLocaleTimeString()
           toast('保存成功')
           if (d2.file) a.file = d2.file
@@ -701,6 +857,77 @@ function blankArticle() {
 
 function field(label, control, extra) {
   return '<div class="' + (extra || '') + '"><label class="mb-1.5 block text-[13px] font-semibold text-[#6e6e73]">' + label + '</label>' + control + '</div>'
+}
+
+/* ---------- 写作助手：光标插入 / 轻量 Markdown 渲染（近似预览） ---------- */
+function insMd(el, before, after, ph) {
+  var s = el.selectionStart, e = el.selectionEnd, v = el.value
+  var sel = v.slice(s, e) || ph
+  el.value = v.slice(0, s) + before + sel + after + v.slice(e)
+  el.focus()
+  el.selectionStart = s + before.length
+  el.selectionEnd = s + before.length + sel.length
+  el.dispatchEvent(new Event('input'))
+}
+
+function linePrefix(el, prefix) {
+  var s = el.selectionStart, v = el.value
+  var ls = v.lastIndexOf('\\n', s - 1) + 1
+  if (v.slice(ls, ls + prefix.length) === prefix) return // 该行已有前缀，不重复加
+  el.value = v.slice(0, ls) + prefix + v.slice(ls)
+  el.selectionStart = el.selectionEnd = s + prefix.length
+  el.focus()
+  el.dispatchEvent(new Event('input'))
+}
+
+function mdRender(src) {
+  var esc = function (s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') }
+  var inline = function (s) {
+    return esc(s)
+      .replace(/\`([^\`]+)\`/g, '<code style="background:#f5f5f7;border-radius:4px;padding:1px 5px">$1</code>')
+      .replace(/!\\[([^\\]]*)\\]\\(([^)\\s]+)\\)/g, function (_, alt, u) { return '<img alt="' + alt + '" src="' + (u.charAt(0) === '/' ? BLOG_URL + u : u) + '" style="max-width:100%;border-radius:8px" />' })
+      .replace(/\\[([^\\]]+)\\]\\(([^)\\s]+)\\)/g, '<a href="$2" target="_blank" style="color:#0071e3">$1</a>')
+      .replace(/\\*\\*([^*]+)\\*\\*/g, '<b>$1</b>')
+      .replace(/\\*([^*]+)\\*/g, '<i>$1</i>')
+  }
+  var lines = String(src || '').split('\\n')
+  var html = [], para = [], list = null, code = null
+  function flushPara() { if (para.length) { html.push('<p style="margin:.5em 0">' + para.map(inline).join('<br/>') + '</p>'); para = [] } }
+  function flushList() {
+    if (!list) return
+    html.push('<' + list.tag + ' style="margin:.5em 0;padding-left:1.5em">' + list.items.map(function (x) { return '<li>' + inline(x) + '</li>' }).join('') + '</' + list.tag + '>')
+    list = null
+  }
+  for (var i = 0; i < lines.length; i++) {
+    var L = lines[i]
+    if (code !== null) {
+      if (/^\`\`\`/.test(L)) { html.push('<pre style="background:#f5f5f7;border-radius:8px;padding:10px;overflow:auto;font-size:12.5px"><code>' + esc(code.join('\\n')) + '</code></pre>'); code = null }
+      else code.push(L)
+      continue
+    }
+    if (/^\`\`\`/.test(L)) { flushPara(); flushList(); code = []; continue }
+    var h = L.match(/^(#{1,6})\\s+(.*)/)
+    if (h) { flushPara(); flushList(); var n = h[1].length; html.push('<h' + n + ' style="margin:.7em 0 .3em">' + inline(h[2]) + '</h' + n + '>'); continue }
+    if (/^(---+|\\*\\*\\*+)\\s*$/.test(L)) { flushPara(); flushList(); html.push('<hr style="border:none;border-top:1px solid #d2d2d7;margin:1em 0"/>'); continue }
+    var q = L.match(/^>\\s?(.*)/)
+    if (q) { flushPara(); flushList(); html.push('<blockquote style="border-left:3px solid #d2d2d7;margin:.5em 0;padding:2px 12px;color:#6e6e73">' + inline(q[1]) + '</blockquote>'); continue }
+    var ul = L.match(/^\\s*[-*]\\s+(.*)/)
+    var ol = L.match(/^\\s*\\d+\\.\\s+(.*)/)
+    if (ul || ol) {
+      flushPara()
+      var tag = ul ? 'ul' : 'ol'
+      if (!list || list.tag !== tag) { flushList(); list = { tag: tag, items: [] } }
+      list.items.push((ul || ol)[1])
+      continue
+    }
+    if (!L.trim()) { flushPara(); flushList(); continue }
+    flushList()
+    para.push(L)
+  }
+  if (code !== null) html.push('<pre style="background:#f5f5f7;border-radius:8px;padding:10px;overflow:auto;font-size:12.5px"><code>' + esc(code.join('\\n')) + '</code></pre>')
+  flushPara()
+  flushList()
+  return html.join('')
 }
 
 /* ================= 视图：回收站 ================= */
@@ -986,6 +1213,21 @@ onRoute('site', function () {
   }).catch(function (e) {
     view.innerHTML = '<p class="text-sm text-[#c0392b]">' + esc(e.message) + '</p>'
   })
+})
+
+/* ================= 全局：编辑器脏状态 / Ctrl+S / 离开提醒 ================= */
+var editDirty = false // 编辑器有未保存改动时为 true（Ctrl+S 与离开提醒共用）
+window.addEventListener('beforeunload', function (e) {
+  if (editDirty) { e.preventDefault(); e.returnValue = '' }
+})
+document.addEventListener('keydown', function (e) {
+  if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+    var s = document.getElementById('eSave')
+    if (s) {
+      e.preventDefault()
+      if (!s.disabled) s.click() // eSave 只在编辑器视图存在，其他视图按 Ctrl+S 无副作用
+    }
+  }
 })
 
 /* ================= 启动 ================= */
