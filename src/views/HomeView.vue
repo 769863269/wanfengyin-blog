@@ -13,7 +13,7 @@ import AppSidebar from '@/components/layout/AppSidebar.vue'
 import { PAGE_SIZE, siteConfig } from '@/config/site'
 import { usePostList } from '@/composables/usePostList'
 import { useSeoMeta } from '@/composables/useSeoMeta'
-import { featuredPosts, sortedPosts } from '@/data/posts'
+import { carouselPosts, sortedPosts } from '@/data/posts'
 
 const route = useRoute()
 
@@ -55,7 +55,7 @@ useSeoMeta({
   <div class="layout__main">
     <div class="layout__content">
       <!-- 筛选状态（标签/分类）下不展示轮播，避免与筛选结果语义冲突 -->
-      <CarouselBanner v-if="!activeTag && !activeCategory" :slides="featuredPosts" />
+      <CarouselBanner v-if="!activeTag && !activeCategory" :slides="carouselPosts" />
 
       <div v-if="activeTag || activeCategory" class="home__filter">
         <span>

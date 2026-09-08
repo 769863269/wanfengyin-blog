@@ -7,7 +7,8 @@ publishedAt: 2026-05-18
 views: 1447
 commentCount: 13
 tags: [CSS]
-featured: false
+featured: true
+status: published
 ---
 
 重构前样式里散落着几十个硬编码色值，夜间模式等于全文件搜索替换，改一次崩三处。

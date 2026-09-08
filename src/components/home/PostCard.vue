@@ -10,6 +10,7 @@ import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { formatCount, formatRelativeTime } from '@/utils/format'
 import { withBase } from '@/utils/asset'
+import { totalViews } from '@/utils/viewStats'
 import type { Post } from '@/types'
 
 const { post } = defineProps<{ post: Post }>()
@@ -17,7 +18,7 @@ const { post } = defineProps<{ post: Post }>()
 const hasThumb = computed(() => Boolean(post.cover))
 const thumbSrc = computed(() => withBase(post.cover))
 const relativeTime = computed(() => formatRelativeTime(post.publishedAt))
-const viewCount = computed(() => formatCount(post.views))
+const viewCount = computed(() => formatCount(totalViews(post.views, post.slug)))
 </script>
 
 <template>

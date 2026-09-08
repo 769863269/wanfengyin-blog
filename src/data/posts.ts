@@ -1,5 +1,9 @@
+import { computed } from 'vue'
 import type { HotPost, Post, PostNeighbor, TagName } from '@/types'
 import { generatedPosts } from './posts.generated'
+// 注意：本文件被 vite.config.ts（sitemap 插件）在 Node 侧引用，
+// 必须用相对路径导入——vite 打包 config 自身时不解析 @/ 别名
+import { totalViews } from '../utils/viewStats'
 
 /**
  * 文章数据源
@@ -26,18 +30,29 @@ export const sortedPosts: readonly Post[] = [...posts]
     return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
   })
 
-/**
- * 轮播展示的精选文章（Studio CMS 的 featured）。
- * 无封面的文章也进轮播——CarouselBanner 对无图文章降级为品牌渐变底，
- * 否则「推荐了没效果」（旧版会静默过滤掉没封面的推荐文章）。
- */
+/** 轮播展示的精选文章（Studio CMS 的 featured）。无封面的走渐变兜底，侧栏「推荐阅读」消费 */
 export const featuredPosts: readonly Post[] = sortedPosts.filter((post) => post.featured === true)
 
-/** 侧栏热门文章：按阅读量取前 4 */
-export const hotPosts: readonly HotPost[] = [...sortedPosts]
-  .sort((a, b) => b.views - a.views)
-  .slice(0, 4)
-  .map(({ slug, title }) => ({ slug, title }))
+/**
+ * 首页轮播：自动筛选带封面的文章，最多 5 篇滚动。
+ * 排序规则：站长推荐（featured）优先霸位，其余按「置顶 → 时间新→旧」补位。
+ * 没封面的不进轮播（背景没图只剩渐变底，观感差），但仍在侧栏推荐位露出。
+ */
+export const carouselPosts: readonly Post[] = [
+  ...sortedPosts.filter((post) => post.featured === true && post.cover !== ''),
+  ...sortedPosts.filter((post) => post.featured !== true && post.cover !== ''),
+].slice(0, 5)
+
+/**
+ * 侧栏热门文章：frontmatter 基数 + 本机真实浏览量（viewStats），动态排序取前 4。
+ * 访客每看一篇，榜单实时重排（响应式 computed，recordView 触发）。
+ */
+export const hotPosts = computed<readonly HotPost[]>(() =>
+  [...posts]
+    .sort((a, b) => totalViews(b.views, b.slug) - totalViews(a.views, a.slug))
+    .slice(0, 4)
+    .map(({ slug, title }) => ({ slug, title })),
+)
 
 /** 侧栏标签云：按出现次数降序去重 */
 export const tagCloud: readonly TagName[] = [...new Set(posts.flatMap((post) => post.tags))].sort(

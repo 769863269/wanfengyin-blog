@@ -5,7 +5,7 @@
  * 数据层为本地静态数据，找不到 slug 时由路由层处理 404，
  * 这里只渲染存在的文章。评论区按当前路径动态挂载 Giscus。
  */
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import ArticleBody from '@/components/article/ArticleBody.vue'
 import CommentSection from '@/components/article/CommentSection.vue'
@@ -15,9 +15,13 @@ import { findPost, getNeighbors, postPlainText } from '@/data/posts'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { estimateReadingTime, formatCount, formatRelativeTime } from '@/utils/format'
 import { withBase } from '@/utils/asset'
+import { recordView, totalViews } from '@/utils/viewStats'
 import NotFoundView from './NotFoundView.vue'
 
 const props = defineProps<{ slug: string }>()
+
+// 每进入一篇文章记一次真实浏览（同会话刷新去重），驱动热门榜动态排序
+watch(() => props.slug, (slug) => recordView(slug), { immediate: true })
 
 const router = useRouter()
 
@@ -51,6 +55,9 @@ const neighbors = computed(() => (post.value ? getNeighbors(post.value.slug) : u
 const readingTime = computed(() =>
   post.value ? estimateReadingTime(postPlainText(post.value)) : 0,
 )
+
+/** 展示用阅读数：frontmatter 基数 + 本机真实浏览增量（动态） */
+const displayViews = computed(() => (post.value ? totalViews(post.value.views, post.value.slug) : 0))
 
 const canonicalUrl = computed(() => (post.value ? `${domain}/post/${post.value.slug}` : domain))
 
@@ -96,7 +103,7 @@ useSeoMeta({
             </span>
             <span>
               <span aria-hidden="true">👁</span>
-              {{ formatCount(post.views) }} 阅读
+              {{ formatCount(displayViews) }} 阅读
             </span>
             <span>
               <span aria-hidden="true">📖</span>
