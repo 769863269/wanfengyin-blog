@@ -12,6 +12,7 @@ import { join, extname } from 'node:path'
 import {
   ROOT,
   STATUSES, STATUS_LABELS, ROLES, ROLE_LABELS,
+  MAX_FEATURED, featuredCount,
   can, canTouchArticle, roleOf, listAuthors, saveAuthors,
   log, readLogs,
   getArticle, createArticle, updateArticle,
@@ -260,6 +261,7 @@ export function startStudio(port = 5199) {
           counts: statusCounts(),
           taxonomy: taxonomy(),
           me: { name: actor || '(未选择身份)', role },
+          featured: { count: featuredCount(), max: MAX_FEATURED },
           pending: pendingChanges(),
           blog: { building: blogBuild.building, builtAt: blogBuild.builtAt, lastError: blogBuild.lastError },
         })

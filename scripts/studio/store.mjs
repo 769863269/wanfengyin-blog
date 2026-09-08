@@ -28,6 +28,9 @@ export const ARTICLES_DIR = articlesDir
 export const STATUSES = ['draft', 'review', 'published', 'offline']
 export const STATUS_LABELS = { draft: '草稿', review: '审核中', published: '已发布', offline: '已下线' }
 export const ROLES = ['admin', 'editor', 'author']
+
+/** 推荐位上限：满员后再推荐直接拒绝（前台推荐阅读/轮播共用该配额） */
+export const MAX_FEATURED = 10
 export const ROLE_LABELS = { admin: '管理员', editor: '编辑', author: '作者' }
 
 /** 状态流转白名单：from → 允许的 to */
@@ -244,6 +247,18 @@ export function slugExistsIn(slug, exceptFile = '') {
   return listArticles().some((a) => a.slug === slug && a.file !== exceptFile)
 }
 
+/** 当前推荐文章数（全站） */
+export function featuredCount() {
+  return listArticles().filter((a) => a.featured).length
+}
+
+/** 推荐位满员拦截：只在「未推荐 → 推荐」跃迁时校验，已推荐文章保存不受影响 */
+function assertFeaturedSlot(willFeature, alreadyFeatured) {
+  if (willFeature && !alreadyFeatured && featuredCount() >= MAX_FEATURED) {
+    throw new Error(`推荐位已满（最多 ${MAX_FEATURED} 篇），请先取消其他文章的推荐再试`)
+  }
+}
+
 /** 创建：返回 { file } 或抛错（中文错误消息直接给前端） */
 export function createArticle(input) {
   const slug = String(input.slug || '').trim()
@@ -276,6 +291,7 @@ export function createArticle(input) {
   }
   if (!article.excerpt) article.excerpt = '（待补摘要）'
   if (!article.author) article.author = '未知'
+  assertFeaturedSlot(article.featured, false)
 
   const body = String(input.content ?? '').replace(/\r\n/g, '\n').trim()
   if (!body) throw new Error('正文不能为空')
@@ -321,6 +337,7 @@ export function updateArticle(file, input) {
     merged._body = body
   }
   merged._body ??= old.body
+  assertFeaturedSlot(merged.featured === true, old.featured === true)
 
   const newFile = `${merged.publishedAt}-${merged.slug}.md`
   writeArticleFile(newFile, orderedData(merged), merged._body)
@@ -373,6 +390,7 @@ export function setFlags(file, { pinned, featured }) {
   const next = { ...article }
   if (pinned !== undefined) next.pinned = Boolean(pinned)
   if (featured !== undefined) next.featured = Boolean(featured)
+  assertFeaturedSlot(next.featured === true, article.featured === true)
   // orderedData 对 false 值省略字段，必须从 raw 里删掉，否则旧值复活（取消置顶失效）
   const merged = { ...raw, ...orderedData(next) }
   if (!next.pinned) delete merged.pinned

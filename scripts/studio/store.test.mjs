@@ -6,6 +6,7 @@ import {
   createArticle, getArticle, updateArticle, changeStatus, setFlags,
   trashArticle, restoreFromTrash, purgeTrash, listTrash,
   renameTaxonomy, queryArticles, statusCounts, runSchedule, roleOf,
+  MAX_FEATURED, featuredCount,
 } from './store.mjs'
 
 // 随机后缀：避免与本机正在运行的 studio 调度器或上次崩溃残留抢 slug
@@ -109,6 +110,31 @@ assert('重新上线不被过期 offlineAt 秒杀', !reflip.some((x) => x.file =
 
 // 9. 权限与作者
 assert('角色解析', roleOf('周周') === 'admin' && roleOf('不存在的人') === 'guest')
+
+// 9b. 推荐位上限：补满坑位后，创建/编辑/快捷开关三条路径都应被拦
+const fillFiles = []
+const toFill = MAX_FEATURED - featuredCount()
+try {
+  for (let i = 0; i < toFill; i++) {
+    fillFiles.push(createArticle({ title: '推荐位测试' + i, slug: S + '-feat' + i, content: 'x'.repeat(10), status: 'published', author: '周周', featured: true }).file)
+  }
+  let blocked = 0
+  try { createArticle({ title: '超员创建', slug: S + '-over', content: 'x'.repeat(10), status: 'published', author: '周周', featured: true }) } catch { blocked++ }
+  const spare = createArticle({ title: '腾位测试', slug: S + '-spare', content: 'x'.repeat(10), status: 'published', author: '周周' }).file
+  fillFiles.push(spare)
+  try { updateArticle(spare, { featured: true }) } catch { blocked++ }
+  try { setFlags(spare, { featured: true }) } catch { blocked++ }
+  assert('推荐位满员三条路径全拦截', blocked === 3, 'blocked=' + blocked)
+  assert('满员时推荐计数=上限', featuredCount() === MAX_FEATURED)
+} finally {
+  for (const file of fillFiles) {
+    try {
+      const t = trashArticle(file, '推荐位测试清理')
+      purgeTrash(t.trashName)
+    } catch { /* 并发清理容错 */ }
+  }
+}
+assert('清理后推荐位回落', featuredCount() <= MAX_FEATURED)
 
 // 10. 计数
 const counts = statusCounts()

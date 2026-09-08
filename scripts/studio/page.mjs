@@ -540,7 +540,7 @@ onRoute('editor/*', function (file) {
               '<label class="flex cursor-pointer items-center gap-1.5 text-[13px]"><input id="ePinned" type="checkbox" class="accent-[#0071e3]" ' + (a.pinned ? 'checked' : '') + (myRole === 'author' ? ' disabled' : '') + ' /> 📌 置顶</label>' +
               '<label class="flex cursor-pointer items-center gap-1.5 text-[13px]"><input id="eFeatured" type="checkbox" class="accent-[#0071e3]" ' + (a.featured ? 'checked' : '') + (myRole === 'author' ? ' disabled' : '') + ' /> ⭐ 推荐</label>' +
             '</div>' +
-            '<p class="mt-2.5 text-[11.5px] leading-relaxed text-[#a1a1a6]">定时任务由本机 Studio 每 30 秒扫描执行，到点自动切换状态并推送上线（需 Studio 保持运行）。</p>' +
+            '<p id="eFlagHint" class="mt-2.5 text-[11.5px] leading-relaxed text-[#a1a1a6]">定时任务由本机 Studio 每 30 秒扫描执行，到点自动切换状态并推送上线（需 Studio 保持运行）。</p>' +
           '</div>' +
 
           '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
@@ -579,6 +579,10 @@ onRoute('editor/*', function (file) {
       meta.taxonomy.categories.forEach(function (c) {
         var o = document.createElement('option'); o.value = c.name; cat.appendChild(o)
       })
+      // 推荐位余量实时提示：后端满员拦截，这里让站长提前看到还剩几个坑
+      if (meta.featured && $('eFlagHint')) {
+        $('eFlagHint').textContent = '推荐位 ' + meta.featured.count + ' / ' + meta.featured.max + ' 篇，满员后无法再推荐。' + $('eFlagHint').textContent
+      }
       var sel = $('eAuthor')
       meta.authors.forEach(function (au) {
         var o = document.createElement('option')

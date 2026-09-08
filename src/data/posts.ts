@@ -30,8 +30,10 @@ export const sortedPosts: readonly Post[] = [...posts]
     return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
   })
 
-/** 轮播展示的精选文章（Studio CMS 的 featured）。无封面的走渐变兜底，侧栏「推荐阅读」消费 */
-export const featuredPosts: readonly Post[] = sortedPosts.filter((post) => post.featured === true)
+/** 轮播展示的精选文章（Studio CMS 的 featured）。无封面的走渐变兜底，侧栏「推荐阅读」消费；上限 10 篇与后台配额一致 */
+export const featuredPosts: readonly Post[] = sortedPosts
+  .filter((post) => post.featured === true)
+  .slice(0, 10)
 
 /**
  * 首页轮播：自动筛选带封面的文章，最多 5 篇滚动。
