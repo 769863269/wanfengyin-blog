@@ -936,8 +936,10 @@ onRoute('site', function () {
       row.querySelector('.nv-del').addEventListener('click', function () { row.remove() })
       box.appendChild(row)
     }
-    (d.site.mainNav || []).forEach(function (n) { navRow(navRows, n) })
-    (d.site.mobileExtraNav || []).forEach(function (n) { navRow(mnavRows, n) })
+    var mainNavList = Array.isArray(d.site.mainNav) ? d.site.mainNav : []
+    var extraNavList = Array.isArray(d.site.mobileExtraNav) ? d.site.mobileExtraNav : []
+    mainNavList.forEach(function (n) { navRow(navRows, n) })
+    extraNavList.forEach(function (n) { navRow(mnavRows, n) })
     function collectNav(box) {
       return [].slice.call(box.querySelectorAll('.nav-row')).map(function (row) {
         return {
