@@ -665,7 +665,7 @@ onRoute('editor/*', function (file) {
     }
     function setCoverFile(f) {
       if (!f) return
-      var m = (f.name || '').match(/\.([a-z0-9]+)$/i)
+      var m = (f.name || '').match(/\\.([a-z0-9]+)$/i)
       var ext = m ? m[1].toLowerCase() : ''
       if (ALLOWED_COVER.indexOf(ext) < 0) return toast('不支持的图片格式：.' + ext + '（支持 JPG/PNG/WebP/GIF/AVIF）', true)
       if (f.size > 10 * 1024 * 1024) return toast('图片超过 10MB，先压缩一下再上传', true)
@@ -713,11 +713,11 @@ onRoute('editor/*', function (file) {
       var items = e.clipboardData && e.clipboardData.items
       if (!items) return
       for (var i = 0; i < items.length; i++) {
-        if (items[i].kind === 'file' && /^image\//.test(items[i].type)) {
+        if (items[i].kind === 'file' && /^image\\//.test(items[i].type)) {
           var f = items[i].getAsFile()
           if (f) {
             e.preventDefault()
-            if (!/\.[a-z0-9]+$/i.test(f.name || '')) {
+            if (!/\\.[a-z0-9]+$/i.test(f.name || '')) {
               f = new File([f], 'paste-' + Date.now() + '.png', { type: f.type }) // 剪贴板截图常无扩展名，补一个
             }
             setCoverFile(f)
