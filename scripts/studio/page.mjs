@@ -516,7 +516,7 @@ onRoute('editor/*', function (file) {
           '<div class="rounded-2xl border border-black/5 bg-white p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
             field('标题 *', '<input id="eTitle" class="w-full rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[15px] outline-none focus:border-[#0071e3] focus:ring-4 focus:ring-[#0071e3]/10" value="' + esc(a.title) + '" />') +
             '<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">' +
-              field('slug *（网址名）', '<input id="eSlug" class="w-full rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[14px] outline-none focus:border-[#0071e3]" value="' + esc(a.slug) + '" placeholder="my-post" />') +
+              field('slug（网址名，留空自动生成）', '<input id="eSlug" class="w-full rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[14px] outline-none focus:border-[#0071e3]" value="' + esc(a.slug) + '" placeholder="留空自动生成，或填 my-post" />') +
               field('发布日期', '<input id="eDate" type="date" class="w-full rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[14px] outline-none focus:border-[#0071e3]" value="' + esc(a.publishedAt || new Date().toISOString().slice(0, 10)) + '" />') +
             '</div>' +
             '<div class="mt-4"><div class="mb-1.5 flex items-center justify-between"><label class="text-[13px] font-semibold text-[#6e6e73]">摘要（列表与 SEO description）</label>' +
@@ -808,7 +808,7 @@ onRoute('editor/*', function (file) {
         ['标签 ≥ 1', $('eTags').value.trim().length > 0],
         ['分类', Boolean($('eCategory').value.trim())],
         ['SEO 描述', Boolean($('eSeoDesc').value.trim())],
-        ['slug 规范（小写字母/数字/连字符）', /^[a-z0-9][a-z0-9-]*$/.test($('eSlug').value.trim())],
+        ['slug 规范（小写字母/数字/连字符，留空自动生成）', $('eSlug').value.trim() === '' || /^[a-z0-9][a-z0-9-]*$/.test($('eSlug').value.trim())],
       ]
       $('eCheck').innerHTML = rows.map(function (r) {
         return '<div class="flex items-center gap-2"><span>' + (r[1] ? '✅' : '⬜') + '</span><span class="' + (r[1] ? 'text-[#1d7a35]' : 'text-[#86868b]') + '">' + r[0] + '</span></div>'

@@ -315,6 +315,15 @@ export function slugExistsIn(slug, exceptFile = '') {
   return listArticles().some((a) => a.slug === slug && a.file !== exceptFile)
 }
 
+/** 留空自动出号：时间戳+两位随机尾数，纯数字；撞车重抽，保证唯一 */
+function uniqueNumericSlug() {
+  let s = ''
+  do {
+    s = String(Date.now()) + String(Math.floor(Math.random() * 100)).padStart(2, '0')
+  } while (slugExistsIn(s))
+  return s
+}
+
 /** 当前推荐文章数（全站） */
 export function featuredCount() {
   return listArticles().filter((a) => a.featured).length
@@ -329,10 +338,9 @@ function assertFeaturedSlot(willFeature, alreadyFeatured) {
 
 /** 创建：返回 { file } 或抛错（中文错误消息直接给前端） */
 export function createArticle(input) {
-  const slug = String(input.slug || '').trim()
+  const slug = String(input.slug || '').trim() || uniqueNumericSlug() // 留空自动分配随机编号
   const title = String(input.title || '').trim()
   if (!title) throw new Error('标题不能为空')
-  if (!slug) throw new Error('slug 不能为空')
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) throw new Error(`slug 不合法：${slug}`)
   if (slugExistsIn(slug)) throw new Error(`slug "${slug}" 已被使用`)
 
@@ -390,7 +398,7 @@ export function updateArticle(file, input) {
     merged.title = t
   }
   if (input.slug !== undefined) {
-    const s = String(input.slug).trim()
+    const s = String(input.slug).trim() || uniqueNumericSlug() // 清空 slug 视同重新自动分配
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s)) throw new Error(`slug 不合法：${s}`)
     if (slugExistsIn(s, file)) throw new Error(`slug "${s}" 已被使用`)
     merged.slug = s
