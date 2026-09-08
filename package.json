@@ -28,6 +28,7 @@
     "smoke": "node scripts/clean-smoke.mjs && vite build --config vite.config.smoke.ts && node scripts/smoke.mjs"
   },
   "dependencies": {
+    "vditor": "^4.0.0",
     "vue": "^3.5.42",
     "vue-router": "^5.3.1"
   },

@@ -7,8 +7,8 @@
 import { createServer } from 'node:http'
 import { spawn } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
-import { mkdirSync, readFileSync, watch, writeFileSync } from 'node:fs'
-import { join, extname } from 'node:path'
+import { createReadStream, existsSync, mkdirSync, readFileSync, statSync, watch, writeFileSync } from 'node:fs'
+import { join, extname, sep } from 'node:path'
 import {
   ROOT,
   STATUSES, STATUS_LABELS, ROLES, ROLE_LABELS,
@@ -27,6 +27,17 @@ const coversDir = join(ROOT, 'public', 'images', 'covers')
 // 预编译静态 CSS（构建期由 tailwind.config.cjs 生成），运行时零编译开销；
 // 原 451KB 浏览器版构建（tailwind.js）已退役——MutationObserver 每次DOM变更全量重编译，是页面卡顿元凶之一
 const studioCss = readFileSync(join(ROOT, 'scripts', 'studio-assets', 'studio.css'), 'utf8')
+
+/* Vditor 编辑器静态资源：伺服 node_modules/vditor/dist（前端 cdn 选项指向 /vditor） */
+const vditorRoot = join(ROOT, 'node_modules', 'vditor')
+const MIME = {
+  js: 'text/javascript; charset=utf-8',
+  css: 'text/css; charset=utf-8',
+  json: 'application/json; charset=utf-8',
+  woff: 'font/woff', woff2: 'font/woff2', ttf: 'font/ttf',
+  png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', svg: 'image/svg+xml',
+  mp3: 'audio/mpeg',
+}
 
 /* ---------------- 发布同步任务（复用上一版流式机制） ---------------- */
 
@@ -250,6 +261,22 @@ export function startStudio(port = 5199) {
           'Cache-Control': 'public, max-age=86400',
         })
         res.end(studioCss)
+        return
+      }
+      /* Vditor 富文本编辑器（node_modules/vditor/dist 本地伺服，零 CDN 依赖） */
+      if (req.method === 'GET' && path.startsWith('/vditor/')) {
+        const rel = decodeURIComponent(path.slice('/vditor/'.length))
+        const file = join(vditorRoot, rel)
+        if (rel.includes('..') || !file.startsWith(vditorRoot + sep) || !existsSync(file) || !statSync(file).isFile()) {
+          res.writeHead(404).end('not found')
+          return
+        }
+        const ext = extname(file).slice(1)
+        res.writeHead(200, {
+          'Content-Type': MIME[ext] ?? 'application/octet-stream',
+          'Cache-Control': 'public, max-age=86400',
+        })
+        createReadStream(file).pipe(res)
         return
       }
 

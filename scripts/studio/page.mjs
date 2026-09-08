@@ -494,13 +494,7 @@ onRoute('editor/*', function (file) {
   load.then(function (d) {
     var a = d.article
     var canEdit = myRole === 'admin' || myRole === 'editor' || (myRole === 'author' && a.author === me && (isNew || a.status === 'draft'))
-    var mdBar = [
-      ['bold', '<b>B</b>'], ['italic', 'I'], ['h2', 'H2'], ['h3', 'H3'],
-      ['link', '链接'], ['img', '图片'], ['code', '行内码'], ['fence', '代码块'],
-      ['ul', '列表'], ['ol', '数字列表'], ['quote', '引用'],
-    ].map(function (b) {
-      return '<button type="button" data-md="' + b[0] + '" title="' + b[0] + '" class="md-btn rounded-md border border-[#d2d2d7] px-2 py-0.5 text-[11.5px] text-[#6e6e73] hover:border-[#0071e3] hover:text-[#0071e3]">' + b[1] + '</button>'
-    }).join('')
+    var mdBar = '' // Vditor 自带工具栏，手搓版已退役（保留变量名防旧引用报错）
 
     view.innerHTML =
       '<div id="eDraftBar" class="mb-4 hidden flex-wrap items-center gap-3 rounded-xl border border-[#f0d78c] bg-[#fdf6ec] px-4 py-2.5 text-[13px] text-[#8a6d1a]">' +
@@ -528,11 +522,9 @@ onRoute('editor/*', function (file) {
             '<div class="mt-4"><div class="mb-1.5 flex items-center justify-between"><label class="text-[13px] font-semibold text-[#6e6e73]">摘要（列表与 SEO description）</label>' +
               '<button type="button" id="eExcerptGen" class="rounded-md border border-[#d2d2d7] px-2 py-0.5 text-[11.5px] text-[#6e6e73] hover:border-[#0071e3] hover:text-[#0071e3]">✨ 一键取正文开头</button></div>' +
               '<textarea id="eExcerpt" rows="2" class="w-full resize-y rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[14px] outline-none focus:border-[#0071e3]">' + esc(a.excerpt) + '</textarea></div>' +
-            '<div class="mt-4"><div class="mb-1.5 flex flex-wrap items-center justify-between gap-2"><label class="text-[13px] font-semibold text-[#6e6e73]">正文（Markdown）*</label>' +
-              '<div class="flex flex-wrap items-center gap-1.5">' + mdBar +
-              '<button type="button" id="ePreviewToggle" class="rounded-md bg-[#0071e3]/10 px-2.5 py-0.5 text-[11.5px] font-medium text-[#0071e3] hover:bg-[#0071e3]/20">👁 预览</button></div></div>' +
-              '<textarea id="eContent" rows="18" class="w-full resize-y rounded-[10px] border border-[#d2d2d7] px-3.5 py-3 font-mono text-[13px] leading-relaxed outline-none focus:border-[#0071e3]">' + esc(a.body) + '</textarea>' +
-              '<div id="ePreview" class="mt-2 hidden max-h-[560px] overflow-auto rounded-[10px] border border-[#d2d2d7] px-4 py-2 text-[13.5px] leading-relaxed"></div>' +
+            '<div class="mt-4"><div class="mb-1.5 flex flex-wrap items-center justify-between gap-2"><label class="text-[13px] font-semibold text-[#6e6e73]">正文（Markdown）*</label><span id="vdModeHint" class="hidden text-[11px] text-[#a1a1a6]"></span></div>' +
+              '<div id="vditorHost" class="overflow-hidden rounded-[10px] border border-[#d2d2d7]"></div>' +
+              '<textarea id="eContent" rows="18" class="hidden w-full resize-y rounded-[10px] border border-[#d2d2d7] px-3.5 py-3 font-mono text-[13px] leading-relaxed outline-none focus:border-[#0071e3]">' + esc(a.body) + '</textarea>' +
               '<div id="eStats" class="mt-1.5 text-[11.5px] text-[#a1a1a6]"></div></div>' +
           '</div>' +
         '</div>' +
@@ -644,43 +636,78 @@ onRoute('editor/*', function (file) {
       r.readAsDataURL(coverNew)
     })
 
-    /* ---- 写作助手：工具栏 / 预览 / 统计 / 发布检查 / 本地草稿 ---- */
+    /* ---- 写作助手：Vditor 富文本编辑 / 统计 / 发布检查 / 本地草稿 ---- */
     var contentEl = $('eContent')
-    var MD_ACTS = {
-      bold: function (el) { insMd(el, '**', '**', '加粗文字') },
-      italic: function (el) { insMd(el, '*', '*', '斜体文字') },
-      h2: function (el) { linePrefix(el, '## ') },
-      h3: function (el) { linePrefix(el, '### ') },
-      link: function (el) { insMd(el, '[', '](https://)', '链接文字') },
-      img: function (el) { insMd(el, '![', '](/images/图名.png)', '图片描述') },
-      code: function (el) { insMd(el, '\`', '\`', '代码') },
-      fence: function (el) { insMd(el, '\\n\`\`\`js\\n', '\\n\`\`\`\\n', '代码内容') },
-      ul: function (el) { linePrefix(el, '- ') },
-      ol: function (el) { linePrefix(el, '1. ') },
-      quote: function (el) { linePrefix(el, '> ') },
-    }
-    view.querySelectorAll('.md-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () { MD_ACTS[btn.dataset.md](contentEl) })
-    })
-    var previewOn = false
-    $('ePreviewToggle').addEventListener('click', function () {
-      var pv = $('ePreview')
-      previewOn = !previewOn
-      if (previewOn) {
-        pv.innerHTML = mdRender(contentEl.value) || '<p style="color:#a1a1a6">（正文为空，先写点什么）</p>'
-        pv.classList.remove('hidden')
-        contentEl.classList.add('hidden')
-        this.textContent = '✏️ 返回编辑'
-      } else {
-        pv.classList.add('hidden')
-        contentEl.classList.remove('hidden')
-        this.textContent = '👁 预览'
-      }
-    })
+    var vd = null // Vditor 实例；null = 未加载或降级为纯 textarea
+    function getContent() { return vd ? vd.getValue() : contentEl.value }
+    function setContent(v) { if (vd) { vd.setValue(v) } else { contentEl.value = v } }
 
-    function updateStats() {
-      var n = contentEl.value.trim().length
-      $('eStats').textContent = n + ' 字符 · 预计阅读 ' + (n ? Math.max(1, Math.round(n / 350)) : 0) + ' 分钟 · 预览为近似渲染，以博客实际样式为准'
+    // 按需注入 Vditor 资源（只在进编辑器时加载，不拖慢后台其他页面）
+    function ensureVditor(cb) {
+      if (window.Vditor) return cb()
+      if (!$('vdCss')) {
+        var l = document.createElement('link'); l.id = 'vdCss'; l.rel = 'stylesheet'; l.href = '/vditor/dist/index.css'
+        document.head.appendChild(l)
+      }
+      var s = $('vdJs')
+      if (!s) {
+        s = document.createElement('script'); s.id = 'vdJs'; s.src = '/vditor/dist/index.min.js'
+        s.onload = function () { cb() }
+        s.onerror = function () { cb() } // 加载失败也回调，走 textarea 降级
+        document.head.appendChild(s)
+      } else {
+        s.addEventListener('load', function () { cb() })
+      }
+    }
+
+    function fallbackToTextarea(reason) {
+      if (vd) return
+      $('vditorHost').classList.add('hidden')
+      contentEl.classList.remove('hidden')
+      var hint = $('vdModeHint')
+      hint.classList.remove('hidden')
+      hint.textContent = reason
+    }
+
+    function initVditor() {
+      if (!window.Vditor || typeof window.Vditor !== 'function') return fallbackToTextarea('（编辑器脚本加载失败，已降级为纯文本输入）')
+      try {
+        vd = new window.Vditor('vditorHost', {
+          cdn: '/vditor',
+          mode: 'wysiwyg',
+          value: contentEl.value,
+          minHeight: 460,
+          cache: { enable: false },
+          counter: { enable: true, type: 'markdown' },
+          toolbar: [
+            'headings', 'bold', 'italic', 'strike', '|',
+            'list', 'ordered-list', 'check', 'quote', '|',
+            'link', 'table', 'code', 'inline-code', '|',
+            'undo', 'redo', '|', 'edit-mode', 'fullscreen', 'export', '|', 'help',
+          ],
+          input: function (v) { onContentChange(v) },
+          after: function () {
+            // Vditor 异步初始化完成后同步一次初始状态
+            var v = getContent()
+            updateStats(v)
+            scheduleDraft()
+          },
+        })
+        contentEl.classList.add('hidden')
+      } catch (e) {
+        vd = null
+        fallbackToTextarea('（编辑器初始化异常，已降级为纯文本输入）')
+      }
+    }
+
+    function onContentChange(v) {
+      markDirty()
+      updateStats(v)
+      updateCheck()
+    }
+    function updateStats(v) {
+      var n = (typeof v === 'string' ? v : getContent()).trim().length
+      $('eStats').textContent = n + ' 字符 · 预计阅读 ' + (n ? Math.max(1, Math.round(n / 350)) : 0) + ' 分钟'
     }
     function updateCheck() {
       var rows = [
@@ -705,7 +732,7 @@ onRoute('editor/*', function (file) {
         try {
           localStorage.setItem(DKEY, JSON.stringify({
             title: $('eTitle').value, slug: $('eSlug').value, publishedAt: $('eDate').value,
-            excerpt: $('eExcerpt').value, content: contentEl.value, category: $('eCategory').value,
+            excerpt: $('eExcerpt').value, content: getContent(), category: $('eCategory').value,
             tags: $('eTags').value, keywords: $('eKeywords').value, seoDescription: $('eSeoDesc').value, ts: Date.now(),
           }))
         } catch (e) { /* 隐私模式存不了就算了 */ }
@@ -719,9 +746,20 @@ onRoute('editor/*', function (file) {
       var el = $(id)
       el.addEventListener('input', function () { markDirty(); updateCheck() })
     })
-    contentEl.addEventListener('input', updateStats)
+    contentEl.addEventListener('input', function () { updateStats() })
     updateStats()
     updateCheck()
+
+    // 可编辑用户 → 起 Vditor；只读查看者 → 直接用 textarea 展示
+    if (canEdit) {
+      ensureVditor(function () { if (seq === viewSeq) initVditor() })
+      setTimeout(function () {
+        if (seq !== viewSeq) return // 视图已切换，丢弃过期回调
+        if (!vd && !window.Vditor) fallbackToTextarea('（编辑器加载超时，已降级为纯文本输入）')
+      }, 8000)
+    } else {
+      fallbackToTextarea('')
+    }
 
     if (isNew) {
       var draft = null
@@ -737,7 +775,7 @@ onRoute('editor/*', function (file) {
           slugTouched = true
           $('eDate').value = draft.publishedAt || $('eDate').value
           $('eExcerpt').value = draft.excerpt || ''
-          contentEl.value = draft.content || ''
+          setContent(draft.content || '')
           $('eCategory').value = draft.category || ''
           $('eTags').value = draft.tags || ''
           $('eKeywords').value = draft.keywords || ''
@@ -757,7 +795,7 @@ onRoute('editor/*', function (file) {
     }
 
     $('eExcerptGen').addEventListener('click', function () {
-      var s = contentEl.value
+      var s = getContent()
         .replace(/\`\`\`[\\s\\S]*?\`\`\`/g, ' ')
         .replace(/!\\[[^\\]]*\\]\\([^)]*\\)/g, ' ')
         .replace(/\\[([^\\]]+)\\]\\([^)]*\\)/g, '$1')
@@ -778,7 +816,7 @@ onRoute('editor/*', function (file) {
         slug: $('eSlug').value.trim(),
         publishedAt: $('eDate').value,
         excerpt: $('eExcerpt').value.trim(),
-        content: $('eContent').value,
+        content: getContent(),
         status: $('eStatus').value,
         pinned: $('ePinned').checked,
         featured: $('eFeatured').checked,
@@ -857,77 +895,6 @@ function blankArticle() {
 
 function field(label, control, extra) {
   return '<div class="' + (extra || '') + '"><label class="mb-1.5 block text-[13px] font-semibold text-[#6e6e73]">' + label + '</label>' + control + '</div>'
-}
-
-/* ---------- 写作助手：光标插入 / 轻量 Markdown 渲染（近似预览） ---------- */
-function insMd(el, before, after, ph) {
-  var s = el.selectionStart, e = el.selectionEnd, v = el.value
-  var sel = v.slice(s, e) || ph
-  el.value = v.slice(0, s) + before + sel + after + v.slice(e)
-  el.focus()
-  el.selectionStart = s + before.length
-  el.selectionEnd = s + before.length + sel.length
-  el.dispatchEvent(new Event('input'))
-}
-
-function linePrefix(el, prefix) {
-  var s = el.selectionStart, v = el.value
-  var ls = v.lastIndexOf('\\n', s - 1) + 1
-  if (v.slice(ls, ls + prefix.length) === prefix) return // 该行已有前缀，不重复加
-  el.value = v.slice(0, ls) + prefix + v.slice(ls)
-  el.selectionStart = el.selectionEnd = s + prefix.length
-  el.focus()
-  el.dispatchEvent(new Event('input'))
-}
-
-function mdRender(src) {
-  var esc = function (s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') }
-  var inline = function (s) {
-    return esc(s)
-      .replace(/\`([^\`]+)\`/g, '<code style="background:#f5f5f7;border-radius:4px;padding:1px 5px">$1</code>')
-      .replace(/!\\[([^\\]]*)\\]\\(([^)\\s]+)\\)/g, function (_, alt, u) { return '<img alt="' + alt + '" src="' + (u.charAt(0) === '/' ? BLOG_URL + u : u) + '" style="max-width:100%;border-radius:8px" />' })
-      .replace(/\\[([^\\]]+)\\]\\(([^)\\s]+)\\)/g, '<a href="$2" target="_blank" style="color:#0071e3">$1</a>')
-      .replace(/\\*\\*([^*]+)\\*\\*/g, '<b>$1</b>')
-      .replace(/\\*([^*]+)\\*/g, '<i>$1</i>')
-  }
-  var lines = String(src || '').split('\\n')
-  var html = [], para = [], list = null, code = null
-  function flushPara() { if (para.length) { html.push('<p style="margin:.5em 0">' + para.map(inline).join('<br/>') + '</p>'); para = [] } }
-  function flushList() {
-    if (!list) return
-    html.push('<' + list.tag + ' style="margin:.5em 0;padding-left:1.5em">' + list.items.map(function (x) { return '<li>' + inline(x) + '</li>' }).join('') + '</' + list.tag + '>')
-    list = null
-  }
-  for (var i = 0; i < lines.length; i++) {
-    var L = lines[i]
-    if (code !== null) {
-      if (/^\`\`\`/.test(L)) { html.push('<pre style="background:#f5f5f7;border-radius:8px;padding:10px;overflow:auto;font-size:12.5px"><code>' + esc(code.join('\\n')) + '</code></pre>'); code = null }
-      else code.push(L)
-      continue
-    }
-    if (/^\`\`\`/.test(L)) { flushPara(); flushList(); code = []; continue }
-    var h = L.match(/^(#{1,6})\\s+(.*)/)
-    if (h) { flushPara(); flushList(); var n = h[1].length; html.push('<h' + n + ' style="margin:.7em 0 .3em">' + inline(h[2]) + '</h' + n + '>'); continue }
-    if (/^(---+|\\*\\*\\*+)\\s*$/.test(L)) { flushPara(); flushList(); html.push('<hr style="border:none;border-top:1px solid #d2d2d7;margin:1em 0"/>'); continue }
-    var q = L.match(/^>\\s?(.*)/)
-    if (q) { flushPara(); flushList(); html.push('<blockquote style="border-left:3px solid #d2d2d7;margin:.5em 0;padding:2px 12px;color:#6e6e73">' + inline(q[1]) + '</blockquote>'); continue }
-    var ul = L.match(/^\\s*[-*]\\s+(.*)/)
-    var ol = L.match(/^\\s*\\d+\\.\\s+(.*)/)
-    if (ul || ol) {
-      flushPara()
-      var tag = ul ? 'ul' : 'ol'
-      if (!list || list.tag !== tag) { flushList(); list = { tag: tag, items: [] } }
-      list.items.push((ul || ol)[1])
-      continue
-    }
-    if (!L.trim()) { flushPara(); flushList(); continue }
-    flushList()
-    para.push(L)
-  }
-  if (code !== null) html.push('<pre style="background:#f5f5f7;border-radius:8px;padding:10px;overflow:auto;font-size:12.5px"><code>' + esc(code.join('\\n')) + '</code></pre>')
-  flushPara()
-  flushList()
-  return html.join('')
 }
 
 /* ================= 视图：回收站 ================= */
