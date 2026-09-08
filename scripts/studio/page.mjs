@@ -875,6 +875,17 @@ onRoute('site', function () {
           '</div>' +
         '</div>' +
       '</div>' +
+      '<div class="mt-5 rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+        '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">顶部导航菜单（web 顶栏）</p>' +
+        '<p class="mb-2 text-[11.5px] leading-relaxed text-[#a1a1a6]">「页面」=博客内页（首页/归档/标签/关于/随便看看）；「外链」=http(s):// 或 / 开头；「占位」=未上线不可点。勾选 H5 = 同时出现在手机抽屉菜单</p>' +
+        '<div id="navRows"></div>' +
+        (readOnly ? '' : '<button id="navAdd" type="button" class="mt-2 rounded-full border border-[#d2d2d7] px-4 py-1.5 text-[12.5px] hover:border-[#0071e3] hover:text-[#0071e3]">＋ 添加菜单项</button>') +
+      '</div>' +
+      '<div class="mt-5 rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+        '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">H5 抽屉额外入口（仅手机抽屉显示）</p>' +
+        '<div id="mnavRows"></div>' +
+        (readOnly ? '' : '<button id="mnavAdd" type="button" class="mt-2 rounded-full border border-[#d2d2d7] px-4 py-1.5 text-[12.5px] hover:border-[#0071e3] hover:text-[#0071e3]">＋ 添加抽屉入口</button>') +
+      '</div>' +
       (readOnly ? '' : '<div class="sticky bottom-4 z-10 mt-5 flex items-center gap-3 rounded-2xl border border-black/5 bg-white/95 px-5 py-3.5 shadow-[0_4px_24px_rgba(0,0,0,0.1)] backdrop-blur">' +
         '<span id="sMsg" class="text-[13px] text-[#1d7a35]"></span>' +
         '<button id="sSave" class="ml-auto rounded-full bg-[#1d1d1f] px-6 py-2.5 text-[13.5px] font-semibold text-white hover:opacity-85">保存站点设置</button>' +
@@ -896,6 +907,53 @@ onRoute('site', function () {
       $('flAdd').addEventListener('click', function () { flRow('', '') })
     }
 
+    // 导航菜单动态行（web 顶栏 + H5 抽屉，增删改查）
+    var navRows = $('navRows')
+    var mnavRows = $('mnavRows')
+    function navRow(box, it) {
+      it = it || {}
+      var row = document.createElement('div')
+      row.className = 'nav-row mt-2 flex flex-wrap items-center gap-2'
+      row.innerHTML = '<input class="nv-icon w-12 shrink-0 rounded-lg border border-[#d2d2d7] px-2 py-1.5 text-center text-[14px] outline-none focus:border-[#0071e3]" placeholder="图标" value="' + esc(it.icon || '') + '"' + (readOnly ? ' disabled' : '') + ' />' +
+        '<input class="nv-label w-28 shrink-0 rounded-lg border border-[#d2d2d7] px-2.5 py-1.5 text-[13px] outline-none focus:border-[#0071e3]" placeholder="名称" value="' + esc(it.label || '') + '"' + (readOnly ? ' disabled' : '') + ' />' +
+        '<select class="nv-kind shrink-0 rounded-lg border border-[#d2d2d7] px-2 py-1.5 text-[13px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' +
+          '<option value="route">页面</option><option value="external">外链</option><option value="disabled">占位</option>' +
+        '</select>' +
+        '<input class="nv-target min-w-[160px] flex-1 rounded-lg border border-[#d2d2d7] px-2.5 py-1.5 text-[13px] outline-none focus:border-[#0071e3]" value="' + esc(it.target || '') + '"' + (readOnly ? ' disabled' : '') + ' />' +
+        '<label class="shrink-0 flex items-center gap-1 text-[12px] text-[#6e6e73]"><input type="checkbox" class="nv-mobile"' + (it.showOnMobile !== false ? ' checked' : '') + (readOnly ? ' disabled' : '') + ' />H5</label>' +
+        '<button type="button" class="nv-del shrink-0 rounded-full px-2 py-1 text-[12px] text-[#c0392b] hover:bg-[#fdf0ef]">删除</button>'
+      var kindSel = row.querySelector('.nv-kind')
+      var targetInp = row.querySelector('.nv-target')
+      function syncTarget() {
+        var k = kindSel.value
+        targetInp.disabled = readOnly || k === 'disabled'
+        targetInp.placeholder = k === 'route' ? 'home / archive / tags / about / random'
+          : k === 'external' ? 'https:// 或 /feed.xml' : '未上线，无需地址'
+      }
+      kindSel.value = it.kind || 'disabled'
+      syncTarget()
+      kindSel.addEventListener('change', syncTarget)
+      row.querySelector('.nv-del').addEventListener('click', function () { row.remove() })
+      box.appendChild(row)
+    }
+    (d.site.mainNav || []).forEach(function (n) { navRow(navRows, n) })
+    (d.site.mobileExtraNav || []).forEach(function (n) { navRow(mnavRows, n) })
+    function collectNav(box) {
+      return [].slice.call(box.querySelectorAll('.nav-row')).map(function (row) {
+        return {
+          icon: row.querySelector('.nv-icon').value.trim(),
+          label: row.querySelector('.nv-label').value.trim(),
+          kind: row.querySelector('.nv-kind').value,
+          target: row.querySelector('.nv-target').value.trim(),
+          showOnMobile: row.querySelector('.nv-mobile').checked,
+        }
+      }).filter(function (n) { return n.label })
+    }
+    if (!readOnly) {
+      $('navAdd').addEventListener('click', function () { navRow(navRows, { kind: 'route' }) })
+      $('mnavAdd').addEventListener('click', function () { navRow(mnavRows, { kind: 'route' }) })
+    }
+
     if (!readOnly) {
       $('sSave').addEventListener('click', function () {
         var links = [].slice.call(flRows.querySelectorAll('.fl-label')).map(function (inp, i) {
@@ -910,6 +968,7 @@ onRoute('site', function () {
             author: $('sAuthor').value.trim(), email: $('sEmail').value.trim(),
             icp: $('sIcp').value.trim(), about: $('sAbout').value.trim(),
             footerDesc: $('sFooterDesc').value.trim(), friendLinks: links,
+            mainNav: collectNav(navRows), mobileExtraNav: collectNav(mnavRows),
           },
         }).then(function () {
           $('sMsg').textContent = '已保存 ✓ 本地博客已即时生效'

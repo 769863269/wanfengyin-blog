@@ -144,7 +144,38 @@ export function saveAuthors(authors) {
 /* ---------------- 站点设置（content/site.json） ---------------- */
 
 /** 允许后台编辑的站点字段白名单；其余（domain/logo/导航/giscus）仍归代码管 */
+/* ---------------- 站点设置 ---------------- */
+
 export const SITE_TEXT_FIELDS = ['name', 'fullName', 'tagline', 'description', 'author', 'since', 'email', 'icp', 'icpUrl', 'about', 'footerDesc']
+
+/** 导航菜单可选类型与页面路由白名单（route kind 的 target 必须是其中之一） */
+export const NAV_KINDS = ['route', 'external', 'disabled']
+export const NAV_ROUTES = ['home', 'archive', 'tags', 'about', 'random']
+
+function normalizeNavList(list, name) {
+  if (!Array.isArray(list)) throw new Error(name + '格式错误：应为数组')
+  if (list.length > 20) throw new Error(name + '最多 20 项')
+  return list.map((item, i) => {
+    const label = String(item.label ?? '').trim()
+    const kind = String(item.kind ?? 'disabled')
+    const target = String(item.target ?? '').trim()
+    if (!label) throw new Error(`${name}第 ${i + 1} 项名称不能为空`)
+    if (!NAV_KINDS.includes(kind)) throw new Error(`${name}「${label}」类型非法`)
+    if (kind === 'route' && !NAV_ROUTES.includes(target)) {
+      throw new Error(`${name}「${label}」的页面必须是：${NAV_ROUTES.join(' / ')} 之一`)
+    }
+    if (kind === 'external' && !/^(https?:\/\/|\/)/.test(target)) {
+      throw new Error(`${name}「${label}」的链接必须以 http(s):// 或 / 开头`)
+    }
+    return {
+      label,
+      icon: String(item.icon ?? '').trim(),
+      kind,
+      target: kind === 'disabled' ? '' : target,
+      showOnMobile: item.showOnMobile !== false,
+    }
+  })
+}
 
 export function readSiteConfig() {
   return JSON.parse(readFileSync(siteConfigPath, 'utf8'))
@@ -169,6 +200,9 @@ export function saveSiteConfig(input) {
       return { label, href }
     })
   }
+
+  if (input.mainNav !== undefined) next.mainNav = normalizeNavList(input.mainNav, '顶部导航')
+  if (input.mobileExtraNav !== undefined) next.mobileExtraNav = normalizeNavList(input.mobileExtraNav, 'H5 抽屉入口')
 
   writeFileSync(siteConfigPath, JSON.stringify(next, null, 2) + '\n', 'utf8')
   return next

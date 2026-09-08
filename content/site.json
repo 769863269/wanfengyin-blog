@@ -29,5 +29,72 @@
       "label": "掘金",
       "href": "https://juejin.cn/"
     }
+  ],
+  "mainNav": [
+    {
+      "label": "首页",
+      "icon": "🏠",
+      "kind": "route",
+      "target": "home",
+      "showOnMobile": true
+    },
+    {
+      "label": "留言板",
+      "icon": "💬",
+      "kind": "disabled",
+      "target": "",
+      "showOnMobile": true
+    },
+    {
+      "label": "随便看看",
+      "icon": "🎲",
+      "kind": "route",
+      "target": "random",
+      "showOnMobile": true
+    },
+    {
+      "label": "Rss订阅",
+      "icon": "📡",
+      "kind": "external",
+      "target": "/feed.xml",
+      "showOnMobile": true
+    },
+    {
+      "label": "关于博客",
+      "icon": "ℹ️",
+      "kind": "route",
+      "target": "about",
+      "showOnMobile": true
+    }
+  ],
+  "mobileExtraNav": [
+    {
+      "label": "微语",
+      "icon": "🌐",
+      "kind": "disabled",
+      "target": "",
+      "showOnMobile": true
+    },
+    {
+      "label": "邻居",
+      "icon": "🔗",
+      "kind": "disabled",
+      "target": "",
+      "showOnMobile": true
+    },
+    {
+      "label": "相册",
+      "icon": "🖼",
+      "kind": "disabled",
+      "target": "",
+      "showOnMobile": true
+    },
+    {
+      "label": "归档",
+      "icon": "🗂",
+      "kind": "route",
+      "target": "archive",
+      "showOnMobile": true
+    }
   ]
 }

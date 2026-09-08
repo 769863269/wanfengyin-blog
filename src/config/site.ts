@@ -29,28 +29,41 @@ export const siteConfig = {
 }
 
 /**
- * 主导航。
- *
- * kind = 'disabled' 表示功能尚未上线：渲染成不可点击的占位，
- * 而不是 `href="#"` 死链 —— 既避免误跳转，也方便后续集中启用。
+ * 导航菜单数据源：content/site.json（Studio 后台「站点设置」页维护，可增删改查）。
+ * kind = 'route'   → target 为路由 name（home/archive/tags/about/random）
+ * kind = 'external'→ target 为链接（http(s):// 或 / 开头）
+ * kind = 'disabled'→ 未上线占位，渲染为不可点击
  */
-export const mainNav: readonly NavItem[] = [
-  { id: 'home', label: '首页', icon: '🏠', kind: 'route', to: 'home', showOnMobile: true },
-  { id: 'guestbook', label: '留言板', icon: '💬', kind: 'disabled', showOnMobile: true },
-  { id: 'random', label: '随便看看', icon: '🎲', kind: 'route', to: 'random', showOnMobile: true },
-  { id: 'rss', label: 'Rss订阅', icon: '📡', kind: 'external', href: '/feed.xml', showOnMobile: true },
-  { id: 'about', label: '关于博客', icon: 'ℹ️', kind: 'route', to: 'about', showOnMobile: true },
-] as const
+type SiteNavItem = {
+  label: string
+  icon?: string
+  kind: 'route' | 'external' | 'disabled'
+  target: string
+  showOnMobile?: boolean
+}
 
-/** 移动端抽屉额外入口（PC 顶栏放不下） */
-export const mobileExtraNav: readonly NavItem[] = [
-  { id: 'whisper', label: '微语', icon: '🌐', kind: 'disabled', showOnMobile: true },
-  { id: 'neighbors', label: '邻居', icon: '🔗', kind: 'disabled', showOnMobile: true },
-  { id: 'gallery', label: '相册', icon: '🖼', kind: 'disabled', showOnMobile: true },
-  { id: 'archive', label: '归档', icon: '🗂', kind: 'route', to: 'archive', showOnMobile: true },
-] as const
+function toNavItems(list: readonly SiteNavItem[], prefix: string): NavItem[] {
+  return list.map((item, i) => ({
+    id: `${prefix}-${i}`,
+    label: item.label,
+    icon: item.icon ?? '',
+    kind: item.kind,
+    ...(item.kind === 'route' ? { to: item.target } : {}),
+    ...(item.kind === 'external' ? { href: item.target } : {}),
+    showOnMobile: item.showOnMobile !== false,
+  }))
+}
 
-export const drawerNav: readonly NavItem[] = [...mainNav, ...mobileExtraNav]
+/** web 顶栏主导航（H5 抽屉里勾选了「H5」的也会出现） */
+export const mainNav: readonly NavItem[] = toNavItems(siteData.mainNav as readonly SiteNavItem[], 'nav')
+
+/** H5 抽屉额外入口（仅移动端抽屉显示） */
+export const mobileExtraNav: readonly NavItem[] = toNavItems(siteData.mobileExtraNav as readonly SiteNavItem[], 'mnav')
+
+/** 移动端抽屉：顶栏项（勾选 H5 的）+ 抽屉专属项 */
+export const drawerNav: readonly NavItem[] = [...mainNav, ...mobileExtraNav].filter(
+  (item) => item.showOnMobile !== false,
+)
 
 export const footerQuickLinks: readonly NavItem[] = [
   { id: 'f-home', label: '首页', icon: '', kind: 'route', to: 'home' },
