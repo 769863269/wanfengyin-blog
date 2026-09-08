@@ -13,7 +13,7 @@ import AppSidebar from '@/components/layout/AppSidebar.vue'
 import { domain, siteConfig } from '@/config/site'
 import { findPost, getNeighbors, postPlainText } from '@/data/posts'
 import { useSeoMeta } from '@/composables/useSeoMeta'
-import { estimateReadingTime, formatCount, formatRelativeTime } from '@/utils/format'
+import { estimateReadingTime, formatCount, formatDateTime, formatRelativeTime } from '@/utils/format'
 import { withBase } from '@/utils/asset'
 import { recordView, totalViews } from '@/utils/viewStats'
 import NotFoundView from './NotFoundView.vue'
@@ -97,9 +97,9 @@ useSeoMeta({
               <span aria-hidden="true">✍️</span>
               {{ post.author }}
             </span>
-            <span>
+            <span :title="formatRelativeTime(post.publishedAt)">
               <span aria-hidden="true">🕒</span>
-              <time :datetime="post.publishedAt">{{ formatRelativeTime(post.publishedAt) }}</time>
+              <time :datetime="`${post.publishedAt}T${post.publishedTime || '00:00'}`">{{ formatDateTime(post.publishedAt, post.publishedTime) }}</time>
             </span>
             <span>
               <span aria-hidden="true">👁</span>

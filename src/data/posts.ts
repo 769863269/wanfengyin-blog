@@ -27,7 +27,9 @@ export const posts: readonly Post[] = generatedPosts
 export const sortedPosts: readonly Post[] = [...posts]
   .sort((a, b) => {
     if (Boolean(b.pinned) !== Boolean(a.pinned)) return Number(Boolean(b.pinned)) - Number(Boolean(a.pinned))
-    return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+    // 发布时间精确到分钟（publishedTime），同日内新发的排前面
+    const ts = (p: Post) => new Date(`${p.publishedAt}T${p.publishedTime || '00:00'}`).getTime()
+    return ts(b) - ts(a)
   })
 
 /** 轮播展示的精选文章（Studio CMS 的 featured）。无封面的走渐变兜底，侧栏「推荐阅读」消费；上限 10 篇与后台配额一致 */

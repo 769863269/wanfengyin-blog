@@ -225,6 +225,7 @@ export function normalizeArticle(data, body, file) {
     title: String(data.title ?? ''),
     excerpt: String(data.excerpt ?? ''),
     publishedAt: String(data.publishedAt ?? ''),
+    publishedTime: String(data.publishedTime ?? ''),
     tags: Array.isArray(data.tags) ? data.tags : [],
     category: String(data.category ?? ''),
     author: String(data.author ?? ''),
@@ -294,6 +295,7 @@ function orderedData(a) {
   out.title = a.title
   if (a.excerpt) out.excerpt = a.excerpt
   if (a.publishedAt) out.publishedAt = a.publishedAt
+  if (a.publishedTime) out.publishedTime = a.publishedTime
   if (a.tags?.length) out.tags = a.tags
   if (a.category) out.category = a.category
   if (a.author) out.author = a.author
@@ -336,6 +338,12 @@ function assertFeaturedSlot(willFeature, alreadyFeatured) {
   }
 }
 
+/** 当前本地时间 HH:mm（记录发布时间用） */
+function nowHM() {
+  const d = new Date()
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
 /** 创建：返回 { file } 或抛错（中文错误消息直接给前端） */
 export function createArticle(input) {
   const slug = String(input.slug || '').trim() || uniqueNumericSlug() // 留空自动分配随机编号
@@ -367,6 +375,7 @@ export function createArticle(input) {
   }
   if (!article.excerpt) article.excerpt = '（待补摘要）'
   if (!article.author) article.author = '未知'
+  if (article.status === 'published' && !article.publishedTime) article.publishedTime = nowHM()
   assertFeaturedSlot(article.featured, false)
 
   const body = String(input.content ?? '').replace(/\r\n/g, '\n').trim()
@@ -413,6 +422,7 @@ export function updateArticle(file, input) {
     merged._body = body
   }
   merged._body ??= old.body
+  if (merged.status === 'published' && !merged.publishedTime) merged.publishedTime = nowHM() // 首次落发布时间
   assertFeaturedSlot(merged.featured === true, old.featured === true)
 
   const newFile = `${merged.publishedAt}-${merged.slug}.md`
@@ -445,6 +455,7 @@ export function changeStatus(file, to, _actor) {
     data.publishAt = '' // 已正式发布，清掉定时
     data.offlineAt = '' // 重新上线必须清掉过期 offlineAt，否则调度器 30 秒内又把文章踢回 offline
     if (!article.publishedAt) data.publishedAt = new Date().toISOString().slice(0, 10)
+    if (!article.publishedTime) data.publishedTime = nowHM() // 记录发布时间（首次上线）
   }
   const p = articlePath(file)
   const { data: raw, body } = parseFrontmatter(readFileSync(p, 'utf8'))

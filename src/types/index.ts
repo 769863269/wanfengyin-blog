@@ -27,6 +27,8 @@ export interface Post {
   cover: string
   /** ISO 8601 日期，相对时间由运行时计算 */
   publishedAt: string
+  /** 发布时间 HH:mm（Studio CMS 首次发布时记录，排序与展示用；旧文可能为空） */
+  publishedTime?: string
   /** 阅读数原始值，展示时格式化为 1.6k */
   views: number
   commentCount: number

@@ -53,6 +53,16 @@ export function formatDate(iso: string): string {
 }
 
 /**
+ * 发布时间完整展示：YYYY-MM-DD HH:mm。
+ * publishedTime 缺省（旧文）时退化为纯日期。
+ */
+export function formatDateTime(iso: string, time?: string): string {
+  const date = formatDate(iso)
+  if (!date) return ''
+  return time ? `${date} ${time}` : date
+}
+
+/**
  * 计数格式化：1600 → "1.6k"，16000 → "16k"
  * 阈值 1000，小于 1000 原样输出。
  */

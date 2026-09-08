@@ -69,6 +69,7 @@ for (const file of files) {
     title: data.title,
     excerpt: data.excerpt,
     cover: data.cover ?? '',
+    publishedTime: data.publishedTime ?? '',
     publishedAt: data.publishedAt,
     views: Number(data.views ?? 0),
     commentCount: Number(data.commentCount ?? 0),
@@ -99,8 +100,9 @@ for (const post of posts) {
   }
 }
 
-// 按时间倒序输出，读起来直观；运行时排序逻辑依然独立存在
-posts.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+// 按发布时间倒序（发布时间含 HH:mm，同日内新发在前）；运行时排序逻辑依然独立存在
+const publishTs = (p) => new Date(`${p.publishedAt}T${p.publishedTime || '00:00'}`).getTime()
+posts.sort((a, b) => publishTs(b) - publishTs(a))
 
 const banner = `/**
  * ⚠️ 本文件由 scripts/build-posts.mjs 自动生成，请勿手工编辑。
