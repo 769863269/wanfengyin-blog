@@ -46,6 +46,7 @@ export function page() {
       <a href="#/taxonomy" data-nav="taxonomy" class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">🏷 分类与标签</a>
       <a href="#/authors"  data-nav="authors"  class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">👥 作者与权限</a>
       <a href="#/logs"     data-nav="logs"     class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">📜 操作日志</a>
+      <a href="#/site"     data-nav="site"     class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">⚙️ 站点设置</a>
     </nav>
 
     <div class="space-y-2 border-t border-[#f0f0f2] pt-3">
@@ -831,6 +832,94 @@ onRoute('logs', function () {
           '<td class="px-5 py-2.5 text-[#6e6e73]">' + esc(l.detail) + '</td></tr>'
       }).join('') : '<tr><td colspan="5" class="px-5 py-14 text-center text-sm text-[#a1a1a6]">还没有操作记录</td></tr>') +
       '</tbody></table></div>'
+  }).catch(function (e) {
+    view.innerHTML = '<p class="text-sm text-[#c0392b]">' + esc(e.message) + '</p>'
+  })
+})
+
+/* ================= 视图：站点设置（content/site.json 增删改查） ================= */
+onRoute('site', function () {
+  api('/api/site').then(function (d) {
+    var s = d.site.site
+    var readOnly = myRole !== 'admin' && myRole !== 'editor'
+    var field = function (label, id, val, type) {
+      return '<label class="mt-3 block text-[12.5px] text-[#6e6e73]">' + label +
+        '<input id="' + id + '" type="text" value="' + esc(String(val ?? '')) + '" class="mt-1 w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + ' /></label>'
+    }
+    view.innerHTML = '<h2 class="mb-1 text-[22px] font-semibold tracking-tight">站点设置</h2>' +
+      '<p class="mb-5 text-[13px] text-[#86868b]">博客主页的站点文案与友情链接，保存后本地博客即时生效（dev HMR），线上随下次发布上线</p>' +
+      (readOnly ? '<p class="mb-4 rounded-lg bg-[#fdf6ec] px-4 py-2.5 text-[13px] text-[#8a6d1a]">当前身份只读，站点设置仅管理员/编辑可修改</p>' : '') +
+      '<div class="grid gap-5 lg:grid-cols-2">' +
+        '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+          '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">站点信息</p>' +
+          field('站名（侧栏/页脚品牌）', 'sName', s.name) +
+          field('完整站名（SEO）', 'sFullName', s.fullName) +
+          field('副标题', 'sTagline', s.tagline) +
+          field('SEO 描述', 'sDesc', s.description) +
+          field('站长署名', 'sAuthor', s.author) +
+          field('邮箱', 'sEmail', s.email) +
+          field('备案号', 'sIcp', s.icp) +
+        '</div>' +
+        '<div>' +
+          '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+            '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">展示文案</p>' +
+            '<label class="mt-3 block text-[12.5px] text-[#6e6e73]">侧栏「关于本站」文案' +
+              '<textarea id="sAbout" rows="2" class="mt-1 w-full resize-y rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' + esc(s.about) + '</textarea></label>' +
+            '<label class="mt-3 block text-[12.5px] text-[#6e6e73]">页脚描述（副标题下一行）' +
+              '<textarea id="sFooterDesc" rows="2" class="mt-1 w-full resize-y rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' + esc(s.footerDesc) + '</textarea></label>' +
+          '</div>' +
+          '<div class="mt-5 rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+            '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">友情链接（页脚）</p>' +
+            '<div id="flRows"></div>' +
+            (readOnly ? '' : '<button id="flAdd" type="button" class="mt-2 rounded-full border border-[#d2d2d7] px-4 py-1.5 text-[12.5px] hover:border-[#0071e3] hover:text-[#0071e3]">＋ 添加友链</button>') +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      (readOnly ? '' : '<div class="sticky bottom-4 z-10 mt-5 flex items-center gap-3 rounded-2xl border border-black/5 bg-white/95 px-5 py-3.5 shadow-[0_4px_24px_rgba(0,0,0,0.1)] backdrop-blur">' +
+        '<span id="sMsg" class="text-[13px] text-[#1d7a35]"></span>' +
+        '<button id="sSave" class="ml-auto rounded-full bg-[#1d1d1f] px-6 py-2.5 text-[13.5px] font-semibold text-white hover:opacity-85">保存站点设置</button>' +
+      '</div>')
+
+    // 友链动态行（增删改查）
+    var flRows = $('flRows')
+    function flRow(label, href) {
+      var row = document.createElement('div')
+      row.className = 'mt-2 flex items-center gap-2'
+      row.innerHTML = '<input placeholder="名称" value="' + esc(label) + '" class="fl-label w-full rounded-lg border border-[#d2d2d7] px-2.5 py-1.5 text-[13px] outline-none focus:border-[#0071e3]" />' +
+        '<input placeholder="https:// 地址" value="' + esc(href) + '" class="fl-href w-full rounded-lg border border-[#d2d2d7] px-2.5 py-1.5 text-[13px] outline-none focus:border-[#0071e3]" />' +
+        '<button type="button" class="fl-del shrink-0 rounded-full px-2 py-1 text-[12px] text-[#c0392b] hover:bg-[#fdf0ef]">删除</button>'
+      row.querySelector('.fl-del').addEventListener('click', function () { row.remove() })
+      flRows.appendChild(row)
+    }
+    d.site.friendLinks.forEach(function (l) { flRow(l.label, l.href) })
+    if (!readOnly) {
+      $('flAdd').addEventListener('click', function () { flRow('', '') })
+    }
+
+    if (!readOnly) {
+      $('sSave').addEventListener('click', function () {
+        var links = [].slice.call(flRows.querySelectorAll('.fl-label')).map(function (inp, i) {
+          var hrefInp = flRows.querySelectorAll('.fl-href')[i]
+          return { label: inp.value.trim(), href: hrefInp.value.trim() }
+        }).filter(function (l) { return l.label || l.href })
+        api('/api/site', {
+          method: 'PUT',
+          body: {
+            name: $('sName').value.trim(), fullName: $('sFullName').value.trim(),
+            tagline: $('sTagline').value.trim(), description: $('sDesc').value.trim(),
+            author: $('sAuthor').value.trim(), email: $('sEmail').value.trim(),
+            icp: $('sIcp').value.trim(), about: $('sAbout').value.trim(),
+            footerDesc: $('sFooterDesc').value.trim(), friendLinks: links,
+          },
+        }).then(function () {
+          $('sMsg').textContent = '已保存 ✓ 本地博客已即时生效'
+          toast('站点设置已保存')
+        }).catch(function (e) {
+          $('sMsg').textContent = ''
+          toast(e.message, true)
+        })
+      })
+    }
   }).catch(function (e) {
     view.innerHTML = '<p class="text-sm text-[#c0392b]">' + esc(e.message) + '</p>'
   })

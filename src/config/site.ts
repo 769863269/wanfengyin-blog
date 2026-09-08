@@ -13,23 +13,20 @@ import type { GiscusConfig, NavItem, SocialLink } from '@/types'
 /** TODO: 以后绑定自定义域名时替换（当前为 GitHub Pages 项目页地址，含子路径） */
 export const domain = 'https://wanfengyin-blog.vercel.app'
 
+/**
+ * 站点文案数据源：content/site.json（Studio 后台「站点设置」页维护，可增删改查）。
+ * 本文件只保留结构映射与代码级配置（导航/社交图标/giscus），文本内容一律改 JSON。
+ * 注意：本文件被 vite.config.ts 在 Node 侧引用，必须用相对路径导入。
+ */
+import siteData from '../../content/site.json'
+
 export const siteConfig = {
-  name: '晚风吟',
-  fullName: '晚风吟个人开发博客',
-  tagline: '浮生拾韵，且听风吟。',
-  description: '晚风吟个人开发博客 —— 记录开发、生活与技术碎碎念，浮生拾韵，且听风吟。',
-  author: '晚风吟',
-  since: 2025,
-  email: 'hi@wanfengyin.com',
+  ...siteData.site,
 
   /** 放在 public/ 下，直接以 / 开头的绝对路径引用 */
   logo: '/logo.svg',
   favicon: '/favicon.svg',
-
-  /** TODO: 替换为真实备案号 */
-  icp: '粤ICP备 0000000 号',
-  icpUrl: 'https://beian.miit.gov.cn/',
-} as const
+}
 
 /**
  * 主导航。
@@ -62,12 +59,14 @@ export const footerQuickLinks: readonly NavItem[] = [
   { id: 'f-about', label: '关于博客', icon: '', kind: 'route', to: 'about' },
 ] as const
 
-export const footerFriendLinks: readonly NavItem[] = [
-  { id: 'fr-1', label: '阮一峰的网络日志', icon: '', kind: 'external', href: 'https://www.ruanyifeng.com/blog/' },
-  { id: 'fr-2', label: 'Vite 官方博客', icon: '', kind: 'external', href: 'https://vite.dev/blog/' },
-  { id: 'fr-3', label: 'CSS-Tricks', icon: '', kind: 'external', href: 'https://css-tricks.com/' },
-  { id: 'fr-4', label: '掘金', icon: '', kind: 'external', href: 'https://juejin.cn/' },
-] as const
+/** 友情链接：content/site.json 维护，后台「站点设置」可增删改查 */
+export const footerFriendLinks: readonly NavItem[] = siteData.friendLinks.map((l, i) => ({
+  id: 'fr-' + i,
+  label: l.label,
+  icon: '',
+  kind: 'external',
+  href: l.href,
+}))
 
 export const socialLinks: readonly SocialLink[] = [
   {

@@ -26,7 +26,7 @@ const currentYear = new Date().getFullYear()
         <p class="app-footer__desc">
           {{ siteConfig.tagline }}
           <br />
-          记录开发、生活与一点点技术碎碎念。
+          {{ siteConfig.footerDesc }}
         </p>
 
         <div class="app-footer__social">

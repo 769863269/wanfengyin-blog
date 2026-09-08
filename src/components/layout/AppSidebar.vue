@@ -13,7 +13,7 @@ import { siteConfig } from '@/config/site'
 <template>
   <aside class="app-sidebar" aria-label="侧边栏">
     <SidebarPanel title="关于本站">
-      <p>{{ siteConfig.name }} —— {{ siteConfig.tagline }}记录开发、生活与一点点技术碎碎念。</p>
+      <p>{{ siteConfig.name }} —— {{ siteConfig.tagline }}{{ siteConfig.about }}</p>
     </SidebarPanel>
 
     <SidebarPanel title="热门文章">

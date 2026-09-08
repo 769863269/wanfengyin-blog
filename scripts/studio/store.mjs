@@ -19,6 +19,7 @@ const stateDir = join(root, '.studio')
 const trashDir = join(stateDir, 'trash')
 const logsPath = join(stateDir, 'logs.jsonl')
 const authorsPath = join(stateDir, 'authors.json')
+const siteConfigPath = join(root, 'content', 'site.json')
 
 export const ROOT = root
 export const ARTICLES_DIR = articlesDir
@@ -138,6 +139,39 @@ export function listAuthors() {
 export function saveAuthors(authors) {
   ensureDirs()
   writeFileSync(authorsPath, JSON.stringify(authors, null, 2), 'utf8')
+}
+
+/* ---------------- 站点设置（content/site.json） ---------------- */
+
+/** 允许后台编辑的站点字段白名单；其余（domain/logo/导航/giscus）仍归代码管 */
+export const SITE_TEXT_FIELDS = ['name', 'fullName', 'tagline', 'description', 'author', 'since', 'email', 'icp', 'icpUrl', 'about', 'footerDesc']
+
+export function readSiteConfig() {
+  return JSON.parse(readFileSync(siteConfigPath, 'utf8'))
+}
+
+/** 保存站点设置：字段白名单过滤 + 友链结构校验，返回保存后的完整配置 */
+export function saveSiteConfig(input) {
+  const current = readSiteConfig()
+  const next = { ...current, site: { ...current.site } }
+
+  for (const key of SITE_TEXT_FIELDS) {
+    if (input[key] !== undefined) next.site[key] = input[key]
+  }
+
+  if (input.friendLinks !== undefined) {
+    if (!Array.isArray(input.friendLinks)) throw new Error('友链格式错误：应为数组')
+    next.friendLinks = input.friendLinks.map((l, i) => {
+      const label = String(l.label ?? '').trim()
+      const href = String(l.href ?? '').trim()
+      if (!label) throw new Error(`第 ${i + 1} 条友链名称不能为空`)
+      if (!/^https?:\/\//.test(href)) throw new Error(`友链「${label}」的地址必须以 http(s):// 开头`)
+      return { label, href }
+    })
+  }
+
+  writeFileSync(siteConfigPath, JSON.stringify(next, null, 2) + '\n', 'utf8')
+  return next
 }
 
 export function roleOf(actor) {

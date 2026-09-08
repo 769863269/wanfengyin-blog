@@ -19,7 +19,8 @@
     /* vite.config.ts 的 sitemap 插件会引用 src 下的数据/配置模块 */
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "resolveJsonModule": true
   },
   "include": [
     "vite.config.ts",

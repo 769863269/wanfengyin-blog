@@ -1,0 +1,33 @@
+{
+  "site": {
+    "name": "晚风吟",
+    "fullName": "晚风吟个人开发博客",
+    "tagline": "浮生拾韵，且听风吟。",
+    "description": "晚风吟个人开发博客 —— 记录开发、生活与技术碎碎念，浮生拾韵，且听风吟。",
+    "author": "晚风吟",
+    "since": 2025,
+    "email": "hi@wanfengyin.com",
+    "icp": "粤ICP备 0000000 号",
+    "icpUrl": "https://beian.miit.gov.cn/",
+    "about": "记录开发、生活与一点点技术碎碎念。",
+    "footerDesc": "记录开发、生活与一点点技术碎碎念。"
+  },
+  "friendLinks": [
+    {
+      "label": "阮一峰的网络日志",
+      "href": "https://www.ruanyifeng.com/blog/"
+    },
+    {
+      "label": "Vite 官方博客",
+      "href": "https://vite.dev/blog/"
+    },
+    {
+      "label": "CSS-Tricks",
+      "href": "https://css-tricks.com/"
+    },
+    {
+      "label": "掘金",
+      "href": "https://juejin.cn/"
+    }
+  ]
+}

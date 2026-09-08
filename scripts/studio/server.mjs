@@ -19,6 +19,7 @@ import {
   changeStatus, setFlags,
   trashArticle, listTrash, restoreFromTrash, purgeTrash,
   taxonomy, renameTaxonomy, queryArticles, statusCounts, runSchedule,
+  readSiteConfig, saveSiteConfig,
 } from './store.mjs'
 import { page } from './page.mjs'
 
@@ -465,6 +466,25 @@ export function startStudio(port = 5199) {
       if (path === '/api/logs' && req.method === 'GET') {
         if (!guard('logs:read')) return
         return ok(res, { logs: readLogs(Number(url.searchParams.get('limit') ?? 200)) })
+      }
+
+      /* ---------- 站点设置（content/site.json） ---------- */
+      if (path === '/api/site' && req.method === 'GET') {
+        return ok(res, { site: readSiteConfig() })
+      }
+      if (path === '/api/site' && req.method === 'PUT') {
+        // 站点级改动只允许 admin / editor；author 只读
+        if (role !== 'admin' && role !== 'editor') {
+          return sendJson(res, 403, { error: '站点设置仅管理员/编辑可修改' })
+        }
+        const body = JSON.parse(await readBody(req).catch(() => ({})))
+        try {
+          const saved = saveSiteConfig(body)
+          log(actor, 'site:update', 'content/site.json', '更新站点设置/友链')
+          return ok(res, { site: saved })
+        } catch (e) {
+          return sendJson(res, 400, { error: e.message })
+        }
       }
 
       /* ---------- 推送上线（git commit + push，流式任务） ---------- */
