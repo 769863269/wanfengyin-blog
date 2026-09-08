@@ -390,7 +390,7 @@ function renderRows(status) {
           (a.category ? '<span class="rounded-full bg-[#e8f1fd] px-2 py-0.5 text-[11px] text-[#0b62c4]">' + esc(a.category) + '</span>' : '') +
           a.tags.slice(0, 3).map(function (t) { return '<span class="rounded-full bg-[#f0f0f2] px-2 py-0.5 text-[11px] text-[#6e6e73]">' + esc(t) + '</span>' }).join('') +
         '</div></td>' +
-        '<td class="hidden whitespace-nowrap px-3 py-3 text-[#86868b] sm:table-cell">' + esc(a.publishedAt) + '</td>' +
+        '<td class="hidden whitespace-nowrap px-3 py-3 text-[#86868b] sm:table-cell">' + esc(a.publishedAt + (a.publishedTime ? ' ' + a.publishedTime : '')) + '</td>' +
         '<td class="px-3 py-3"><span class="whitespace-nowrap rounded-full px-2.5 py-1 text-[11.5px] font-medium ' + STATUS_STYLE[a.status] + '">' + STATUS_LABEL[a.status] + '</span></td>' +
         '<td class="px-4 py-3">' + ops + '</td></tr>'
     }).join('')

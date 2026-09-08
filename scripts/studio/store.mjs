@@ -649,7 +649,9 @@ export function queryArticles({ status, q, category, tag, author, sort }) {
         .includes(kw),
     )
   }
-  const byDate = (a, b) => (a.publishedAt < b.publishedAt ? 1 : -1)
+  // 发布时间精确到分钟：同日内新发的排前面（与前台 sortedPosts 排序键一致）
+  const ts = (a) => new Date(`${a.publishedAt}T${a.publishedTime || '00:00'}`).getTime()
+  const byDate = (a, b) => ts(b) - ts(a)
   if (sort === 'oldest') items.sort((a, b) => -byDate(a, b))
   else items.sort(byDate)
   // 置顶永远在最前（仅列表展示层排序，不影响线上 sortedPosts 之外逻辑）
