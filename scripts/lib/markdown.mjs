@@ -32,10 +32,15 @@ export function escapeHtml(text) {
     .replaceAll("'", '&#39;')
 }
 
-/** 链接白名单：http(s) / 站内相对路径 / 页内锚点 / mailto，其余原样返回不生成 a 标签 */
+/** App 深链协议白名单（阿里卖家中心等客户端深链）；javascript:/vbscript:/data: 永远不在列，杜绝注入 */
+const APP_SCHEMES = ['aicenter']
+
+/** 链接白名单：http(s) / 站内相对路径 / 页内锚点 / mailto / APP_SCHEMES 深链，其余原样返回不生成 a 标签 */
 function safeHref(href) {
   const url = href.replaceAll('&amp;', '&')
-  return /^(https?:\/\/|\/|#|mailto:)/i.test(url) ? escapeHtml(url) : null
+  if (/^(https?:\/\/|\/|#|mailto:)/i.test(url)) return escapeHtml(url)
+  if (APP_SCHEMES.some((s) => url.toLowerCase().startsWith(s + ':'))) return escapeHtml(url)
+  return null
 }
 
 /**

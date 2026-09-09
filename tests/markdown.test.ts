@@ -157,6 +157,17 @@ describe('renderInline', () => {
     expect(html).toContain('javascript:alert(1)')
   })
 
+  it('APP 深链白名单（aicenter://）生成 a 标签', () => {
+    const html = renderInline('[使用RFQ报价](aicenter://customChat)')
+    expect(html).toContain('<a href="aicenter://customChat"')
+    expect(html).toContain('>使用RFQ报价</a>')
+  })
+
+  it('未收录的 app 协议仍然拦截（data: 不放行）', () => {
+    const html = renderInline('[点我](data:text/html,hi)')
+    expect(html).not.toContain('<a ')
+  })
+
   it('行内 HTML 被转义，不可能注入', () => {
     const html = renderInline('**<script>alert(1)</script>**')
     expect(html).not.toContain('<script>')
