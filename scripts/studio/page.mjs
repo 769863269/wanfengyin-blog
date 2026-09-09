@@ -283,7 +283,6 @@ function navigate() {
   else view.innerHTML = '<p class="text-sm text-[#86868b]">页面不存在</p>'
 }
 $('syncPanelClose').addEventListener('click', function () { $('syncPanel').classList.add('hidden') })
-window.addEventListener('resize', fitCoverStage)
 window.addEventListener('hashchange', navigate)
 
 /* ================= 视图：文章列表 ================= */
@@ -730,6 +729,7 @@ onRoute('editor/*', function (file) {
     /** 舞台高度跟随图片比例（完整显示不裁切），超高图封顶 420px，空态 240px */
     function fitCoverStage() {
       var stage = $('eCoverStage')
+      if (!stage) return // 编辑器未打开时无舞台，跳过
       if (!coverDims.w || !coverDims.h) {
         stage.style.height = '240px'
         return
@@ -737,6 +737,7 @@ onRoute('editor/*', function (file) {
       var cw = stage.clientWidth || 800
       stage.style.height = Math.min(420, Math.round((cw * coverDims.h) / coverDims.w)) + 'px'
     }
+    window.addEventListener('resize', fitCoverStage)
 
     function renderCover(dims) {
       var has = Boolean(coverNew || a.cover)
