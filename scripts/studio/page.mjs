@@ -19,6 +19,11 @@ export function page() {
   .fade-in { animation: fadein .2s ease-out; } @keyframes fadein { from { opacity:0; transform:translateY(4px);} to { opacity:1; transform:none; } }
   .nav-item.active { background:#e8f1fd; color:#0071e3; font-weight:600; }
   ::-webkit-scrollbar { width:8px; height:8px; } ::-webkit-scrollbar-thumb { background:#d2d2d7; border-radius:4px; }
+  /* Vditor 固定尺寸护栏：高度由 JS 配置锁定，宽度永不超容器，内容超长在编辑器内部滚动 */
+  #vditorHost .vditor { width:100% !important; max-width:100% !important; }
+  #vditorHost .vditor-content { overflow-y:auto; }
+  #vditorHost img, #vditorHost table, #vditorHost pre { max-width:100%; }
+  #vditorHost table { display:block; overflow-x:auto; }
 </style>
 </head>
 <body class="min-h-screen bg-[#f5f5f7] text-[#1d1d1f] antialiased">
@@ -847,7 +852,7 @@ onRoute('editor/*', function (file) {
           cdn: '/vditor',
           mode: 'wysiwyg',
           value: contentEl.value,
-          minHeight: 460,
+          height: 560,
           cache: { enable: false },
           counter: { enable: true, type: 'markdown' },
           toolbar: [
