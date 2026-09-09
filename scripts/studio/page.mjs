@@ -299,7 +299,7 @@ function navigate() {
     }
   }
   viewSeq++
-  view.className = '' // 每个视图自带宽度策略（表单类视图会自行收窄居中），进入新视图先复位
+  view.className = 'mx-auto max-w-[1100px]' // 全视图统一宽度：居中 1100px，切菜单不再忽宽忽窄
   if (matched) matched(arg)
   else view.innerHTML = '<p class="text-sm text-[#86868b]">页面不存在</p>'
 }
@@ -1230,7 +1230,7 @@ onRoute('logs', function () {
 
 /* ================= 视图：站点设置（content/site.json 增删改查） ================= */
 onRoute('site', function () {
-  view.className = 'mx-auto max-w-[1100px]' // 表单类视图收窄居中，宽屏下不留大片空白
+  view.className = 'mx-auto max-w-[1100px]' // 与全局统一宽度保持一致
   api('/api/site').then(function (d) {
     var s = d.site.site
     var readOnly = myRole !== 'admin' && myRole !== 'editor'
@@ -1383,7 +1383,7 @@ onRoute('site', function () {
 /* ================= 视图：系统设置（后台行为配置，存 content/site.json） ================= */
 onRoute('settings', function () {
   var seq = viewSeq
-  view.className = 'mx-auto max-w-[1100px]' // 表单类视图收窄居中
+  view.className = 'mx-auto max-w-[1100px]' // 与全局统一宽度保持一致
   var readOnly = myRole !== 'admin' && myRole !== 'editor'
   api('/api/site').then(function (d) {
     if (seq !== viewSeq) return
@@ -1394,7 +1394,7 @@ onRoute('settings', function () {
     view.innerHTML = '<h2 class="mb-1 text-[22px] font-semibold tracking-tight">系统设置</h2>' +
       '<p class="mb-5 text-[13px] text-[#86868b]">后台界面的行为配置，保存后所有电脑打开后台都生效（不再依赖浏览器本地记忆）</p>' +
       (readOnly ? '<p class="mb-4 rounded-lg bg-[#fdf6ec] px-4 py-2.5 text-[13px] text-[#8a6d1a]">当前身份只读，系统设置仅管理员/编辑可修改</p>' : '') +
-      '<div class="max-w-xl rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+      '<div class="w-full rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
         '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">文章列表翻页</p>' +
         '<p class="mb-3 text-[11.5px] leading-relaxed text-[#a1a1a6]">勾选翻页条「每页条数」下拉可提供的档位；默认条数必须是已勾选档位之一。配置存在 site.json 里，换电脑、换浏览器都一致</p>' +
         '<div id="pgSizes" class="flex flex-wrap items-center gap-x-5 gap-y-2">' +
@@ -1406,7 +1406,7 @@ onRoute('settings', function () {
           '<select id="pgDefault" class="mt-1 w-40 rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '></select>' +
         '</label>' +
       '</div>' +
-      (readOnly ? '' : '<div class="sticky bottom-4 z-10 mt-5 flex max-w-xl items-center gap-3 rounded-2xl border border-black/5 bg-white/95 px-5 py-3.5 shadow-[0_4px_24px_rgba(0,0,0,0.1)] backdrop-blur">' +
+      (readOnly ? '' : '<div class="sticky bottom-4 z-10 mt-5 flex w-full items-center gap-3 rounded-2xl border border-black/5 bg-white/95 px-5 py-3.5 shadow-[0_4px_24px_rgba(0,0,0,0.1)] backdrop-blur">' +
         '<span id="pgMsg" class="text-[13px] text-[#1d7a35]"></span>' +
         '<button id="pgSave" class="ml-auto rounded-full bg-[#1d1d1f] px-6 py-2.5 text-[13.5px] font-semibold text-white hover:opacity-85">保存系统设置</button>' +
       '</div>')
