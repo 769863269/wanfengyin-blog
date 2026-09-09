@@ -248,8 +248,32 @@ async function copyCode(block: Extract<ArticleBlock, { type: 'code' }>): Promise
 
 .article-body :deep(a) {
   color: var(--brand);
+  font-weight: 500;
+  /* 下划线默认透明，悬停时滑入（过渡平滑，不跳字） */
   text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 1.5px;
   text-underline-offset: 3px;
+  padding: 1px 4px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--brand) 7%, transparent);
+  transition:
+    background var(--duration-fast) ease,
+    text-decoration-color var(--duration-fast) ease;
+}
+
+.article-body :deep(a:hover) {
+  background: color-mix(in srgb, var(--brand) 13%, transparent);
+  text-decoration-color: var(--brand);
+}
+
+/* 外链：右上角小箭头提示新窗口打开 */
+.article-body :deep(a[target="_blank"])::after {
+  content: '↗';
+  font-size: 0.82em;
+  margin-left: 2px;
+  opacity: 0.55;
+  vertical-align: 0.08em;
 }
 
 .article-body :deep(img) {

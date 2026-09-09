@@ -116,6 +116,13 @@ export default defineConfig({
     host: '127.0.0.1',
     port: 5173,
     open: false,
+    // 非 ASCII 路径（E:\小欣\…）下 chokidar 文件监听会静默失效：
+    // 文件改了 dev server 不重新编译，浏览器永远拿旧模块（HMR 也没用）。
+    // 轮询兜底，300ms 足够灵敏，本项目体量开销可忽略。
+    watch: {
+      usePolling: true,
+      interval: 300,
+    },
   },
 
   build: {
