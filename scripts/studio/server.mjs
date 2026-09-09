@@ -252,7 +252,7 @@ export function startStudio(port = 5199) {
     try {
       /* ---------- 静态资源 ---------- */
       if (req.method === 'GET' && path === '/') {
-        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' })
         res.end(page())
         return
       }
