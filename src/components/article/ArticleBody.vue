@@ -11,6 +11,7 @@
 import { ref } from 'vue'
 import type { ArticleBlock } from '@/types'
 import { renderInline } from '../../../scripts/lib/markdown.mjs'
+import { sanitizeHtml } from '@/utils/sanitize'
 
 const { blocks } = defineProps<{ blocks: readonly ArticleBlock[] }>()
 
@@ -43,14 +44,14 @@ async function copyCode(block: Extract<ArticleBlock, { type: 'code' }>): Promise
     <template v-for="(block, index) in blocks" :key="index">
       <!-- 行内格式：renderInline 先转义再挂白名单标签，受控 HTML -->
       <!-- eslint-disable-next-line vue/no-v-html -->
-      <p v-if="block.type === 'paragraph'" v-html="renderInline(block.text)" />
+      <p v-if="block.type === 'paragraph'" v-html="sanitizeHtml(renderInline(block.text))" />
 
       <!-- eslint-disable-next-line vue/no-v-html -->
       <!-- eslint-disable-next-line vue/no-v-html -->
-      <h2 v-else-if="block.type === 'heading'" :id="block.id" class="article-body__heading" v-html="renderInline(block.text)" />
+      <h2 v-else-if="block.type === 'heading'" :id="block.id" class="article-body__heading" v-html="sanitizeHtml(renderInline(block.text))" />
 
       <!-- eslint-disable-next-line vue/no-v-html -->
-      <blockquote v-else-if="block.type === 'quote'" class="article-body__quote" v-html="renderInline(block.text)" />
+      <blockquote v-else-if="block.type === 'quote'" class="article-body__quote" v-html="sanitizeHtml(renderInline(block.text))" />
 
       <figure v-else-if="block.type === 'image'" class="article-body__figure">
         <img :src="block.src" :alt="block.alt" loading="lazy" decoding="async" />
@@ -60,18 +61,18 @@ async function copyCode(block: Extract<ArticleBlock, { type: 'code' }>): Promise
         <li v-for="(item, li) in block.items" :key="li">
           <template v-if="typeof item === 'string'">
             <!-- eslint-disable-next-line vue/no-v-html -->
-            <span v-html="renderInline(item)" />
+            <span v-html="sanitizeHtml(renderInline(item))" />
           </template>
           <template v-else>
             <!-- eslint-disable-next-line vue/no-v-html -->
-            <span v-html="renderInline(item.text)" />
+            <span v-html="sanitizeHtml(renderInline(item.text))" />
             <ol v-if="item.childrenOrdered" class="article-body__olist">
               <!-- eslint-disable-next-line vue/no-v-html -->
-              <li v-for="(c, ci) in item.children" :key="ci" v-html="renderInline(c)" />
+              <li v-for="(c, ci) in item.children" :key="ci" v-html="sanitizeHtml(renderInline(c))" />
             </ol>
             <ul v-else class="article-body__ulist">
               <!-- eslint-disable-next-line vue/no-v-html -->
-              <li v-for="(c, ci) in item.children" :key="ci" v-html="renderInline(c)" />
+              <li v-for="(c, ci) in item.children" :key="ci" v-html="sanitizeHtml(renderInline(c))" />
             </ul>
           </template>
         </li>
@@ -81,18 +82,18 @@ async function copyCode(block: Extract<ArticleBlock, { type: 'code' }>): Promise
         <li v-for="(item, li) in block.items" :key="li">
           <template v-if="typeof item === 'string'">
             <!-- eslint-disable-next-line vue/no-v-html -->
-            <span v-html="renderInline(item)" />
+            <span v-html="sanitizeHtml(renderInline(item))" />
           </template>
           <template v-else>
             <!-- eslint-disable-next-line vue/no-v-html -->
-            <span v-html="renderInline(item.text)" />
+            <span v-html="sanitizeHtml(renderInline(item.text))" />
             <ol v-if="item.childrenOrdered" class="article-body__olist">
               <!-- eslint-disable-next-line vue/no-v-html -->
-              <li v-for="(c, ci) in item.children" :key="ci" v-html="renderInline(c)" />
+              <li v-for="(c, ci) in item.children" :key="ci" v-html="sanitizeHtml(renderInline(c))" />
             </ol>
             <ul v-else class="article-body__ulist">
               <!-- eslint-disable-next-line vue/no-v-html -->
-              <li v-for="(c, ci) in item.children" :key="ci" v-html="renderInline(c)" />
+              <li v-for="(c, ci) in item.children" :key="ci" v-html="sanitizeHtml(renderInline(c))" />
             </ul>
           </template>
         </li>
@@ -103,13 +104,13 @@ async function copyCode(block: Extract<ArticleBlock, { type: 'code' }>): Promise
           <thead>
             <tr>
               <!-- eslint-disable-next-line vue/no-v-html -->
-              <th v-for="(h, hi) in block.head" :key="hi" v-html="renderInline(h)" />
+              <th v-for="(h, hi) in block.head" :key="hi" v-html="sanitizeHtml(renderInline(h))" />
             </tr>
           </thead>
           <tbody>
             <tr v-for="(row, ri) in block.rows" :key="ri">
               <!-- eslint-disable-next-line vue/no-v-html -->
-              <td v-for="(cell, ci) in row" :key="ci" v-html="renderInline(cell)" />
+              <td v-for="(cell, ci) in row" :key="ci" v-html="sanitizeHtml(renderInline(cell))" />
             </tr>
           </tbody>
         </table>
@@ -117,7 +118,7 @@ async function copyCode(block: Extract<ArticleBlock, { type: 'code' }>): Promise
 
       <div v-else-if="block.type === 'code'" class="article-body__codewrap">
         <!-- eslint-disable-next-line vue/no-v-html -- codeHtml 为构建期 Shiki 产物，token 内容已在构建时转义 -->
-        <pre class="article-body__code" :data-lang="block.lang"><code v-if="block.codeHtml" v-html="block.codeHtml" /><code v-else>{{ block.text }}</code></pre>
+        <pre class="article-body__code" :data-lang="block.lang"><code v-if="block.codeHtml" v-html="sanitizeHtml(block.codeHtml)" /><code v-else>{{ block.text }}</code></pre>
 
         <button
           class="article-body__copy"

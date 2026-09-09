@@ -240,6 +240,12 @@ export function startStudio(port = 5199) {
     // HTTP 头只支持 latin1，中文身份必须 URL 编码传输
     const actor = decodeURIComponent(req.headers['x-studio-actor'] || '')
     const role = roleOf(actor)
+
+    /* ---------- 全局安全响应头（XSS 防纵深） ---------- */
+    res.setHeader('X-Content-Type-Options', 'nosniff')
+    res.setHeader('Referrer-Policy', 'no-referrer')
+    res.setHeader('X-Frame-Options', 'DENY')
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
     // 给后端动作一个统一入口：校验 + 日志 + 错误兜底
     const guard = (action) => {
       if (!can(role, action)) {
@@ -252,8 +258,15 @@ export function startStudio(port = 5199) {
     try {
       /* ---------- 静态资源 ---------- */
       if (req.method === 'GET' && path === '/') {
-        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' })
-        res.end(page())
+        // nonce CSP：每请求随机 nonce 放行唯一内联脚本，外链脚本全走 'self'（Vditor 懒加载为同源脚本）
+        const nonce = randomUUID().replaceAll('-', '')
+        res.writeHead(200, {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'no-store',
+          'Content-Security-Policy':
+            "default-src 'self'; script-src 'self' 'nonce-" + nonce + "'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+        })
+        res.end(page(nonce))
         return
       }
       if (req.method === 'GET' && path === '/studio.css') {

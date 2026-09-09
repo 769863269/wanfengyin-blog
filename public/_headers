@@ -1,0 +1,12 @@
+# Vercel 静态响应头：全站 XSS 防纵深（CSP + 防嗅探 + 防点击劫持）
+# CSP 说明：
+#   script-src 'self' https://giscus.app —— 仅本站脚本与 giscus 评论组件，无内联脚本
+#   style-src 'unsafe-inline' —— Vue SFC scoped 样式与主题变量以 <style>/style 注入，必须放行
+#   img-src https: http: —— 文章允许外链图片（如商品图床）， Cover 预览用 data:
+#   frame-src giscus —— 评论 iframe；frame-ancestors 'none' 禁止被任何站嵌入
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://giscus.app; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:; font-src 'self' data:; connect-src 'self' https://giscus.app; frame-src https://giscus.app; media-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'

@@ -4,7 +4,7 @@
  * 视图：内容列表（按状态）/ 编辑器 / 回收站 / 分类与标签 / 作者与权限 / 操作日志
  * 身份：右上角切换当前作者（存 localStorage），请求带 x-studio-actor 头。
  */
-export function page() {
+export function page(nonce) {
   return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -80,7 +80,7 @@ export function page() {
 <div id="syncPanel" class="fade-in fixed bottom-5 right-5 z-40 hidden w-[420px] rounded-2xl border border-black/10 bg-white p-4 shadow-[0_12px_40px_rgba(0,0,0,0.18)]">
   <div class="mb-2 flex items-center justify-between">
     <span class="text-[13px] font-semibold">推送进度</span>
-    <button onclick="document.getElementById('syncPanel').classList.add('hidden')" class="text-xs text-[#86868b] hover:text-[#1d1d1f]">关闭</button>
+    <button id="syncPanelClose" class="text-xs text-[#86868b] hover:text-[#1d1d1f]">关闭</button>
   </div>
   <pre id="syncLog" class="max-h-[200px] overflow-auto whitespace-pre-wrap rounded-xl bg-[#1d1d1f] p-3 font-mono text-[11.5px] leading-relaxed text-[#7ee29a]"></pre>
   <div id="syncBanner" class="mt-2.5 hidden rounded-lg px-3 py-2 text-[12.5px]"></div>
@@ -100,14 +100,14 @@ export function page() {
 
 <div id="toast" class="pointer-events-none fixed left-1/2 top-6 z-50 hidden -translate-x-1/2 rounded-full bg-[#1d1d1f] px-5 py-2.5 text-[13px] text-white shadow-lg"></div>
 
-<script>
+<script nonce="${nonce || 'noncerequired'}">
 /* ================= 基础设施 ================= */
 var $ = function (id) { return document.getElementById(id) }
 var view = $('view')
 var me = localStorage.getItem('wf-actor') || '周周'
 
 function esc(s) {
-  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 }
 
 function api(path, opts) {
@@ -282,6 +282,7 @@ function navigate() {
   if (matched) matched(arg)
   else view.innerHTML = '<p class="text-sm text-[#86868b]">页面不存在</p>'
 }
+$('syncPanelClose').addEventListener('click', function () { $('syncPanel').classList.add('hidden') })
 window.addEventListener('hashchange', navigate)
 
 /* ================= 视图：文章列表 ================= */
