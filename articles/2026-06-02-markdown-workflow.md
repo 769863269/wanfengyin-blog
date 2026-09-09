@@ -8,7 +8,6 @@ views: 1122
 commentCount: 8
 tags: [工具, 随笔]
 status: published
-pinned: true
 featured: true
 ---
 
