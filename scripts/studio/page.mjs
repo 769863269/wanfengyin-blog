@@ -600,23 +600,20 @@ onRoute('editor/*', function (file) {
           '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
             '<p class="mb-3 text-[13px] font-semibold text-[#6e6e73]">封面图</p>' +
             '<input type="file" id="eCover" accept="image/*" class="hidden" />' +
-            '<div id="eCoverPick" class="flex min-h-[132px] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-[12px] border-2 border-dashed border-[#d2d2d7] bg-[#f5f5f7]/60 px-4 py-6 text-center transition-colors hover:border-[#0071e3] hover:bg-[#f0f7ff]">' +
-              '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#0071e3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.6" cy="8.6" r="1.7"/><path d="M21 15.2 16 10.2 5.4 20.8"/></svg>' +
-              '<p class="text-[13px] font-medium text-[#1d1d1f]">点击选择图片，或拖拽到这里</p>' +
-              '<p class="text-[11.5px] leading-4 text-[#86868b]">支持 JPG / PNG / WebP / GIF / AVIF · 也可直接 Ctrl+V 粘贴截图</p>' +
-            '</div>' +
-            '<div id="eCoverCard" class="mt-3 hidden overflow-hidden rounded-[12px] border border-[#d2d2d7]">' +
-              '<div id="eCoverPreview" title="点击更换" class="h-[150px] w-full cursor-pointer bg-[#f5f5f7] bg-center bg-no-repeat [background-size:cover]"></div>' +
-              '<div class="flex items-center gap-2 border-t border-[#e8e8ed] bg-white px-3 py-2">' +
-                '<div class="min-w-0 flex-1">' +
-                  '<p id="eCoverName" class="truncate text-[12.5px] font-medium text-[#1d1d1f]"></p>' +
-                  '<p id="eCoverInfo" class="mt-0.5 text-[11px] text-[#86868b]"></p>' +
-                '</div>' +
-                '<button id="eCoverSwap" class="shrink-0 rounded-full border border-[#d2d2d7] px-3.5 py-1 text-[12px] text-[#1d1d1f] transition-colors hover:bg-[#f5f5f7]">更换</button>' +
-                '<button id="eCoverDel" class="shrink-0 rounded-full border border-[#ffd2cf] px-3.5 py-1 text-[12px] text-[#c0392b] transition-colors hover:bg-[#fff5f4]">移除</button>' +
+            '<div id="eCoverStage" title="点击更换封面" class="group relative cursor-pointer overflow-hidden rounded-[14px] border border-[#e8e8ed] bg-[#f5f5f7] shadow-[0_1px_4px_rgba(0,0,0,0.04)] [aspect-ratio:21/9]">' +
+              '<div id="eCoverPreview" class="absolute inset-0 bg-center bg-no-repeat transition-transform duration-500 [background-size:cover] group-hover:scale-[1.03]"></div>' +
+              '<div id="eCoverEmpty" class="absolute inset-0 flex flex-col items-center justify-center gap-1.5 border-2 border-dashed border-[#d2d2d7] px-4 text-center transition-colors group-hover:border-[#0071e3] group-hover:bg-[#f0f7ff]/60">' +
+                '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0071e3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.6" cy="8.6" r="1.7"/><path d="M21 15.2 16 10.2 5.4 20.8"/></svg>' +
+                '<p class="text-[13px] font-medium text-[#1d1d1f]">点击选择图片，或拖拽 / Ctrl+V 粘贴到这里</p>' +
+                '<p class="text-[11.5px] text-[#86868b]">支持 JPG / PNG / WebP / GIF / AVIF · 不超过 10MB</p>' +
+              '</div>' +
+              '<span id="eCoverBadge" class="absolute left-3 top-3 hidden rounded-full bg-black/50 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm"></span>' +
+              '<div id="eCoverActions" class="absolute bottom-3 right-3 hidden gap-2">' +
+                '<button id="eCoverSwap" class="rounded-full bg-white/95 px-3.5 py-1.5 text-[12px] font-medium text-[#1d1d1f] shadow-sm backdrop-blur transition-colors hover:bg-white">更换</button>' +
+                '<button id="eCoverDel" class="rounded-full bg-white/95 px-3.5 py-1.5 text-[12px] font-medium text-[#c0392b] shadow-sm backdrop-blur transition-colors hover:bg-[#fff5f4]">移除</button>' +
               '</div>' +
             '</div>' +
-            '<p id="eCoverPath" class="mt-2 truncate text-[11.5px] text-[#a1a1a6]">未设置</p>' +
+            '<p id="eCoverMeta" class="mt-2.5 truncate text-[11.5px] text-[#a1a1a6]">未设置</p>' +
           '</div>' +
           '<div class="rounded-2xl border border-black/5 bg-white p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
             field('标题 *', '<input id="eTitle" class="w-full rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[15px] outline-none focus:border-[#0071e3] focus:ring-4 focus:ring-[#0071e3]/10" value="' + esc(a.title) + '" />') +
@@ -729,21 +726,24 @@ onRoute('editor/*', function (file) {
 
     function renderCover(dims) {
       var has = Boolean(coverNew || a.cover)
-      $('eCoverCard').classList.toggle('hidden', !has)
-      $('eCoverPick').classList.toggle('hidden', has)
-      if (!has) { $('eCoverPath').textContent = '未设置'; return }
-      $('eCoverPath').textContent = coverNew
-        ? '新封面（点保存后上传生效）：' + coverNew.name
-        : (a.cover ? '当前封面：' + a.cover : '未设置')
+      $('eCoverEmpty').classList.toggle('hidden', has)
+      $('eCoverActions').classList.toggle('hidden', !has)
+      $('eCoverBadge').classList.toggle('hidden', !has)
+      var meta = $('eCoverMeta')
+      if (!has) {
+        $('eCoverPreview').style.backgroundImage = ''
+        meta.textContent = '未设置 · 轮播推荐位与分享卡会用到封面，建议 21:9 横图'
+        return
+      }
       if (coverNew) {
         $('eCoverPreview').style.backgroundImage = 'url(' + coverDataUrl + ')'
-        $('eCoverName').textContent = coverNew.name
+        $('eCoverBadge').textContent = '待保存'
         var kb = coverNew.size / 1024
-        $('eCoverInfo').textContent = (kb > 1024 ? (kb / 1024).toFixed(1) + ' MB' : Math.round(kb) + ' KB') + (dims ? ' · ' + dims : '') + ' · 待上传'
+        meta.textContent = coverNew.name + (dims ? ' · ' + dims : '') + ' · ' + (kb > 1024 ? (kb / 1024).toFixed(1) + ' MB' : Math.round(kb) + ' KB') + ' · 点「保存」后上传生效'
       } else {
         $('eCoverPreview').style.backgroundImage = 'url(/covers/' + encodeURIComponent(a.cover.split('/').pop()) + ')'
-        $('eCoverName').textContent = a.cover.split('/').pop()
-        $('eCoverInfo').textContent = '已在博客使用 · 更换或移除后点保存生效'
+        $('eCoverBadge').textContent = '使用中'
+        meta.textContent = a.cover.split('/').pop() + ' · 更换或移除后点「保存」生效'
       }
     }
     function setCoverFile(f) {
@@ -769,16 +769,16 @@ onRoute('editor/*', function (file) {
       renderCover()
     }
     function pickCover() { $('eCover').click() }
-    $('eCoverPick').addEventListener('click', pickCover)
-    $('eCoverPreview').addEventListener('click', pickCover)
-    $('eCoverSwap').addEventListener('click', pickCover)
-    $('eCoverDel').addEventListener('click', clearCover)
+    $('eCoverStage').addEventListener('click', pickCover)
+    $('eCoverSwap').addEventListener('click', function (e) { e.stopPropagation(); pickCover() })
+    $('eCoverDel').addEventListener('click', function (e) { e.stopPropagation(); clearCover() })
     $('eCover').addEventListener('change', function () {
       setCoverFile($('eCover').files[0])
       $('eCover').value = '' // 允许重复选择同一文件
     })
-    // 拖拽：选择区和预览卡都接受放下换图
-    ;[ $('eCoverPick'), $('eCoverCard') ].forEach(function (zone) {
+    // 拖拽：海报区接受放下换图
+    ;(function () {
+      var zone = $('eCoverStage')
       zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.style.borderColor = '#0071e3' })
       zone.addEventListener('dragleave', function () { zone.style.borderColor = '' })
       zone.addEventListener('drop', function (e) {
@@ -787,7 +787,7 @@ onRoute('editor/*', function (file) {
         var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]
         if (f) setCoverFile(f)
       })
-    })
+    })()
     // Ctrl+V 粘贴截图：只在非输入焦点时接管（不干扰 Vditor 正文粘贴）
     document.addEventListener('paste', function (e) {
       if (seq !== viewSeq) return // 旧视图的监听直接作废
