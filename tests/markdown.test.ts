@@ -157,13 +157,23 @@ describe('renderInline', () => {
     expect(html).toContain('javascript:alert(1)')
   })
 
-  it('APP 深链白名单（aicenter://）生成 a 标签', () => {
+  it('markdown 语义：任意 []() 协议都生成链接（aicenter 深链）', () => {
     const html = renderInline('[使用RFQ报价](aicenter://customChat)')
     expect(html).toContain('<a href="aicenter://customChat"')
     expect(html).toContain('>使用RFQ报价</a>')
   })
 
-  it('未收录的 app 协议仍然拦截（data: 不放行）', () => {
+  it('markdown 语义：ftp 等任意协议也生成链接', () => {
+    const html = renderInline('[文件](ftp://files.example.com/a.zip)')
+    expect(html).toContain('<a href="ftp://files.example.com/a.zip"')
+  })
+
+  it('危险协议变体（空白混淆 java\\tscript:）仍然拦截', () => {
+    const html = renderInline('[点我](java\tscript:alert(1))')
+    expect(html).not.toContain('<a ')
+  })
+
+  it('data: 协议不放行', () => {
     const html = renderInline('[点我](data:text/html,hi)')
     expect(html).not.toContain('<a ')
   })

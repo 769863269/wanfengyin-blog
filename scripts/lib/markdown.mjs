@@ -32,15 +32,18 @@ export function escapeHtml(text) {
     .replaceAll("'", '&#39;')
 }
 
-/** App 深链协议白名单（阿里卖家中心等客户端深链）；javascript:/vbscript:/data: 永远不在列，杜绝注入 */
-const APP_SCHEMES = ['aicenter']
+/**
+ * 链接安全：符合 Markdown 语义 —— 任何 []() 都生成 a 标签，
+ * 仅拦截危险协议（javascript:/vbscript:/data: 是 XSS 注入载体，绝不能变成可点链接）。
+ * 协议判断前剔除空白与制表符（浏览器解析 href 时会忽略它们，java\tscript: 也要拦住）。
+ */
+const UNSAFE_SCHEMES = ['javascript:', 'vbscript:', 'data:']
 
-/** 链接白名单：http(s) / 站内相对路径 / 页内锚点 / mailto / APP_SCHEMES 深链，其余原样返回不生成 a 标签 */
 function safeHref(href) {
-  const url = href.replaceAll('&amp;', '&')
-  if (/^(https?:\/\/|\/|#|mailto:)/i.test(url)) return escapeHtml(url)
-  if (APP_SCHEMES.some((s) => url.toLowerCase().startsWith(s + ':'))) return escapeHtml(url)
-  return null
+  const url = href.replaceAll('&amp;', '&').trim()
+  const probe = url.toLowerCase().replaceAll(/\s+/g, '')
+  if (UNSAFE_SCHEMES.some((s) => probe.startsWith(s))) return null
+  return escapeHtml(url)
 }
 
 /**

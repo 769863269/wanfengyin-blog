@@ -595,7 +595,7 @@ onRoute('editor/*', function (file) {
         (a.status === 'published' ? '<a id="eViewBlog" href="' + BLOG_URL + '/post/' + encodeURIComponent(a.slug) + '" target="_blank" class="text-[12.5px] text-[#0071e3] hover:underline">在博客预览 ↗</a>' : '') + '</div>' +
       '</div>' +
 
-      '<div class="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">' +
+      '<div class="space-y-5">' +
         '<div class="space-y-5">' +
           '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
             '<p class="mb-3 text-[13px] font-semibold text-[#6e6e73]">封面图</p>' +
@@ -631,7 +631,7 @@ onRoute('editor/*', function (file) {
           '</div>' +
         '</div>' +
 
-        '<div class="space-y-5 xl:sticky xl:top-4 xl:max-h-[calc(100vh-32px)] xl:self-start xl:overflow-y-auto xl:pr-1.5">' +
+        '<div class="space-y-5">' +
           '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
             '<p class="mb-3 text-[13px] font-semibold text-[#6e6e73]">发布管理</p>' +
             field('状态', '<select id="eStatus" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]">' +
