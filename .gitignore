@@ -28,3 +28,6 @@ scripts/**/*.tmp.mjs
 
 # 本机 safe-delete 拦截删除的临时文件隔离区
 scripts/.trash-tmp/
+
+# 本地 git 配置（身份/HTTP 版本等，跨机器各填各的，不上传）
+git.config.local

@@ -1,0 +1,4 @@
+# 复制为 git.config.local 并填入你自己的值（git.config.local 已被 gitignore，不会上传）
+http.version=HTTP/1.1
+user.name=你的名字
+user.email=you@example.com
