@@ -66,8 +66,8 @@ export function page() {
   </aside>
 
   <!-- 主区 -->
-  <main class="ml-[228px] flex-1 px-8 py-7">
-    <div id="view" class="mx-auto max-w-[1000px]"></div>
+  <main class="ml-[228px] min-w-0 flex-1 px-8 py-7">
+    <div id="view" class="w-full min-w-0"></div>
   </main>
 </div>
 
@@ -273,6 +273,7 @@ function navigate() {
     }
   }
   viewSeq++
+  view.className = '' // 每个视图自带宽度策略（表单类视图会自行收窄居中），进入新视图先复位
   if (matched) matched(arg)
   else view.innerHTML = '<p class="text-sm text-[#86868b]">页面不存在</p>'
 }
@@ -300,7 +301,7 @@ onRoute('list/*', function (status) {
     '</div>' +
     '<div id="batchBar" class="mb-3 hidden flex-wrap items-center gap-2 rounded-xl bg-[#e8f1fd] px-4 py-2.5 text-[13px] text-[#0b62c4]"></div>' +
     '<div class="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
-      '<table class="w-full text-left text-[13.5px]"><thead id="thead" class="bg-[#fafafa] text-[12px] text-[#86868b]"></thead><tbody id="tbody"></tbody></table>' +
+      '<div class="overflow-x-auto"><table class="w-full text-left text-[13.5px]"><thead id="thead" class="bg-[#fafafa] text-[12px] text-[#86868b]"></thead><tbody id="tbody"></tbody></table></div>' +
       '<div id="pageBar" class="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#f0f0f2] px-4 py-3 text-[12.5px] text-[#6e6e73]"></div>' +
     '</div>'
 
@@ -398,7 +399,7 @@ function renderRows(status) {
       ops += '</div>'
       return '<tr class="border-t border-[#f0f0f2] hover:bg-[#fafafa]">' +
         '<td class="px-4 py-3"><input type="checkbox" data-check="' + esc(a.file) + '" class="row-check accent-[#0071e3]" ' + (listState.selected.has(a.file) ? 'checked' : '') + ' /></td>' +
-        '<td class="max-w-[320px] px-3 py-3"><div class="flex items-center gap-1.5">' +
+        '<td class="max-w-[320px] px-3 py-3 lg:max-w-[520px] 2xl:max-w-[760px]"><div class="flex items-center gap-1.5">' +
           (a.pinned ? '<span title="置顶">📌</span>' : '') + (a.featured ? '<span title="推荐">⭐</span>' : '') +
           '<span class="truncate font-medium">' + esc(a.title) + '</span>' +
           (a.publishAt && a.status !== 'published' ? '<span title="定时发布 ' + esc(a.publishAt) + '" class="shrink-0 text-[11px]">⏰</span>' : '') +
@@ -1072,7 +1073,7 @@ onRoute('trash', function () {
   api('/api/trash').then(function (d) {
     view.innerHTML = '<h2 class="mb-1 text-[22px] font-semibold tracking-tight">回收站</h2>' +
       '<p class="mb-5 text-[13px] text-[#86868b]">删除的文章在这里，可恢复；彻底删除不可恢复（仅管理员）</p>' +
-      '<div class="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]"><table class="w-full text-left text-[13.5px]"><tbody>' +
+      '<div class="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]"><div class="overflow-x-auto"><table class="w-full text-left text-[13.5px]"><tbody>' +
       (d.trash.length ? d.trash.map(function (t) {
         return '<tr class="border-b border-[#f0f0f2] last:border-0">' +
           '<td class="px-5 py-3.5"><div class="font-medium">' + esc(t.title) + '</div>' +
@@ -1082,7 +1083,7 @@ onRoute('trash', function () {
           (myRole === 'admin' ? '<button data-purge="' + esc(t.trashName) + '" class="rounded-full border border-[#f0d0d0] px-3.5 py-1 text-[12px] text-[#c0392b] hover:bg-[#fdecec]">彻底删除</button>' : '') +
           '</div></td></tr>'
       }).join('') : '<tr><td class="px-5 py-14 text-center text-sm text-[#a1a1a6]">回收站是空的</td></tr>') +
-      '</tbody></table></div>'
+      '</tbody></table></div></div>'
 
     d.trash.forEach(function (t) {
       var r = document.querySelector('[data-restore="' + t.trashName + '"]')
@@ -1146,7 +1147,7 @@ onRoute('authors', function () {
     var isAdmin = d.me.role === 'admin'
     view.innerHTML = '<h2 class="mb-1 text-[22px] font-semibold tracking-tight">作者与权限</h2>' +
       '<p class="mb-5 text-[13px] text-[#86868b]">本地工具无登录体系，身份用于操作授权与日志追溯（管理员 / 编辑 / 作者）</p>' +
-      '<div class="rounded-2xl border border-black/5 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]"><table class="w-full text-left text-[13.5px]"><thead class="bg-[#fafafa] text-[12px] text-[#86868b]"><tr>' +
+      '<div class="rounded-2xl border border-black/5 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]"><div class="overflow-x-auto"><table class="w-full text-left text-[13.5px]"><thead class="bg-[#fafafa] text-[12px] text-[#86868b]"><tr>' +
       '<th class="px-5 py-2.5">作者</th><th class="px-3 py-2.5">角色</th><th class="px-3 py-2.5">权限说明</th><th class="px-5 py-2.5 text-right">操作</th></tr></thead><tbody>' +
       d.authors.map(function (a) {
         var perm = { admin: '全部操作 + 作者管理 + 彻底删除', editor: '发布/编辑/下线/回收站/批量/推送', author: '只能编辑自己的文章，提交审核' }[a.role]
@@ -1155,7 +1156,7 @@ onRoute('authors', function () {
           '<td class="px-3 py-3"><span class="rounded-full bg-[#f0f0f2] px-2.5 py-1 text-[11.5px]">' + ROLE_LABEL[a.role] + '</span></td>' +
           '<td class="px-3 py-3 text-[12.5px] text-[#6e6e73]">' + perm + '</td>' +
           '<td class="px-5 py-3 text-right">' + (isAdmin && a.role !== 'admin' ? '<button data-del="' + esc(a.name) + '" class="rounded-full border border-[#f0d0d0] px-3 py-1 text-[12px] text-[#c0392b] hover:bg-[#fdecec]">移除</button>' : '') + '</td></tr>'
-      }).join('') + '</tbody></table></div>' +
+      }).join('') + '</tbody></table></div></div>' +
       (isAdmin ?
         '<div class="mt-5 flex flex-wrap items-end gap-3 rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
         '<div><label class="mb-1 block text-[12.5px] font-semibold text-[#6e6e73]">作者名</label><input id="aName" class="rounded-lg border border-[#d2d2d7] px-3 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" /></div>' +
@@ -1185,17 +1186,17 @@ onRoute('logs', function () {
   api('/api/logs?limit=300').then(function (d) {
     view.innerHTML = '<h2 class="mb-1 text-[22px] font-semibold tracking-tight">操作日志</h2>' +
       '<p class="mb-5 text-[13px] text-[#86868b]">最近 ' + d.logs.length + ' 条，新到旧；jsonl 追加存储于 .studio/logs.jsonl</p>' +
-      '<div class="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]"><table class="w-full text-left text-[12.5px]"><thead class="bg-[#fafafa] text-[11.5px] text-[#86868b]"><tr>' +
+      '<div class="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]"><div class="overflow-x-auto"><table class="w-full text-left text-[12.5px]"><thead class="bg-[#fafafa] text-[11.5px] text-[#86868b]"><tr>' +
       '<th class="px-5 py-2.5">时间</th><th class="px-3 py-2.5">身份</th><th class="px-3 py-2.5">动作</th><th class="px-3 py-2.5">对象</th><th class="px-5 py-2.5">详情</th></tr></thead><tbody>' +
       (d.logs.length ? d.logs.map(function (l) {
         return '<tr class="border-t border-[#f0f0f2]">' +
           '<td class="whitespace-nowrap px-5 py-2.5 text-[#86868b]">' + esc(l.ts.slice(5, 16).replace('T', ' ')) + '</td>' +
           '<td class="px-3 py-2.5">' + esc(l.actor) + '</td>' +
           '<td class="px-3 py-2.5"><span class="rounded-full bg-[#f0f0f2] px-2 py-0.5 font-mono text-[11px]">' + esc(l.action) + '</span></td>' +
-          '<td class="max-w-[220px] truncate px-3 py-2.5 font-mono text-[11.5px]">' + esc(l.target) + '</td>' +
+          '<td class="max-w-[220px] truncate px-3 py-2.5 font-mono text-[11.5px] xl:max-w-[420px]">' + esc(l.target) + '</td>' +
           '<td class="px-5 py-2.5 text-[#6e6e73]">' + esc(l.detail) + '</td></tr>'
       }).join('') : '<tr><td colspan="5" class="px-5 py-14 text-center text-sm text-[#a1a1a6]">还没有操作记录</td></tr>') +
-      '</tbody></table></div>'
+      '</tbody></table></div></div>'
   }).catch(function (e) {
     view.innerHTML = '<p class="text-sm text-[#c0392b]">' + esc(e.message) + '</p>'
   })
@@ -1203,6 +1204,7 @@ onRoute('logs', function () {
 
 /* ================= 视图：站点设置（content/site.json 增删改查） ================= */
 onRoute('site', function () {
+  view.className = 'mx-auto max-w-[1100px]' // 表单类视图收窄居中，宽屏下不留大片空白
   api('/api/site').then(function (d) {
     var s = d.site.site
     var readOnly = myRole !== 'admin' && myRole !== 'editor'
@@ -1355,6 +1357,7 @@ onRoute('site', function () {
 /* ================= 视图：系统设置（后台行为配置，存 content/site.json） ================= */
 onRoute('settings', function () {
   var seq = viewSeq
+  view.className = 'mx-auto max-w-[1100px]' // 表单类视图收窄居中
   var readOnly = myRole !== 'admin' && myRole !== 'editor'
   api('/api/site').then(function (d) {
     if (seq !== viewSeq) return
