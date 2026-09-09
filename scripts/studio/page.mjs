@@ -462,7 +462,7 @@ function renderPageBar(total, totalPages, page, status) {
     }).join('') +
     '</select>'
   bar.innerHTML =
-    '<span class="text-[13.5px]">共 <span class="font-semibold text-[#1d1d1f]">' + total + '</span> 篇<span class="mx-2 text-[#d2d2d7]">·</span>第 <span class="font-semibold text-[#1d1d1f]">' + page + '</span> / ' + totalPages + ' 页</span>' +
+    '<span class="flex items-center text-[13.5px]">共 <span class="mx-1.5 font-semibold text-[#1d1d1f]">' + total + '</span> 篇<span class="mx-3.5 text-[13px] text-[#c7c7cc]">·</span>第 <span class="mx-1.5 font-semibold text-[#1d1d1f]">' + page + '</span> / ' + totalPages + ' 页</span>' +
     '<span class="flex items-center">' + sizeSel + '</span>' +
     '<span class="ml-auto flex flex-wrap items-center gap-2.5">' +
       pageBtn('pFirst', '首页', page > 1) +
