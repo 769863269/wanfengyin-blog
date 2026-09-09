@@ -597,23 +597,6 @@ onRoute('editor/*', function (file) {
 
       '<div class="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">' +
         '<div class="space-y-5">' +
-          '<div class="rounded-2xl border border-black/5 bg-white p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
-            field('标题 *', '<input id="eTitle" class="w-full rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[15px] outline-none focus:border-[#0071e3] focus:ring-4 focus:ring-[#0071e3]/10" value="' + esc(a.title) + '" />') +
-            '<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">' +
-              field('slug（网址名，留空自动生成）', '<input id="eSlug" class="w-full rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[14px] outline-none focus:border-[#0071e3]" value="' + esc(a.slug) + '" placeholder="留空自动生成，或填 my-post" />') +
-              field('发布日期', '<input id="eDate" type="date" class="w-full rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[14px] outline-none focus:border-[#0071e3]" value="' + esc(a.publishedAt || new Date().toISOString().slice(0, 10)) + '" />') +
-            '</div>' +
-            '<div class="mt-4"><div class="mb-1.5 flex items-center justify-between"><label class="text-[13px] font-semibold text-[#6e6e73]">摘要（列表与 SEO description）</label>' +
-              '<button type="button" id="eExcerptGen" class="rounded-md border border-[#d2d2d7] px-2 py-0.5 text-[11.5px] text-[#6e6e73] hover:border-[#0071e3] hover:text-[#0071e3]">✨ 一键取正文开头</button></div>' +
-              '<textarea id="eExcerpt" rows="2" class="w-full resize-y rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[14px] outline-none focus:border-[#0071e3]">' + esc(a.excerpt) + '</textarea></div>' +
-            '<div class="mt-4"><div class="mb-1.5 flex flex-wrap items-center justify-between gap-2"><label class="text-[13px] font-semibold text-[#6e6e73]">正文（Markdown）*</label><span id="vdModeHint" class="hidden text-[11px] text-[#a1a1a6]"></span></div>' +
-              '<div id="vditorHost" class="overflow-hidden rounded-[10px] border border-[#d2d2d7]"></div>' +
-              '<textarea id="eContent" rows="18" class="hidden w-full resize-y rounded-[10px] border border-[#d2d2d7] px-3.5 py-3 font-mono text-[13px] leading-relaxed outline-none focus:border-[#0071e3]">' + esc(a.body) + '</textarea>' +
-              '<div id="eStats" class="mt-1.5 text-[11.5px] text-[#a1a1a6]"></div></div>' +
-          '</div>' +
-        '</div>' +
-
-        '<div class="space-y-5 xl:sticky xl:top-4 xl:max-h-[calc(100vh-32px)] xl:self-start xl:overflow-y-auto xl:pr-1.5">' +
           '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
             '<p class="mb-3 text-[13px] font-semibold text-[#6e6e73]">封面图</p>' +
             '<input type="file" id="eCover" accept="image/*" class="hidden" />' +
@@ -635,7 +618,23 @@ onRoute('editor/*', function (file) {
             '</div>' +
             '<p id="eCoverPath" class="mt-2 truncate text-[11.5px] text-[#a1a1a6]">未设置</p>' +
           '</div>' +
+          '<div class="rounded-2xl border border-black/5 bg-white p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+            field('标题 *', '<input id="eTitle" class="w-full rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[15px] outline-none focus:border-[#0071e3] focus:ring-4 focus:ring-[#0071e3]/10" value="' + esc(a.title) + '" />') +
+            '<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">' +
+              field('slug（网址名，留空自动生成）', '<input id="eSlug" class="w-full rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[14px] outline-none focus:border-[#0071e3]" value="' + esc(a.slug) + '" placeholder="留空自动生成，或填 my-post" />') +
+              field('发布日期', '<input id="eDate" type="date" class="w-full rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[14px] outline-none focus:border-[#0071e3]" value="' + esc(a.publishedAt || new Date().toISOString().slice(0, 10)) + '" />') +
+            '</div>' +
+            '<div class="mt-4"><div class="mb-1.5 flex items-center justify-between"><label class="text-[13px] font-semibold text-[#6e6e73]">摘要（列表与 SEO description）</label>' +
+              '<button type="button" id="eExcerptGen" class="rounded-md border border-[#d2d2d7] px-2 py-0.5 text-[11.5px] text-[#6e6e73] hover:border-[#0071e3] hover:text-[#0071e3]">✨ 一键取正文开头</button></div>' +
+              '<textarea id="eExcerpt" rows="2" class="w-full resize-y rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[14px] outline-none focus:border-[#0071e3]">' + esc(a.excerpt) + '</textarea></div>' +
+            '<div class="mt-4"><div class="mb-1.5 flex flex-wrap items-center justify-between gap-2"><label class="text-[13px] font-semibold text-[#6e6e73]">正文（Markdown）*</label><span id="vdModeHint" class="hidden text-[11px] text-[#a1a1a6]"></span></div>' +
+              '<div id="vditorHost" class="overflow-hidden rounded-[10px] border border-[#d2d2d7]"></div>' +
+              '<textarea id="eContent" rows="18" class="hidden w-full resize-y rounded-[10px] border border-[#d2d2d7] px-3.5 py-3 font-mono text-[13px] leading-relaxed outline-none focus:border-[#0071e3]">' + esc(a.body) + '</textarea>' +
+              '<div id="eStats" class="mt-1.5 text-[11.5px] text-[#a1a1a6]"></div></div>' +
+          '</div>' +
+        '</div>' +
 
+        '<div class="space-y-5 xl:sticky xl:top-4 xl:max-h-[calc(100vh-32px)] xl:self-start xl:overflow-y-auto xl:pr-1.5">' +
           '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
             '<p class="mb-3 text-[13px] font-semibold text-[#6e6e73]">发布管理</p>' +
             field('状态', '<select id="eStatus" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]">' +
