@@ -299,7 +299,7 @@ function navigate() {
     }
   }
   viewSeq++
-  view.className = 'mx-auto max-w-[1100px]' // 全视图统一宽度：居中 1100px，切菜单不再忽宽忽窄
+  view.className = 'w-full' // 全视图统一：内容区占满主区，不留空白
   if (matched) matched(arg)
   else view.innerHTML = '<p class="text-sm text-[#86868b]">页面不存在</p>'
 }
@@ -1230,7 +1230,7 @@ onRoute('logs', function () {
 
 /* ================= 视图：站点设置（content/site.json 增删改查） ================= */
 onRoute('site', function () {
-  view.className = 'mx-auto max-w-[1100px]' // 与全局统一宽度保持一致
+  view.className = 'w-full' // 与全局统一：占满不留白
   api('/api/site').then(function (d) {
     var s = d.site.site
     var readOnly = myRole !== 'admin' && myRole !== 'editor'
@@ -1383,7 +1383,7 @@ onRoute('site', function () {
 /* ================= 视图：系统设置（后台行为配置，存 content/site.json） ================= */
 onRoute('settings', function () {
   var seq = viewSeq
-  view.className = 'mx-auto max-w-[1100px]' // 与全局统一宽度保持一致
+  view.className = 'w-full' // 与全局统一：占满不留白
   var readOnly = myRole !== 'admin' && myRole !== 'editor'
   api('/api/site').then(function (d) {
     if (seq !== viewSeq) return
