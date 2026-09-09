@@ -19,7 +19,7 @@ import {
   changeStatus, setFlags,
   trashArticle, listTrash, restoreFromTrash, purgeTrash,
   taxonomy, renameTaxonomy, queryArticles, statusCounts, runSchedule,
-  readSiteConfig, saveSiteConfig,
+  readSiteConfig, saveSiteConfig, getPagination,
 } from './store.mjs'
 import { page } from './page.mjs'
 
@@ -308,6 +308,7 @@ export function startStudio(port = 5199) {
           taxonomy: taxonomy(),
           me: { name: actor || '(未选择身份)', role },
           featured: { count: featuredCount(), max: MAX_FEATURED },
+          pagination: getPagination(),
           pending: pendingChanges(),
           blog: { building: blogBuild.building, builtAt: blogBuild.builtAt, lastError: blogBuild.lastError },
         })
@@ -316,6 +317,9 @@ export function startStudio(port = 5199) {
 
       /* ---------- 文章列表 / 详情 ---------- */
       if (req.method === 'GET' && path === '/api/articles') {
+        // 每页条数只认后台「系统设置」配置的档位，未传/传了未配置档位一律用默认值
+        const pagination = getPagination()
+        const reqSize = Number.parseInt(url.searchParams.get('pageSize') ?? '', 10)
         const result = queryArticles({
           status: url.searchParams.get('status') ?? '',
           q: url.searchParams.get('q') ?? '',
@@ -324,7 +328,7 @@ export function startStudio(port = 5199) {
           author: url.searchParams.get('author') ?? '',
           sort: url.searchParams.get('sort') ?? '',
           page: url.searchParams.get('page') ?? '',
-          pageSize: url.searchParams.get('pageSize') ?? '',
+          pageSize: Number.isInteger(reqSize) && pagination.sizes.includes(reqSize) ? reqSize : pagination.defaultSize,
         })
         ok(res, {
           articles: result.items,

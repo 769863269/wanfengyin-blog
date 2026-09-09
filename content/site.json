@@ -68,5 +68,14 @@
       "target": "archive",
       "showOnMobile": true
     }
-  ]
+  ],
+  "pagination": {
+    "sizes": [
+      5,
+      10,
+      20,
+      50
+    ],
+    "defaultSize": 10
+  }
 }

@@ -47,6 +47,7 @@ export function page() {
       <a href="#/authors"  data-nav="authors"  class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">👥 作者与权限</a>
       <a href="#/logs"     data-nav="logs"     class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">📜 操作日志</a>
       <a href="#/site"     data-nav="site"     class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">⚙️ 站点设置</a>
+      <a href="#/settings" data-nav="settings" class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">🧩 系统设置</a>
     </nav>
 
     <div class="space-y-2 border-t border-[#f0f0f2] pt-3">
@@ -278,8 +279,8 @@ function navigate() {
 window.addEventListener('hashchange', navigate)
 
 /* ================= 视图：文章列表 ================= */
-var listState = { q: '', category: '', tag: '', sort: '', selected: new Set(), page: 1, pageSize: Number(localStorage.getItem('studio-pageSize')) || 10 }
-var PAGE_SIZES = [5, 10, 20, 50]
+var listState = { q: '', category: '', tag: '', sort: '', selected: new Set(), page: 1, pageSize: 0 }
+var pageSizes = [5, 10, 20, 50] // 档位以后台「系统设置」为准，meta 加载后覆盖
 
 onRoute('list/*', function (status) {
   status = status || 'all'
@@ -305,6 +306,12 @@ onRoute('list/*', function (status) {
 
   loadMeta().then(function (meta) {
     if (seq !== viewSeq) return // 视图已切换，丢弃过期回调
+    // 分页档位以后台配置为准；当前条数不在档位内（配置被改小）则回默认档
+    if (meta.pagination) {
+      pageSizes = meta.pagination.sizes
+      if (!pageSizes.includes(listState.pageSize)) listState.pageSize = meta.pagination.defaultSize
+      renderRows(status) // 首次渲染可能先于 meta，用配置档位重刷翻页条
+    }
     var fill = function (sel, list) {
       list.forEach(function (t) {
         var o = document.createElement('option')
@@ -449,7 +456,7 @@ function renderPageBar(total, totalPages, page, status) {
   if (!bar) return
   if (!total) { bar.innerHTML = '<span>共 0 篇</span>'; return }
   var sizeSel = '<select id="pSize" class="rounded-lg border border-[#d2d2d7] px-1.5 py-1 text-[12px] outline-none focus:border-[#0071e3]">' +
-    PAGE_SIZES.map(function (n) {
+    pageSizes.map(function (n) {
       return '<option value="' + n + '"' + (n === listState.pageSize ? ' selected' : '') + '>' + n + ' 条/页</option>'
     }).join('') +
     '</select>'
@@ -474,7 +481,6 @@ function renderPageBar(total, totalPages, page, status) {
   $('pSize').addEventListener('change', function () {
     listState.pageSize = Number($('pSize').value)
     listState.page = 1 // 条数变化回第一页
-    try { localStorage.setItem('studio-pageSize', String(listState.pageSize)) } catch (e) { /* 忽略 */ }
     renderRows(status)
   })
   ;['pFirst', 'pPrev', 'pNext', 'pLast'].forEach(function (id) {
@@ -1343,6 +1349,71 @@ onRoute('site', function () {
     }
   }).catch(function (e) {
     view.innerHTML = '<p class="text-sm text-[#c0392b]">' + esc(e.message) + '</p>'
+  })
+})
+
+/* ================= 视图：系统设置（后台行为配置，存 content/site.json） ================= */
+onRoute('settings', function () {
+  var seq = viewSeq
+  var readOnly = myRole !== 'admin' && myRole !== 'editor'
+  api('/api/site').then(function (d) {
+    if (seq !== viewSeq) return
+    var pg = (d.site && d.site.pagination) || {}
+    var cfgSizes = Array.isArray(pg.sizes) && pg.sizes.length ? pg.sizes : [5, 10, 20, 50]
+    var cfgDefault = pg.defaultSize || 10
+    var CANDIDATES = [5, 10, 20, 50, 100] // 可勾选的档位候选
+    view.innerHTML = '<h2 class="mb-1 text-[22px] font-semibold tracking-tight">系统设置</h2>' +
+      '<p class="mb-5 text-[13px] text-[#86868b]">后台界面的行为配置，保存后所有电脑打开后台都生效（不再依赖浏览器本地记忆）</p>' +
+      (readOnly ? '<p class="mb-4 rounded-lg bg-[#fdf6ec] px-4 py-2.5 text-[13px] text-[#8a6d1a]">当前身份只读，系统设置仅管理员/编辑可修改</p>' : '') +
+      '<div class="max-w-xl rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+        '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">文章列表翻页</p>' +
+        '<p class="mb-3 text-[11.5px] leading-relaxed text-[#a1a1a6]">勾选翻页条「每页条数」下拉可提供的档位；默认条数必须是已勾选档位之一。配置存在 site.json 里，换电脑、换浏览器都一致</p>' +
+        '<div id="pgSizes" class="flex flex-wrap items-center gap-x-5 gap-y-2">' +
+          CANDIDATES.map(function (n) {
+            return '<label class="flex items-center gap-1.5 text-[13.5px] text-[#1d1d1f]"><input type="checkbox" class="pg-size accent-[#0071e3]" value="' + n + '"' + (cfgSizes.includes(n) ? ' checked' : '') + (readOnly ? ' disabled' : '') + ' />' + n + ' 条/页</label>'
+          }).join('') +
+        '</div>' +
+        '<label class="mt-4 block text-[12.5px] text-[#6e6e73]">默认每页条数' +
+          '<select id="pgDefault" class="mt-1 w-40 rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '></select>' +
+        '</label>' +
+      '</div>' +
+      (readOnly ? '' : '<div class="sticky bottom-4 z-10 mt-5 flex max-w-xl items-center gap-3 rounded-2xl border border-black/5 bg-white/95 px-5 py-3.5 shadow-[0_4px_24px_rgba(0,0,0,0.1)] backdrop-blur">' +
+        '<span id="pgMsg" class="text-[13px] text-[#1d7a35]"></span>' +
+        '<button id="pgSave" class="ml-auto rounded-full bg-[#1d1d1f] px-6 py-2.5 text-[13.5px] font-semibold text-white hover:opacity-85">保存系统设置</button>' +
+      '</div>')
+
+    // 默认条数下拉 = 当前勾选的档位；勾选变化时重建
+    function rebuildDefault() {
+      var sel = $('pgDefault')
+      var checked = [].slice.call(document.querySelectorAll('.pg-size:checked')).map(function (c) { return Number(c.value) })
+      if (!checked.length) { sel.innerHTML = '<option value="">（先勾选档位）</option>'; return }
+      var cur = Number(sel.value) || cfgDefault
+      sel.innerHTML = checked.map(function (n) {
+        return '<option value="' + n + '"' + (n === cur ? ' selected' : '') + '>' + n + ' 条/页</option>'
+      }).join('')
+    }
+    rebuildDefault()
+    if (!readOnly) {
+      [].slice.call(document.querySelectorAll('.pg-size')).forEach(function (c) {
+        c.addEventListener('change', rebuildDefault)
+      })
+      $('pgSave').addEventListener('click', function () {
+        var checked = [].slice.call(document.querySelectorAll('.pg-size:checked')).map(function (c) { return Number(c.value) })
+        var def = Number($('pgDefault').value)
+        if (!checked.length) { toast('至少勾选一个每页条数档位', true); return }
+        if (!checked.includes(def)) { toast('默认条数必须是已勾选的档位之一', true); return }
+        api('/api/site', { method: 'PUT', body: { pagination: { sizes: checked, defaultSize: def } } })
+          .then(function () {
+            $('pgMsg').textContent = '已保存 ✓ 所有电脑的后台即刻生效'
+            toast('系统设置已保存')
+            loadMeta()
+          })
+          .catch(function (e) {
+            $('pgMsg').textContent = ''
+            toast(e.message, true)
+          })
+      })
+    }
   })
 })
 

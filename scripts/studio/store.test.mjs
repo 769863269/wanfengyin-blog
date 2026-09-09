@@ -6,7 +6,7 @@ import {
   createArticle, getArticle, updateArticle, changeStatus, setFlags,
   trashArticle, restoreFromTrash, purgeTrash, listTrash,
   renameTaxonomy, queryArticles, statusCounts, runSchedule, roleOf,
-  MAX_FEATURED, featuredCount,
+  MAX_FEATURED, featuredCount, saveSiteConfig, getPagination,
 } from './store.mjs'
 
 // 随机后缀：避免与本机正在运行的 studio 调度器或上次崩溃残留抢 slug
@@ -139,5 +139,20 @@ for (const file of [restored.file, f2, f3]) {
   purgeTrash(t.trashName)
 }
 assert('清理完成', !listTrash().some((t) => t.slug.startsWith(S)) && !queryArticles({ q: S }).items.length)
+
+// 7. 分页配置（系统设置，存 site.json）
+assert('分页默认配置', getPagination().defaultSize === 10 && getPagination().sizes.join() === '5,10,20,50')
+saveSiteConfig({ pagination: { sizes: [20, 10, 50, 5, 20], defaultSize: 20 } })
+const pg1 = getPagination()
+assert('分页配置保存+去重排序', pg1.sizes.join() === '5,10,20,50' && pg1.defaultSize === 20)
+let pgBad = false
+try { saveSiteConfig({ pagination: { sizes: [5, 10], defaultSize: 50 } }) } catch { pgBad = true }
+assert('默认条数不在档位被拦截', pgBad)
+let pgBad2 = false
+try { saveSiteConfig({ pagination: { sizes: [], defaultSize: 10 } }) } catch { pgBad2 = true }
+assert('空档位被拦截', pgBad2)
+saveSiteConfig({ pagination: { sizes: [5, 10, 20, 50], defaultSize: 10 } }) // 收尾还原默认
+assert('分页配置还原', getPagination().defaultSize === 10)
+
 console.log(failed ? `\n${failed} FAILED` : '\nALL PASS')
 process.exit(failed ? 1 : 0)

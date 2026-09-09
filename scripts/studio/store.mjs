@@ -181,6 +181,24 @@ export function readSiteConfig() {
   return JSON.parse(readFileSync(siteConfigPath, 'utf8'))
 }
 
+/* ---------------- 文章列表分页配置（后台「系统设置」可调，存 content/site.json） ---------------- */
+const PAGINATION_DEFAULTS = { sizes: [5, 10, 20, 50], defaultSize: 10 }
+
+/** 读取分页配置：缺失/损坏字段逐项回退默认值，永远返回可用配置 */
+export function getPagination() {
+  let cfg = {}
+  try {
+    const raw = readSiteConfig().pagination
+    if (raw && typeof raw === 'object') cfg = raw
+  } catch { /* site.json 缺失/损坏时走默认 */ }
+  const sizes = Array.isArray(cfg.sizes)
+    ? [...new Set(cfg.sizes.map((n) => Math.floor(Number(n))).filter((n) => Number.isInteger(n) && n >= 1 && n <= 100))].sort((a, b) => a - b)
+    : []
+  const useSizes = sizes.length ? sizes : PAGINATION_DEFAULTS.sizes
+  const def = Math.floor(Number(cfg.defaultSize))
+  return { sizes: useSizes, defaultSize: useSizes.includes(def) ? def : useSizes[0] }
+}
+
 /** 保存站点设置：字段白名单过滤 + 友链结构校验，返回保存后的完整配置 */
 export function saveSiteConfig(input) {
   const current = readSiteConfig()
@@ -203,6 +221,17 @@ export function saveSiteConfig(input) {
 
   if (input.mainNav !== undefined) next.mainNav = normalizeNavList(input.mainNav, '顶部导航')
   if (input.mobileExtraNav !== undefined) next.mobileExtraNav = normalizeNavList(input.mobileExtraNav, 'H5 抽屉入口')
+
+  if (input.pagination !== undefined) {
+    const p = input.pagination || {}
+    const sizes = Array.isArray(p.sizes) ? [...new Set(p.sizes.map((n) => Math.floor(Number(n))))].sort((a, b) => a - b) : []
+    if (!sizes.length || sizes.some((n) => !Number.isInteger(n) || n < 1 || n > 100)) {
+      throw new Error('每页条数选项必须是 1~100 的整数（至少一项）')
+    }
+    const def = Math.floor(Number(p.defaultSize))
+    if (!Number.isInteger(def) || !sizes.includes(def)) throw new Error('默认每页条数必须是选项之一')
+    next.pagination = { sizes, defaultSize: def }
+  }
 
   writeFileSync(siteConfigPath, JSON.stringify(next, null, 2) + '\n', 'utf8')
   return next
