@@ -601,7 +601,7 @@ onRoute('editor/*', function (file) {
           '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
             '<p class="mb-3 text-[13px] font-semibold text-[#6e6e73]">封面图</p>' +
             '<input type="file" id="eCover" accept="image/*" class="hidden" />' +
-            '<div id="eCoverStage" title="点击更换封面" class="group relative cursor-pointer overflow-hidden rounded-[14px] border border-[#e8e8ed] bg-[#f5f5f7] shadow-[0_1px_4px_rgba(0,0,0,0.04)] [aspect-ratio:21/9]">' +
+            '<div id="eCoverStage" title="点击更换封面" class="group relative cursor-pointer overflow-hidden rounded-[14px] border border-[#e8e8ed] bg-[#f5f5f7] shadow-[0_1px_4px_rgba(0,0,0,0.04)] [aspect-ratio:21/9] max-h-[260px]">' +
               '<div id="eCoverPreview" class="absolute inset-0 bg-center bg-no-repeat transition-transform duration-500 [background-size:cover] group-hover:scale-[1.03]"></div>' +
               '<div id="eCoverEmpty" class="absolute inset-0 flex flex-col items-center justify-center gap-1.5 border-2 border-dashed border-[#d2d2d7] px-4 text-center transition-colors group-hover:border-[#0071e3] group-hover:bg-[#f0f7ff]/60">' +
                 '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0071e3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.6" cy="8.6" r="1.7"/><path d="M21 15.2 16 10.2 5.4 20.8"/></svg>' +

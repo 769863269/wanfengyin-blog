@@ -24,9 +24,25 @@ function readDisk(): Record<string, number> {
 /** 内存中的事实源：启动时从 localStorage 恢复，写操作同步回写磁盘 */
 const counts = ref<Record<string, number>>(readDisk())
 
+/** 最近一次阅读时间戳（ms）：热门榜同次数时「最近读的优先」的依据 */
+const LAST_KEY = `${STORAGE_KEY}:last-at`
+const lastAt = ref<Record<string, number>>((() => {
+  try {
+    const raw = localStorage.getItem(LAST_KEY)
+    return raw ? (JSON.parse(raw) as Record<string, number>) : {}
+  } catch {
+    return {}
+  }
+})())
+
 /** 该文章在本机的累计阅读次数（响应式：recordView 后所有依赖处自动重算） */
 export function localViews(slug: string): number {
   return counts.value[slug] ?? 0
+}
+
+/** 本机最近一次阅读该文章的时间戳（0 = 从未读过） */
+export function lastReadAt(slug: string): number {
+  return lastAt.value[slug] ?? 0
 }
 
 /** 展示用阅读数 = frontmatter 基数 + 本机浏览增量 */
@@ -53,6 +69,14 @@ export function recordView(slug: string): void {
     return // 存不进去就没法动态，直接放弃（静态基数兜底）
   }
   counts.value = next
+
+  const nextLast = { ...lastAt.value, [slug]: Date.now() }
+  try {
+    localStorage.setItem(LAST_KEY, JSON.stringify(nextLast))
+  } catch {
+    // 时间戳写失败只影响同次数排序，主计数不受影响
+  }
+  lastAt.value = nextLast
 
   try {
     sessionStorage.setItem(`${STORAGE_KEY}:${slug}`, '1')
