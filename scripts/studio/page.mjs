@@ -590,7 +590,7 @@ onRoute('editor/*', function (file) {
         (a.status === 'published' ? '<a id="eViewBlog" href="' + BLOG_URL + '/post/' + encodeURIComponent(a.slug) + '" target="_blank" class="text-[12.5px] text-[#0071e3] hover:underline">在博客预览 ↗</a>' : '') + '</div>' +
       '</div>' +
 
-      '<div class="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_300px]">' +
+      '<div class="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">' +
         '<div class="space-y-5">' +
           '<div class="rounded-2xl border border-black/5 bg-white p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
             field('标题 *', '<input id="eTitle" class="w-full rounded-[10px] border border-[#d2d2d7] px-3.5 py-2.5 text-[15px] outline-none focus:border-[#0071e3] focus:ring-4 focus:ring-[#0071e3]/10" value="' + esc(a.title) + '" />') +
@@ -608,7 +608,7 @@ onRoute('editor/*', function (file) {
           '</div>' +
         '</div>' +
 
-        '<div class="space-y-5">' +
+        '<div class="space-y-5 xl:sticky xl:top-4 xl:max-h-[calc(100vh-32px)] xl:self-start xl:overflow-y-auto xl:pr-1.5">' +
           '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
             '<p class="mb-3 text-[13px] font-semibold text-[#6e6e73]">发布管理</p>' +
             field('状态', '<select id="eStatus" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]">' +
@@ -637,15 +637,6 @@ onRoute('editor/*', function (file) {
           '</div>' +
 
           '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
-            '<p class="mb-3 text-[13px] font-semibold text-[#6e6e73]">分类 / 标签 / SEO</p>' +
-            field('分类（单选）', '<input id="eCategory" list="catList" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" value="' + esc(a.category) + '" /><datalist id="catList"></datalist>') +
-            field('标签（逗号分隔）', '<input id="eTags" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" value="' + esc(a.tags.join(', ')) + '" />', 'mt-3') +
-            field('SEO 关键词（逗号分隔）', '<input id="eKeywords" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" value="' + esc(a.keywords.join(', ')) + '" />', 'mt-3') +
-            field('SEO 描述（留空用摘要）', '<textarea id="eSeoDesc" rows="2" class="w-full resize-y rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]">' + esc(a.seoDescription) + '</textarea>', 'mt-3') +
-            field('作者', '<select id="eAuthor" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"></select>', 'mt-3') +
-          '</div>' +
-
-          '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
             '<p class="mb-3 text-[13px] font-semibold text-[#6e6e73]">发布前检查</p>' +
             '<div id="eCheck" class="space-y-1.5 text-[12.5px]"></div>' +
           '</div>' +
@@ -670,6 +661,15 @@ onRoute('editor/*', function (file) {
               '</div>' +
             '</div>' +
             '<p id="eCoverPath" class="mt-2 truncate text-[11.5px] text-[#a1a1a6]">未设置</p>' +
+          '</div>' +
+
+          '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+            '<p class="mb-3 text-[13px] font-semibold text-[#6e6e73]">分类 / 标签 / SEO</p>' +
+            field('分类（单选）', '<input id="eCategory" list="catList" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" value="' + esc(a.category) + '" /><datalist id="catList"></datalist>') +
+            field('标签（逗号分隔）', '<input id="eTags" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" value="' + esc(a.tags.join(', ')) + '" />', 'mt-3') +
+            field('SEO 关键词（逗号分隔）', '<input id="eKeywords" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" value="' + esc(a.keywords.join(', ')) + '" />', 'mt-3') +
+            field('SEO 描述（留空用摘要）', '<textarea id="eSeoDesc" rows="2" class="w-full resize-y rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]">' + esc(a.seoDescription) + '</textarea>', 'mt-3') +
+            field('作者', '<select id="eAuthor" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"></select>', 'mt-3') +
           '</div>' +
         '</div>' +
       '</div>' +
