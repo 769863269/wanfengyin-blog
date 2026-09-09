@@ -428,6 +428,7 @@ export function updateArticle(file, input) {
   const newFile = `${merged.publishedAt}-${merged.slug}.md`
   writeArticleFile(newFile, orderedData(merged), merged._body)
   if (newFile !== file) unlinkSync(articlePath(file))
+  invalidateArticleCache() // 改名/落盘后立刻失效缓存，否则列表查询拿到旧文件名
   return { file: newFile, renamed: newFile !== file }
 }
 
@@ -634,7 +635,7 @@ export function renameTaxonomy(type, from, to) {
 
 /* ---------------- 搜索 / 筛选 / 排序 ---------------- */
 
-export function queryArticles({ status, q, category, tag, author, sort }) {
+export function queryArticles({ status, q, category, tag, author, sort, page, pageSize }) {
   let items = listArticles()
   if (status && STATUSES.includes(status)) items = items.filter((a) => a.status === status)
   if (category) items = items.filter((a) => a.category === category)
@@ -656,7 +657,19 @@ export function queryArticles({ status, q, category, tag, author, sort }) {
   else items.sort(byDate)
   // 置顶永远在最前（仅列表展示层排序，不影响线上 sortedPosts 之外逻辑）
   items.sort((a, b) => Number(b.pinned) - Number(a.pinned))
-  return items
+
+  // 分页：pageSize 缺省/为 0 = 全量返回（兼容旧调用）；page 从 1 起
+  const total = items.length
+  const size = Math.min(Math.max(Number.parseInt(pageSize, 10) || 0, 0), 100)
+  const p = Math.max(Number.parseInt(page, 10) || 1, 1)
+  if (size > 0) items = items.slice((p - 1) * size, p * size)
+  return {
+    items,
+    total,
+    page: p,
+    pageSize: size,
+    totalPages: size > 0 ? Math.max(Math.ceil(total / size), 1) : 1,
+  }
 }
 
 export function statusCounts() {

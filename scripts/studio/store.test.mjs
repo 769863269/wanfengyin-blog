@@ -18,15 +18,7 @@ const assert = (name, cond, extra) => {
 }
 
 // 0. 自愈预清理：上次运行若有残留（崩溃等），先扫掉
-for (const a of queryArticles({ q: 'cms-layer-test' })) {
-  try {
-    const t = trashArticle(a.file, 'test-preclean')
-    purgeTrash(t.trashName)
-  } catch { /* 文件可能已被并发清走 */ }
-}
-
-// 0. 自愈预清理：上次运行若有残留（崩溃等），先扫掉
-for (const a of queryArticles({ q: 'cms-layer-test' })) {
+for (const a of queryArticles({ q: 'cms-layer-test' }).items) {
   try {
     const t = trashArticle(a.file, 'test-preclean')
     purgeTrash(t.trashName)
@@ -71,9 +63,9 @@ assert('更新+改名', r.renamed && a.slug === S + '-2' && a.excerpt === '新�
 f = r.file
 
 // 5. 查询
-const hit = queryArticles({ q: '新摘要' })
+const hit = queryArticles({ q: '新摘要' }).items
 assert('关键词搜索命中', hit.some((x) => x.file === f))
-const byCat = queryArticles({ category: '测试分类' })
+const byCat = queryArticles({ category: '测试分类' }).items
 assert('分类筛选命中', byCat.some((x) => x.file === f))
 
 // 6. 回收站往返
@@ -146,6 +138,6 @@ for (const file of [restored.file, f2, f3]) {
   const t = trashArticle(file, '测试清理')
   purgeTrash(t.trashName)
 }
-assert('清理完成', !listTrash().some((t) => t.slug.startsWith(S)) && !queryArticles({ q: S }).length)
+assert('清理完成', !listTrash().some((t) => t.slug.startsWith(S)) && !queryArticles({ q: S }).items.length)
 console.log(failed ? `\n${failed} FAILED` : '\nALL PASS')
 process.exit(failed ? 1 : 0)

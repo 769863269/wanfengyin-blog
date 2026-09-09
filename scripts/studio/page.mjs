@@ -278,7 +278,8 @@ function navigate() {
 window.addEventListener('hashchange', navigate)
 
 /* ================= 视图：文章列表 ================= */
-var listState = { q: '', category: '', tag: '', sort: '', selected: new Set() }
+var listState = { q: '', category: '', tag: '', sort: '', selected: new Set(), page: 1, pageSize: Number(localStorage.getItem('studio-pageSize')) || 10 }
+var PAGE_SIZES = [5, 10, 20, 50]
 
 onRoute('list/*', function (status) {
   status = status || 'all'
@@ -299,6 +300,7 @@ onRoute('list/*', function (status) {
     '<div id="batchBar" class="mb-3 hidden flex-wrap items-center gap-2 rounded-xl bg-[#e8f1fd] px-4 py-2.5 text-[13px] text-[#0b62c4]"></div>' +
     '<div class="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
       '<table class="w-full text-left text-[13.5px]"><thead id="thead" class="bg-[#fafafa] text-[12px] text-[#86868b]"></thead><tbody id="tbody"></tbody></table>' +
+      '<div id="pageBar" class="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#f0f0f2] px-4 py-3 text-[12.5px] text-[#6e6e73]"></div>' +
     '</div>'
 
   loadMeta().then(function (meta) {
@@ -319,6 +321,7 @@ onRoute('list/*', function (status) {
   var timer = null
   $('fq').addEventListener('input', function () {
     listState.q = $('fq').value
+    listState.page = 1 // 筛选变化回第一页
     clearTimeout(timer)
     timer = setTimeout(function () { renderRows(status) }, 300)
   })
@@ -327,6 +330,7 @@ onRoute('list/*', function (status) {
       listState.category = $('fcat').value
       listState.tag = $('ftag').value
       listState.sort = $('fsort').value
+      listState.page = 1 // 筛选变化回第一页
       renderRows(status)
     })
   })
@@ -344,10 +348,18 @@ function renderRows(status) {
   if (listState.category) params.set('category', listState.category)
   if (listState.tag) params.set('tag', listState.tag)
   if (listState.sort) params.set('sort', listState.sort)
+  params.set('page', listState.page)
+  params.set('pageSize', listState.pageSize)
 
   api('/api/articles?' + params.toString()).then(function (d) {
     if (seq !== viewSeq) return // 视图已切换，丢弃过期回调
     var arts = d.articles
+    // 删数据后当前页可能越界，收敛到最后一页重取
+    if (d.totalPages && listState.page > d.totalPages) {
+      listState.page = d.totalPages
+      return renderRows(status)
+    }
+    renderPageBar(d.total || 0, d.totalPages || 1, d.page || 1, status)
     $('thead').innerHTML = '<tr>' +
       '<th class="w-10 px-4 py-2.5"><input type="checkbox" id="checkAll" class="accent-[#0071e3]" /></th>' +
       '<th class="px-3 py-2.5">标题</th><th class="hidden px-3 py-2.5 md:table-cell">作者</th>' +
@@ -421,6 +433,66 @@ function renderRows(status) {
       })
     })
     updateBatchBar()
+  })
+}
+
+/* ---- 翻页条：每页条数 / 首页 上一页 下一页 尾页 / 指定页跳转 ---- */
+function pageBtn(id, label, enabled) {
+  var base = 'rounded-full border px-3 py-1 text-[12px] transition-colors '
+  return enabled
+    ? '<button id="' + id + '" class="' + base + 'border-[#d2d2d7] text-[#1d1d1f] hover:bg-[#f5f5f7]">' + label + '</button>'
+    : '<button id="' + id + '" disabled class="' + base + 'border-[#e8e8ed] text-[#c7c7cc] cursor-not-allowed">' + label + '</button>'
+}
+
+function renderPageBar(total, totalPages, page, status) {
+  var bar = $('pageBar')
+  if (!bar) return
+  if (!total) { bar.innerHTML = '<span>共 0 篇</span>'; return }
+  var sizeSel = '<select id="pSize" class="rounded-lg border border-[#d2d2d7] px-1.5 py-1 text-[12px] outline-none focus:border-[#0071e3]">' +
+    PAGE_SIZES.map(function (n) {
+      return '<option value="' + n + '"' + (n === listState.pageSize ? ' selected' : '') + '>' + n + ' 条/页</option>'
+    }).join('') +
+    '</select>'
+  bar.innerHTML =
+    '<span>共 ' + total + ' 篇 · 第 ' + page + ' / ' + totalPages + ' 页</span>' +
+    '<span class="flex items-center gap-1.5">' + sizeSel + '</span>' +
+    '<span class="ml-auto flex flex-wrap items-center gap-1.5">' +
+      pageBtn('pFirst', '首页', page > 1) +
+      pageBtn('pPrev', '上一页', page > 1) +
+      pageBtn('pNext', '下一页', page < totalPages) +
+      pageBtn('pLast', '尾页', page < totalPages) +
+      '<span class="ml-2 flex items-center gap-1">跳至' +
+        '<input id="pJump" type="number" min="1" max="' + totalPages + '" value="' + page + '" class="w-14 rounded-lg border border-[#d2d2d7] px-1.5 py-1 text-center text-[12px] outline-none focus:border-[#0071e3]" />页' +
+        '<button id="pGo" class="rounded-full bg-[#1d1d1f] px-3 py-1 text-[12px] font-medium text-white hover:opacity-85">跳转</button>' +
+      '</span>' +
+    '</span>'
+
+  var go = function (p) {
+    listState.page = Math.min(Math.max(p, 1), totalPages)
+    renderRows(status)
+  }
+  $('pSize').addEventListener('change', function () {
+    listState.pageSize = Number($('pSize').value)
+    listState.page = 1 // 条数变化回第一页
+    try { localStorage.setItem('studio-pageSize', String(listState.pageSize)) } catch (e) { /* 忽略 */ }
+    renderRows(status)
+  })
+  ;['pFirst', 'pPrev', 'pNext', 'pLast'].forEach(function (id) {
+    $(id).addEventListener('click', function () {
+      if (id === 'pFirst') go(1)
+      else if (id === 'pPrev') go(listState.page - 1)
+      else if (id === 'pNext') go(listState.page + 1)
+      else go(totalPages)
+    })
+  })
+  var jump = function () {
+    var v = Number.parseInt($('pJump').value, 10)
+    if (Number.isNaN(v)) return
+    go(v)
+  }
+  $('pGo').addEventListener('click', jump)
+  $('pJump').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); jump() }
   })
 }
 

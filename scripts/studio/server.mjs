@@ -316,15 +316,22 @@ export function startStudio(port = 5199) {
 
       /* ---------- 文章列表 / 详情 ---------- */
       if (req.method === 'GET' && path === '/api/articles') {
+        const result = queryArticles({
+          status: url.searchParams.get('status') ?? '',
+          q: url.searchParams.get('q') ?? '',
+          category: url.searchParams.get('category') ?? '',
+          tag: url.searchParams.get('tag') ?? '',
+          author: url.searchParams.get('author') ?? '',
+          sort: url.searchParams.get('sort') ?? '',
+          page: url.searchParams.get('page') ?? '',
+          pageSize: url.searchParams.get('pageSize') ?? '',
+        })
         ok(res, {
-          articles: queryArticles({
-            status: url.searchParams.get('status') ?? '',
-            q: url.searchParams.get('q') ?? '',
-            category: url.searchParams.get('category') ?? '',
-            tag: url.searchParams.get('tag') ?? '',
-            author: url.searchParams.get('author') ?? '',
-            sort: url.searchParams.get('sort') ?? '',
-          }),
+          articles: result.items,
+          total: result.total,
+          page: result.page,
+          pageSize: result.pageSize,
+          totalPages: result.totalPages,
         })
         return
       }
