@@ -302,7 +302,7 @@ onRoute('list/*', function (status) {
     '<div id="batchBar" class="mb-3 hidden flex-wrap items-center gap-2 rounded-xl bg-[#e8f1fd] px-4 py-2.5 text-[13px] text-[#0b62c4]"></div>' +
     '<div class="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
       '<div class="overflow-x-auto"><table class="w-full text-left text-[13.5px]"><thead id="thead" class="bg-[#fafafa] text-[12px] text-[#86868b]"></thead><tbody id="tbody"></tbody></table></div>' +
-      '<div id="pageBar" class="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[#f0f0f2] px-4 py-3 text-[12.5px] text-[#6e6e73]"></div>' +
+      '<div id="pageBar" class="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-[#f0f0f2] px-6 py-4 text-[13px] text-[#6e6e73]"></div>' +
     '</div>'
 
   loadMeta().then(function (meta) {
@@ -446,32 +446,32 @@ function renderRows(status) {
 
 /* ---- 翻页条：每页条数 / 首页 上一页 下一页 尾页 / 指定页跳转 ---- */
 function pageBtn(id, label, enabled) {
-  var base = 'rounded-full border px-3 py-1 text-[12px] transition-colors '
+  var base = 'rounded-full border px-5 py-2 text-[13px] leading-none transition-all '
   return enabled
-    ? '<button id="' + id + '" class="' + base + 'border-[#d2d2d7] text-[#1d1d1f] hover:bg-[#f5f5f7]">' + label + '</button>'
-    : '<button id="' + id + '" disabled class="' + base + 'border-[#e8e8ed] text-[#c7c7cc] cursor-not-allowed">' + label + '</button>'
+    ? '<button id="' + id + '" class="' + base + 'border-[#d2d2d7] bg-white text-[#1d1d1f] hover:border-[#0071e3] hover:text-[#0071e3]">' + label + '</button>'
+    : '<button id="' + id + '" disabled class="' + base + 'border-[#e8e8ed] bg-transparent text-[#c7c7cc] cursor-not-allowed">' + label + '</button>'
 }
 
 function renderPageBar(total, totalPages, page, status) {
   var bar = $('pageBar')
   if (!bar) return
-  if (!total) { bar.innerHTML = '<span>共 0 篇</span>'; return }
-  var sizeSel = '<select id="pSize" class="rounded-lg border border-[#d2d2d7] px-1.5 py-1 text-[12px] outline-none focus:border-[#0071e3]">' +
+  if (!total) { bar.innerHTML = '<span class="py-1 text-[13px]">共 0 篇</span>'; return }
+  var sizeSel = '<select id="pSize" class="rounded-full border border-[#d2d2d7] bg-white px-4 py-2 text-[13px] leading-none outline-none transition-colors hover:border-[#0071e3] focus:border-[#0071e3]">' +
     pageSizes.map(function (n) {
       return '<option value="' + n + '"' + (n === listState.pageSize ? ' selected' : '') + '>' + n + ' 条/页</option>'
     }).join('') +
     '</select>'
   bar.innerHTML =
-    '<span>共 ' + total + ' 篇 · 第 ' + page + ' / ' + totalPages + ' 页</span>' +
-    '<span class="flex items-center gap-1.5">' + sizeSel + '</span>' +
-    '<span class="ml-auto flex flex-wrap items-center gap-1.5">' +
+    '<span class="text-[13.5px]">共 <span class="font-semibold text-[#1d1d1f]">' + total + '</span> 篇<span class="mx-2 text-[#d2d2d7]">·</span>第 <span class="font-semibold text-[#1d1d1f]">' + page + '</span> / ' + totalPages + ' 页</span>' +
+    '<span class="flex items-center">' + sizeSel + '</span>' +
+    '<span class="ml-auto flex flex-wrap items-center gap-2.5">' +
       pageBtn('pFirst', '首页', page > 1) +
       pageBtn('pPrev', '上一页', page > 1) +
       pageBtn('pNext', '下一页', page < totalPages) +
       pageBtn('pLast', '尾页', page < totalPages) +
-      '<span class="ml-2 flex items-center gap-1">跳至' +
-        '<input id="pJump" type="number" min="1" max="' + totalPages + '" value="' + page + '" class="w-14 rounded-lg border border-[#d2d2d7] px-1.5 py-1 text-center text-[12px] outline-none focus:border-[#0071e3]" />页' +
-        '<button id="pGo" class="rounded-full bg-[#1d1d1f] px-3 py-1 text-[12px] font-medium text-white hover:opacity-85">跳转</button>' +
+      '<span class="ml-3 flex items-center gap-2 text-[13px] text-[#6e6e73]">跳至' +
+        '<input id="pJump" type="number" min="1" max="' + totalPages + '" value="' + page + '" class="w-16 rounded-full border border-[#d2d2d7] bg-white px-3 py-2 text-center text-[13px] leading-none outline-none transition-colors focus:border-[#0071e3]" />页' +
+        '<button id="pGo" class="rounded-full bg-[#0071e3] px-5 py-2 text-[13px] font-medium leading-none text-white transition-all hover:bg-[#0077ed] active:scale-[0.97]">跳转</button>' +
       '</span>' +
     '</span>'
 
