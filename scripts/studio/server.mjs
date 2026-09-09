@@ -259,7 +259,8 @@ export function startStudio(port = 5199) {
       if (req.method === 'GET' && path === '/studio.css') {
         res.writeHead(200, {
           'Content-Type': 'text/css; charset=utf-8',
-          'Cache-Control': 'public, max-age=86400',
+          // 不缓存：CSS 是构建期产物，重新生成后必须立即可见（旧 max-age=86400 会缓存一天旧样式）
+          'Cache-Control': 'no-store',
         })
         res.end(studioCss)
         return
