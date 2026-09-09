@@ -8,13 +8,17 @@
  * 正文内容块。
  * 用结构化数据而非 HTML 字符串，渲染时无需 v-html，
  * 从根上杜绝 XSS，同时天然获得类型检查。
+ * 例外：code.codeHtml（Shiki 构建产物）与行内格式（renderInline 受控 HTML）。
  */
+export type ArticleListItem = string | { text: string; children: string[]; childrenOrdered: boolean }
+
 export type ArticleBlock =
   | { type: 'paragraph'; text: string }
   | { type: 'heading'; id: string; text: string }
   | { type: 'quote'; text: string }
   | { type: 'image'; src: string; alt: string }
-  | { type: 'list'; ordered: boolean; items: string[] }
+  | { type: 'list'; ordered: boolean; items: ArticleListItem[] }
+  | { type: 'table'; head: string[]; rows: string[][] }
   | { type: 'code'; lang: string; text: string; /** 构建期 Shiki 高亮的 <code> 内部 HTML（可选，缺省走纯文本） */ codeHtml?: string }
 
 export interface Post {

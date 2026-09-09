@@ -9,23 +9,68 @@
  *   # / ## / ###      标题（统一渲染为 h2 语义）
  *   > 引文
  *   ![alt](src)       图片（独占一行）
- *   * / - / + 条目    无序列表（连续行合并）
+ *   * / - / + 条目    无序列表（连续行合并；缩进两格起为上一条目的子列表）
  *   1. / 1) 条目      有序列表（连续行合并）
+ *   | a | b | 表格    （下一行为 |---|---| 分隔行）
+ *   **粗体** *斜体* ~~删除~~ `行内代码` [文字](链接)   行内格式
  *   ```lang 围栏代码块（``` 结束；未闭合时取到文末）
  *   普通段落
  *
  * 输出为结构化 ArticleBlock 而非 HTML 字符串 —— 与 ArticleBody.vue 的
  * 渲染约定一致，从根上杜绝 XSS。
+ * 行内格式经 renderInline 输出「先整体转义、再挂白名单标签」的受控 HTML，
+ * 与构建期 Shiki codeHtml 同一信任级别，渲染端可安全 v-html。
  */
 
 /** HTML 转义（预渲染输出使用；结构化路径不需要） */
 export function escapeHtml(text) {
-  return text
+  return String(text)
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;')
+}
+
+/** 链接白名单：http(s) / 站内相对路径 / 页内锚点 / mailto，其余原样返回不生成 a 标签 */
+function safeHref(href) {
+  const url = href.replaceAll('&amp;', '&')
+  return /^(https?:\/\/|\/|#|mailto:)/i.test(url) ? escapeHtml(url) : null
+}
+
+/**
+ * 行内 Markdown → 受控 HTML。
+ * 流程：先整体 escapeHtml，再只挂白名单标签（strong/em/del/code/a/img），
+ * 任何未识别内容保持转义后的纯文本 —— 不可能注入。
+ * 渲染端（ArticleBody.vue v-html / blocksToHtml）共用此函数。
+ */
+export function renderInline(text) {
+  let s = escapeHtml(text)
+  const slots = []
+
+  // 行内代码先占位（私用区哨兵，不会出现在正常文本）：内部内容不再参与后续语法匹配
+  s = s.replace(/`([^`]+)`/g, (_, code) => {
+    slots.push('<code class="article-body__inlinecode">' + code + '</code>')
+    return '\uE000' + (slots.length - 1) + '\uE001'
+  })
+
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+  s = s.replace(/(^|[^*\w])\*([^*\n]+)\*/g, '$1<em>$2</em>')
+  s = s.replace(/~~([^~]+)~~/g, '<del>$1</del>')
+
+  // 行内图片（非独占一行的）
+  s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, (m, alt, src) => {
+    const url = safeHref(src)
+    return url ? '<img src="' + url + '" alt="' + alt + '" loading="lazy" decoding="async" />' : m
+  })
+
+  s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, label, href) => {
+    const url = safeHref(href)
+    return url ? '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + label + '</a>' : m
+  })
+
+  s = s.replace(/\uE000(\d+)\uE001/g, (_, n) => slots[Number(n)] ?? '')
+  return s
 }
 
 /**
@@ -77,6 +122,8 @@ export function parseFrontmatter(raw) {
  * Markdown 正文 → ArticleBlock[]
  * 空行分段；连续非空行合并为一个段落。
  * ``` 围栏代码块整体捕获（含空行），lang 记录语言标签。
+ * 表格：首行 | a | b |，紧跟分隔行（每格 :--- / --- : 形态），后续连续行数据行。
+ * 列表：连续行合并；比首条目缩进 ≥2 格的行归为上一条目的子列表（一层嵌套）。
  */
 export function markdownToBlocks(markdown) {
   const lines = markdown.replace(/\r\n/g, '\n').split('\n')
@@ -89,6 +136,25 @@ export function markdownToBlocks(markdown) {
       blocks.push({ type: 'paragraph', text: paragraphLines.join(' ') })
       paragraphLines = []
     }
+  }
+
+  /** 表格行拆格：去首尾竖线后按 | 切 */
+  const splitRow = (raw) => {
+    let t = raw.trim()
+    if (t.startsWith('|')) t = t.slice(1)
+    if (t.endsWith('|')) t = t.slice(0, -1)
+    return t.split('|').map((c) => c.trim())
+  }
+
+  /** 分隔行判定：每个格子都是 :--- / --- : 形态 */
+  const isSeparatorRow = (raw) => {
+    const cells = splitRow(raw)
+    return cells.length > 0 && cells.every((c) => /^:?-{3,}:?$/.test(c))
+  }
+
+  const rowLine = (raw) => {
+    const m = raw.trim().match(/^\|(.+)\|$/)
+    return m ? splitRow(m[1]) : null
   }
 
   for (let i = 0; i < lines.length; i++) {
@@ -111,6 +177,23 @@ export function markdownToBlocks(markdown) {
 
     if (!line) {
       flushParagraph()
+      continue
+    }
+
+    // 表格：首行 | a | b | + 分隔行 |---|---|
+    const headCells = rowLine(lines[i])
+    if (headCells && i + 1 < lines.length && isSeparatorRow(lines[i + 1])) {
+      flushParagraph()
+      const rows = []
+      i += 2
+      while (i < lines.length) {
+        const cells = rowLine(lines[i])
+        if (!cells || cells.length !== headCells.length) break
+        rows.push(cells)
+        i++
+      }
+      i--
+      blocks.push({ type: 'table', head: headCells, rows })
       continue
     }
 
@@ -143,17 +226,34 @@ export function markdownToBlocks(markdown) {
       continue
     }
 
-    // 列表：* / - / + 无序，1. / 1) 有序；连续列表行合并为一个 block
-    const listItem = line.match(/^([*+-]|\d+[.)])\s+(.+)$/)
+    // 列表：* / - / + 无序，1. / 1) 有序；连续列表行合并为一个 block，
+    // 比首条目缩进 ≥2 格的行作为上一条目的子列表项（支持一层嵌套）
+    const listItem = lines[i].match(/^(\s*)([*+-]|\d+[.)])\s+(.+)$/)
     if (listItem) {
       flushParagraph()
-      const ordered = /\d/.test(listItem[1])
-      const items = [listItem[2].trim()]
+      const ordered = /\d/.test(listItem[2])
+      const baseIndent = listItem[1].length
+      /** @type {Array<string | { text: string; children: string[]; childrenOrdered: boolean }>} */
+      const items = [listItem[3].trim()]
+
       while (i + 1 < lines.length) {
         const next = lines[i + 1].trim()
-        const m2 = next.match(/^([*+-]|\d+[.)])\s+(.+)$/)
-        if (!m2 || /\d/.test(m2[1]) !== ordered) break
-        items.push(m2[2].trim())
+        const m2 = lines[i + 1].match(/^(\s*)([*+-]|\d+[.)])\s+(.+)$/)
+        if (!next || !m2) break
+        const ordered2 = /\d/.test(m2[2])
+        if (m2[1].length >= baseIndent + 2) {
+          // 子列表项：最后一个条目从字符串懒升级为带 children 的对象
+          let last = items[items.length - 1]
+          if (typeof last === 'string') {
+            last = { text: last, children: [], childrenOrdered: ordered2 }
+            items[items.length - 1] = last
+          }
+          last.children.push(m2[3].trim())
+        } else if (ordered2 === ordered) {
+          items.push(m2[3].trim())
+        } else {
+          break // 同级但列表类型不同 → 结束本列表，下一轮起新列表
+        }
         i++
       }
       blocks.push({ type: 'list', ordered, items })
@@ -173,17 +273,33 @@ export function blocksToHtml(blocks) {
     .map((block) => {
       switch (block.type) {
         case 'paragraph':
-          return `<p>${escapeHtml(block.text)}</p>`
+          return `<p>${renderInline(block.text)}</p>`
         case 'heading':
-          return `<h2 id="${escapeHtml(block.id ?? '')}" class="article-body__heading">${escapeHtml(block.text)}</h2>`
+          return `<h2 id="${escapeHtml(block.id ?? '')}" class="article-body__heading">${renderInline(block.text)}</h2>`
         case 'quote':
-          return `<blockquote class="article-body__quote">${escapeHtml(block.text)}</blockquote>`
+          return `<blockquote class="article-body__quote">${renderInline(block.text)}</blockquote>`
         case 'image':
           return `<figure class="article-body__figure"><img src="${escapeHtml(block.src)}" alt="${escapeHtml(block.alt)}" loading="lazy" decoding="async" /></figure>`
         case 'list': {
           const tag = block.ordered ? 'ol' : 'ul'
           const cls = block.ordered ? 'article-body__olist' : 'article-body__ulist'
-          return `<${tag} class="${cls}">${block.items.map((it) => `<li>${escapeHtml(it)}</li>`).join('')}</${tag}>`
+          const lis = block.items
+            .map((it) => {
+              if (typeof it === 'string') return `<li>${renderInline(it)}</li>`
+              const ctag = it.childrenOrdered ? 'ol' : 'ul'
+              const ccls = it.childrenOrdered ? 'article-body__olist' : 'article-body__ulist'
+              const children = it.children.map((c) => `<li>${renderInline(c)}</li>`).join('')
+              return `<li>${renderInline(it.text)}<${ctag} class="${ccls}">${children}</${ctag}></li>`
+            })
+            .join('')
+          return `<${tag} class="${cls}">${lis}</${tag}>`
+        }
+        case 'table': {
+          const thead = `<thead><tr>${block.head.map((c) => `<th>${renderInline(c)}</th>`).join('')}</tr></thead>`
+          const tbody = `<tbody>${block.rows
+            .map((row) => `<tr>${row.map((c) => `<td>${renderInline(c)}</td>`).join('')}</tr>`)
+            .join('')}</tbody>`
+          return `<div class="article-body__tablewrap"><table class="article-body__table">${thead}${tbody}</table></div>`
         }
         case 'code':
           // 构建期已高亮（block.codeHtml 为 Shiki 生成的 token span，构建产物可信）；

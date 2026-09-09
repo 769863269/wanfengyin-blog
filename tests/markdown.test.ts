@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { blocksToHtml, markdownToBlocks, parseFrontmatter } from '../scripts/lib/markdown.mjs'
+import { blocksToHtml, markdownToBlocks, parseFrontmatter, renderInline } from '../scripts/lib/markdown.mjs'
 
 describe('parseFrontmatter', () => {
   it('解析标量与数组简写', () => {
@@ -96,6 +96,79 @@ describe('markdownToBlocks', () => {
       { type: 'paragraph', text: '后文' },
     ])
   })
+
+  it('表格：表头 + 分隔行 + 数据行', () => {
+    const blocks = markdownToBlocks(
+      '| 阶段 | 主要任务 |\n| --- | --- |\n| 基础建设 | 店铺装修 |\n| 流量增长 | 关键词优化 |',
+    )
+    expect(blocks).toEqual([
+      {
+        type: 'table',
+        head: ['阶段', '主要任务'],
+        rows: [
+          ['基础建设', '店铺装修'],
+          ['流量增长', '关键词优化'],
+        ],
+      },
+    ])
+  })
+
+  it('分隔行不合规则时不当作表格', () => {
+    const blocks = markdownToBlocks('| a | b |\n| 不是分隔行 |')
+    expect(blocks[0]?.type).toBe('paragraph')
+  })
+
+  it('列表子项缩进两格归为父条目子列表', () => {
+    const blocks = markdownToBlocks('1. 父条目\n   * 子项甲\n   * 子项乙\n2. 兄弟条目')
+    expect(blocks).toEqual([
+      {
+        type: 'list',
+        ordered: true,
+        items: [
+          { text: '父条目', children: ['子项甲', '子项乙'], childrenOrdered: false },
+          '兄弟条目',
+        ],
+      },
+    ])
+  })
+
+  it('无子项的普通列表项仍是字符串形态', () => {
+    const blocks = markdownToBlocks('* 甲\n* 乙')
+    expect(blocks).toEqual([{ type: 'list', ordered: false, items: ['甲', '乙'] }])
+  })
+})
+
+describe('renderInline', () => {
+  it('粗体 / 斜体 / 删除线 / 行内代码', () => {
+    expect(renderInline('**加粗** 和 *斜体* 和 ~~删除~~ 和 `code`')).toBe(
+      '<strong>加粗</strong> 和 <em>斜体</em> 和 <del>删除</del> 和 <code class="article-body__inlinecode">code</code>',
+    )
+  })
+
+  it('链接生成 a 标签并带 noopener', () => {
+    expect(renderInline('[发布新品](https://example.com/x)')).toBe(
+      '<a href="https://example.com/x" target="_blank" rel="noopener noreferrer">发布新品</a>',
+    )
+  })
+
+  it('非白名单协议的链接不生成 a 标签', () => {
+    const html = renderInline('[点我](javascript:alert(1))')
+    expect(html).not.toContain('<a ')
+    expect(html).toContain('javascript:alert(1)')
+  })
+
+  it('行内 HTML 被转义，不可能注入', () => {
+    const html = renderInline('**<script>alert(1)</script>**')
+    expect(html).not.toContain('<script>')
+    expect(html).toContain('&lt;script&gt;')
+    expect(html).toContain('<strong>')
+  })
+
+  it('行内代码里的星号不参与粗体解析', () => {
+    expect(renderInline('`**not bold**`')).toBe(
+      '<code class="article-body__inlinecode">**not bold**</code>',
+    )
+  })
 })
 
 describe('blocksToHtml', () => {
@@ -132,5 +205,30 @@ describe('blocksToHtml', () => {
     expect(html).toContain('class="article-body__code" data-lang="html"')
     expect(html).not.toContain('<script>')
     expect(html).toContain('&lt;script&gt;')
+  })
+
+  it('表格渲染为 table 且单元格行内格式生效', () => {
+    const html = blocksToHtml([
+      { type: 'table', head: ['阶段'], rows: [['**基础建设**']] },
+    ])
+    expect(html).toContain('class="article-body__tablewrap"')
+    expect(html).toContain('<th>阶段</th>')
+    expect(html).toContain('<td><strong>基础建设</strong></td>')
+  })
+
+  it('嵌套子列表渲染在父 li 内部', () => {
+    const html = blocksToHtml([
+      {
+        type: 'list',
+        ordered: true,
+        items: [{ text: '父', children: ['子'], childrenOrdered: false }],
+      },
+    ])
+    expect(html).toContain('<li>父<ul class="article-body__ulist"><li>子</li></ul></li>')
+  })
+
+  it('段落行内粗体生效且 HTML 注入被转义', () => {
+    const html = blocksToHtml([{ type: 'paragraph', text: '**加粗** <script>x</script>' }])
+    expect(html).toContain('<p><strong>加粗</strong> &lt;script&gt;x&lt;/script&gt;</p>')
   })
 })
