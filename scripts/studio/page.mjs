@@ -283,6 +283,7 @@ function navigate() {
   else view.innerHTML = '<p class="text-sm text-[#86868b]">页面不存在</p>'
 }
 $('syncPanelClose').addEventListener('click', function () { $('syncPanel').classList.add('hidden') })
+window.addEventListener('resize', fitCoverStage)
 window.addEventListener('hashchange', navigate)
 
 /* ================= 视图：文章列表 ================= */
@@ -602,7 +603,7 @@ onRoute('editor/*', function (file) {
             '<p class="mb-3 text-[13px] font-semibold text-[#6e6e73]">封面图</p>' +
             '<input type="file" id="eCover" accept="image/*" class="hidden" />' +
             '<div id="eCoverStage" title="点击更换封面" class="group relative h-[240px] w-full cursor-pointer overflow-hidden rounded-[14px] border border-[#e8e8ed] bg-[#f5f5f7] shadow-[0_1px_4px_rgba(0,0,0,0.04)]">' +
-              '<div id="eCoverPreview" class="absolute inset-0 bg-center bg-no-repeat transition-transform duration-500 [background-size:cover] group-hover:scale-[1.03]"></div>' +
+              '<div id="eCoverPreview" class="absolute inset-0 bg-center bg-no-repeat transition-transform duration-500 [background-size:contain] group-hover:scale-[1.02]"></div>' +
               '<div id="eCoverEmpty" class="absolute inset-0 flex flex-col items-center justify-center gap-1.5 border-2 border-dashed border-[#d2d2d7] px-4 text-center transition-colors group-hover:border-[#0071e3] group-hover:bg-[#f0f7ff]/60">' +
                 '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0071e3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.6" cy="8.6" r="1.7"/><path d="M21 15.2 16 10.2 5.4 20.8"/></svg>' +
                 '<p class="text-[13px] font-medium text-[#1d1d1f]">点击选择图片，或拖拽 / Ctrl+V 粘贴到这里</p>' +
@@ -723,7 +724,19 @@ onRoute('editor/*', function (file) {
     /* ---- 封面图组件：点击 / 拖拽 / Ctrl+V 粘贴，实时预览+信息+更换+移除 ---- */
     var coverNew = null // 待上传的新图 File；null = 无新图
     var coverDataUrl = '' // 新图本地预览 dataURL
+    var coverDims = { w: 0, h: 0 } // 当前封面自然尺寸，供舞台按比例自适应高度
     var ALLOWED_COVER = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif']
+
+    /** 舞台高度跟随图片比例（完整显示不裁切），超高图封顶 420px，空态 240px */
+    function fitCoverStage() {
+      var stage = $('eCoverStage')
+      if (!coverDims.w || !coverDims.h) {
+        stage.style.height = '240px'
+        return
+      }
+      var cw = stage.clientWidth || 800
+      stage.style.height = Math.min(420, Math.round((cw * coverDims.h) / coverDims.w)) + 'px'
+    }
 
     function renderCover(dims) {
       var has = Boolean(coverNew || a.cover)
@@ -732,7 +745,9 @@ onRoute('editor/*', function (file) {
       $('eCoverBadge').classList.toggle('hidden', !has)
       var meta = $('eCoverMeta')
       if (!has) {
+        coverDims = { w: 0, h: 0 }
         $('eCoverPreview').style.backgroundImage = ''
+        fitCoverStage()
         meta.textContent = '未设置 · 轮播推荐位与分享卡会用到封面，建议 21:9 横图'
         return
       }
@@ -745,7 +760,15 @@ onRoute('editor/*', function (file) {
         $('eCoverPreview').style.backgroundImage = 'url(/covers/' + encodeURIComponent(a.cover.split('/').pop()) + ')'
         $('eCoverBadge').textContent = '使用中'
         meta.textContent = a.cover.split('/').pop() + ' · 更换或移除后点「保存」生效'
+        // 已保存封面：探测自然尺寸供舞台自适应
+        var probe = new Image()
+        probe.onload = function () {
+          coverDims = { w: probe.naturalWidth, h: probe.naturalHeight }
+          fitCoverStage()
+        }
+        probe.src = $('eCoverPreview').style.backgroundImage.slice(5, -2)
       }
+      fitCoverStage()
     }
     function setCoverFile(f) {
       if (!f) return
@@ -758,7 +781,10 @@ onRoute('editor/*', function (file) {
       r.onload = function () {
         coverDataUrl = r.result
         var img = new Image()
-        img.onload = function () { renderCover(img.naturalWidth + '×' + img.naturalHeight) }
+        img.onload = function () {
+          coverDims = { w: img.naturalWidth, h: img.naturalHeight }
+          renderCover(img.naturalWidth + '×' + img.naturalHeight)
+        }
         img.onerror = function () { renderCover('') }
         img.src = coverDataUrl
       }
