@@ -4,6 +4,26 @@
  * 视图：内容列表（按状态）/ 编辑器 / 回收站 / 分类与标签 / 作者与权限 / 操作日志
  * 身份：右上角切换当前作者（存 localStorage），请求带 x-studio-actor 头。
  */
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+
+/* Vditor 4 工具栏图标 = <use> 引用 SVG 符号表，符号表由其自带的
+ * icons/ant.js 注入——但那个加载器走「XHR 拉内容 + 内联 script 执行」，
+ * 会被 nonce CSP（script-src 无 unsafe-inline）拦掉导致图标全空。
+ * 这里服务端直出符号表（纯 SVG 不受 CSP 限制），并占用 vditorIconScript
+ * 这个 id，让 Vditor 检测到已存在后自动跳过自带加载器。 */
+let vditorIconSprite = ''
+try {
+  const antSrc = readFileSync(
+    fileURLToPath(new URL('../../node_modules/vditor/dist/js/icons/ant.js', import.meta.url)),
+    'utf8',
+  )
+  const m = antSrc.match(/`([\s\S]+)`/)
+  if (m) vditorIconSprite = m[1].replace('<svg ', '<svg id="vditorIconScript" ')
+} catch {
+  // 读不到就不注入：图标缺失但不影响编辑器功能
+}
+
 export function page(nonce) {
   return `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -100,6 +120,7 @@ export function page(nonce) {
 
 <div id="toast" class="pointer-events-none fixed left-1/2 top-6 z-50 hidden -translate-x-1/2 rounded-full bg-[#1d1d1f] px-5 py-2.5 text-[13px] text-white shadow-lg"></div>
 
+${vditorIconSprite}
 <script nonce="${nonce || 'noncerequired'}">
 /* ================= 基础设施 ================= */
 var $ = function (id) { return document.getElementById(id) }
