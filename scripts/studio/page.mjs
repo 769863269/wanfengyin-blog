@@ -1405,11 +1405,11 @@ onRoute('settings', function () {
         '<label class="mt-4 block text-[12.5px] text-[#6e6e73]">默认每页条数' +
           '<select id="pgDefault" class="mt-1 w-40 rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '></select>' +
         '</label>' +
+        (readOnly ? '' : '<div class="mt-4 flex items-center gap-3 border-t border-black/5 pt-4">' +
+          '<span id="pgMsg" class="text-[13px] text-[#1d7a35]"></span>' +
+          '<button id="pgSave" class="ml-auto rounded-full bg-[#0071e3] px-5 py-2 text-[13px] font-semibold text-white hover:opacity-85">保存翻页设置</button>' +
+        '</div>') +
       '</div>' +
-      (readOnly ? '' : '<div class="sticky bottom-4 z-10 mt-5 flex w-full items-center gap-3 rounded-2xl border border-black/5 bg-white/95 px-5 py-3.5 shadow-[0_4px_24px_rgba(0,0,0,0.1)] backdrop-blur">' +
-        '<span id="pgMsg" class="text-[13px] text-[#1d7a35]"></span>' +
-        '<button id="pgSave" class="ml-auto rounded-full bg-[#1d1d1f] px-6 py-2.5 text-[13.5px] font-semibold text-white hover:opacity-85">保存系统设置</button>' +
-      '</div>') +
       '<div class="mt-5 w-full rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
         '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">Git 推送配置</p>' +
         '<p class="mb-4 text-[11.5px] leading-relaxed text-[#a1a1a6]">提交身份存本机 git.config.local、推送凭证存本机凭证库，均不上传 GitHub，保存后本机立即生效；换电脑克隆后 npm run dev 自动生成，凭证在后台粘贴一次即可</p>' +
@@ -1449,12 +1449,11 @@ onRoute('settings', function () {
             '<span id="gitVerifyMsg" class="text-[12.5px] text-[#6e6e73]"></span>' +
           '</div>') +
         '</div>' +
-        (myRole !== 'admin' ? '<p class="mt-3 text-[12px] text-[#a1a1a6]">Git 配置仅管理员可修改</p>' : '') +
-      '</div>' +
-      (myRole !== 'admin' ? '' : '<div class="sticky bottom-4 z-10 mt-5 flex w-full items-center gap-3 rounded-2xl border border-black/5 bg-white/95 px-5 py-3.5 shadow-[0_4px_24px_rgba(0,0,0,0.1)] backdrop-blur" id="gitBar">' +
-        '<span id="gitMsg" class="text-[13px] text-[#1d7a35]"></span>' +
-        '<button id="gitSave" class="ml-auto rounded-full bg-[#1d1d1f] px-6 py-2.5 text-[13.5px] font-semibold text-white hover:opacity-85">保存 Git 配置</button>' +
-      '</div>')
+        (myRole !== 'admin' ? '<p class="mt-3 text-[12px] text-[#a1a1a6]">Git 配置仅管理员可修改</p>' : '<div class="mt-4 flex items-center gap-3 border-t border-black/5 pt-4">' +
+          '<span id="gitMsg" class="text-[13px] text-[#1d7a35]"></span>' +
+          '<button id="gitSave" class="ml-auto rounded-full bg-[#0071e3] px-5 py-2 text-[13px] font-semibold text-white hover:opacity-85">保存 Git 配置</button>' +
+        '</div>') +
+      '</div>'
 
     // 默认条数下拉 = 当前勾选的档位；勾选变化时重建
     function rebuildDefault() {
