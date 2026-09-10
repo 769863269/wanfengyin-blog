@@ -19,12 +19,15 @@ const techStack = [
   { name: 'Vue 3.5', role: '<script setup> 组合式 API' },
   { name: 'TypeScript 6', role: 'strict 全开，类型即文档' },
   { name: 'Shiki', role: '构建期代码高亮，零运行时成本' },
+  { name: '自研 Studio CMS', role: '后台写文章、发布管理、一键推送上线' },
+  { name: 'DOMPurify + CSP', role: '前后台双层 XSS 防护' },
   { name: 'Vitest + jsdom', role: '39 项单测 + 21 项冒烟回归' },
 ]
 
 const milestones = [
   { date: '2026-04', text: '博客上线，第一篇文章发布' },
   { date: '2026-08', text: '整套架构从静态 HTML 迁移到 Vite + Vue 3 + TS，支持 Markdown 发文、RSS、预渲染与自动部署' },
+  { date: '2026-09', text: '自研 Studio CMS 后台上线：后台写文章、发布状态机、回收站与操作日志，一键推送上线；全站 DOMPurify + CSP 双层防护，热门榜按真实阅读动态排序' },
 ]
 </script>
 
