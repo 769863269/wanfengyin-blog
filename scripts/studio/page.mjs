@@ -1397,13 +1397,13 @@ onRoute('settings', function () {
       '<div class="w-full rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
         '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">文章列表翻页</p>' +
         '<p class="mb-3 text-[11.5px] leading-relaxed text-[#a1a1a6]">勾选翻页条「每页条数」下拉可提供的档位；默认条数必须是已勾选档位之一。配置存在 site.json 里，换电脑、换浏览器都一致</p>' +
-        '<div id="pgSizes" class="flex flex-wrap items-center gap-x-5 gap-y-2">' +
+        '<div id="pgSizes" class="flex flex-wrap items-center gap-2">' +
           CANDIDATES.map(function (n) {
-            return '<label class="flex items-center gap-1.5 text-[13.5px] text-[#1d1d1f]"><input type="checkbox" class="pg-size accent-[#0071e3]" value="' + n + '"' + (cfgSizes.includes(n) ? ' checked' : '') + (readOnly ? ' disabled' : '') + ' />' + n + ' 条/页</label>'
+            return '<label class="pg-chip flex cursor-pointer items-center gap-1.5 rounded-full border bg-white px-3.5 py-1.5 text-[13px] text-[#1d1d1f] transition-colors"><input type="checkbox" class="pg-size accent-[#0071e3]" value="' + n + '"' + (cfgSizes.includes(n) ? ' checked' : '') + (readOnly ? ' disabled' : '') + ' />' + n + ' 条/页</label>'
           }).join('') +
         '</div>' +
         '<label class="mt-4 block text-[12.5px] text-[#6e6e73]">默认每页条数' +
-          '<select id="pgDefault" class="mt-1 w-40 rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '></select>' +
+          '<select id="pgDefault" class="mt-1 w-44 rounded-lg border border-[#d2d2d7] bg-white px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '></select>' +
         '</label>' +
         (readOnly ? '' : '<div class="mt-4 flex items-center gap-3 border-t border-black/5 pt-4">' +
           '<span id="pgMsg" class="text-[13px] text-[#1d7a35]"></span>' +
@@ -1456,6 +1456,13 @@ onRoute('settings', function () {
       '</div>'
 
     // 默认条数下拉 = 当前勾选的档位；勾选变化时重建
+    function syncChips() {
+      [].slice.call(document.querySelectorAll('.pg-chip')).forEach(function (lab) {
+        var on = lab.querySelector('.pg-size').checked
+        if (on) { lab.classList.add('border-[#0071e3]', 'bg-[#0071e3]/5', 'font-medium'); lab.classList.remove('border-[#d2d2d7]', 'bg-white') }
+        else { lab.classList.remove('border-[#0071e3]', 'bg-[#0071e3]/5', 'font-medium'); lab.classList.add('border-[#d2d2d7]', 'bg-white') }
+      })
+    }
     function rebuildDefault() {
       var sel = $('pgDefault')
       var checked = [].slice.call(document.querySelectorAll('.pg-size:checked')).map(function (c) { return Number(c.value) })
@@ -1466,9 +1473,10 @@ onRoute('settings', function () {
       }).join('')
     }
     rebuildDefault()
+    syncChips()
     if (!readOnly) {
       [].slice.call(document.querySelectorAll('.pg-size')).forEach(function (c) {
-        c.addEventListener('change', rebuildDefault)
+        c.addEventListener('change', function () { rebuildDefault(); syncChips() })
       })
       $('pgSave').addEventListener('click', function () {
         var checked = [].slice.call(document.querySelectorAll('.pg-size:checked')).map(function (c) { return Number(c.value) })
