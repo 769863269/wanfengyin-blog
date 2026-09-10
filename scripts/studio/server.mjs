@@ -546,7 +546,7 @@ export function startStudio(port = 5199) {
       if (path === '/api/site' && req.method === 'PUT') {
         // 站点级改动只允许 admin / editor；author 只读
         if (role !== 'admin' && role !== 'editor') {
-          return sendJson(res, 403, { error: '站点设置仅管理员/编辑可修改' })
+          return sendJson(res, 403, { ok: false, output: '站点设置仅管理员/编辑可修改' })
         }
         const body = JSON.parse(await readBody(req).catch(() => ({})))
         try {
@@ -554,7 +554,7 @@ export function startStudio(port = 5199) {
           log(actor, 'site:update', 'content/site.json', '更新站点设置/友链')
           return ok(res, { site: saved })
         } catch (e) {
-          return sendJson(res, 400, { error: e.message })
+          return sendJson(res, 400, { ok: false, output: e.message })
         }
       }
 
@@ -572,7 +572,7 @@ export function startStudio(port = 5199) {
           log(actor, 'git-config:update', 'git.config.local', '更新本地 git 配置: ' + applied.join(', ') + (body.githubToken ? '；保存 GitHub 推送凭证' : ''))
           return ok(res, { file: readGitConfigFile(), live: readGitConfigLive(), applied, cred: readGithubCredStatus() })
         } catch (e) {
-          return sendJson(res, 400, { error: e.message })
+          return sendJson(res, 400, { ok: false, output: e.message })
         }
       }
 

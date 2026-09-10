@@ -1339,17 +1339,30 @@ onRoute('site', function () {
         '<select class="nv-kind shrink-0 rounded-lg border border-[#d2d2d7] px-2 py-1.5 text-[13px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' +
           '<option value="route">页面</option><option value="external">外链</option><option value="disabled">占位</option><option value="hidden">隐藏</option>' +
         '</select>' +
+        '<select class="nv-route shrink-0 rounded-lg border border-[#d2d2d7] px-2 py-1.5 text-[13px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' +
+          '<option value="home">home · 首页</option><option value="archive">archive · 归档</option><option value="tags">tags · 标签</option><option value="about">about · 关于</option><option value="random">random · 随便看看</option>' +
+        '</select>' +
         '<input class="nv-target min-w-[160px] flex-1 rounded-lg border border-[#d2d2d7] px-2.5 py-1.5 text-[13px] outline-none focus:border-[#0071e3]" value="' + esc(it.target || '') + '"' + (readOnly ? ' disabled' : '') + ' />' +
         (showMobileToggle ? '<label class="shrink-0 flex items-center gap-1 text-[12px] text-[#6e6e73]"><input type="checkbox" class="nv-mobile"' + (it.showOnMobile !== false ? ' checked' : '') + (readOnly ? ' disabled' : '') + ' />H5</label>' : '') +
         '<button type="button" class="nv-del shrink-0 rounded-full px-2 py-1 text-[12px] text-[#c0392b] hover:bg-[#fdf0ef]">删除</button>'
       var kindSel = row.querySelector('.nv-kind')
+      var routeSel = row.querySelector('.nv-route')
       var targetInp = row.querySelector('.nv-target')
+      var ROUTES = ['home', 'archive', 'tags', 'about', 'random']
       function syncTarget() {
         var k = kindSel.value
+        var isRoute = k === 'route'
+        // 页面类型：下拉框选合法路由（自由输入会被后端白名单拒绝）；其余类型：文本框
+        routeSel.style.display = isRoute ? '' : 'none'
+        targetInp.style.display = isRoute ? 'none' : ''
         targetInp.disabled = readOnly || k === 'disabled' || k === 'hidden'
-        targetInp.placeholder = k === 'route' ? 'home / archive / tags / about / random'
-          : k === 'external' ? 'https:// 或 /feed.xml'
-          : k === 'hidden' ? '已隐藏，不出现在任何菜单' : '未上线，无需地址'
+        if (isRoute) {
+          var cur = targetInp.value.trim()
+          routeSel.value = ROUTES.indexOf(cur) >= 0 ? cur : 'home'
+        } else {
+          targetInp.placeholder = k === 'external' ? 'https:// 或 /feed.xml'
+            : k === 'hidden' ? '已隐藏，不出现在任何菜单' : '未上线，无需地址'
+        }
       }
       kindSel.value = it.kind || 'disabled'
       syncTarget()
@@ -1364,11 +1377,13 @@ onRoute('site', function () {
     function collectNav(box) {
       return [].slice.call(box.querySelectorAll('.nav-row')).map(function (row) {
         var mobileBox = row.querySelector('.nv-mobile')
+        var tSel = row.querySelector('.nv-route')
+        var tInp = row.querySelector('.nv-target')
         return {
           icon: row.querySelector('.nv-icon').value.trim(),
           label: row.querySelector('.nv-label').value.trim(),
           kind: row.querySelector('.nv-kind').value,
-          target: row.querySelector('.nv-target').value.trim(),
+          target: tSel.style.display !== 'none' ? tSel.value : tInp.value.trim(),
           showOnMobile: mobileBox ? mobileBox.checked : true,
         }
       }).filter(function (n) { return n.label })
