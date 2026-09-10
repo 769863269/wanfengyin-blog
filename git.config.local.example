@@ -1,6 +1,8 @@
 # 本文件仅为模板参考，无需复制改名：npm run dev / studio 启动时会自动生成 git.config.local
 # （身份优先取全局 git 配置；若为占位值，去 Studio「系统设置 → Git 推送配置」填写即可）
+# GitHub Token（PAT）在后台 Git 卡片填写，存本机凭证库 ~/.git-credentials，与本文件无关
 # git.config.local 已被 gitignore，不会上传
 http.version=HTTP/1.1
+credential.helper=store
 user.name=你的名字
 user.email=you@example.com

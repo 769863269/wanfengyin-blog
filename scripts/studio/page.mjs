@@ -1412,7 +1412,7 @@ onRoute('settings', function () {
       '</div>') +
       '<div class="mt-5 w-full rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
         '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">Git 推送配置</p>' +
-        '<p class="mb-3 text-[11.5px] leading-relaxed text-[#a1a1a6]">推送上线的提交身份与网络协议，保存在本机 git.config.local（不上传 GitHub），保存后本机立即生效；换电脑后克隆仓库，复制 git.config.local.example 改名填入即可</p>' +
+        '<p class="mb-3 text-[11.5px] leading-relaxed text-[#a1a1a6]">提交身份与网络协议存本机 git.config.local（不上传 GitHub），保存后本机立即生效；换电脑克隆后 npm run dev 自动生成。GitHub Token 存本机凭证库（用户主目录 ~/.git-credentials），同样永不上传</p>' +
         '<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">' +
           '<label class="block text-[12.5px] text-[#6e6e73]">提交用户名' +
             '<input id="gitName" type="text" class="mt-1 w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" placeholder="如 WillowEcho"' + (myRole !== 'admin' ? ' disabled' : '') + ' />' +
@@ -1425,6 +1425,13 @@ onRoute('settings', function () {
               '<option value="HTTP/1.1">HTTP/1.1（稳定，推荐）</option>' +
               '<option value="HTTP/2">HTTP/2（更快，偶发 TLS 抖动）</option>' +
             '</select>' +
+          '</label>' +
+          '<label class="block text-[12.5px] text-[#6e6e73]">GitHub 账号名（推送鉴权用，留空自动取远程地址）' +
+            '<input id="gitUser" type="text" class="mt-1 w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" placeholder="如 769863269"' + (myRole !== 'admin' ? ' disabled' : '') + ' />' +
+          '</label>' +
+          '<label class="block text-[12.5px] text-[#6e6e73]">GitHub Token（PAT，填一次新机免输）' +
+            '<input id="gitToken" type="password" autocomplete="off" class="mt-1 w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" placeholder="粘贴 PAT（ghp_ / github_pat_ 开头）"' + (myRole !== 'admin' ? ' disabled' : '') + ' />' +
+            '<span id="gitCred" class="mt-1 block text-[11.5px] text-[#a1a1a6]"></span>' +
           '</label>' +
         '</div>' +
         (myRole !== 'admin' ? '<p class="mt-3 text-[12px] text-[#a1a1a6]">Git 配置仅管理员可修改</p>' : '') +
@@ -1467,14 +1474,18 @@ onRoute('settings', function () {
       })
     }
 
-    // Git 推送配置：回填当前值（file 优先，实际生效值兜底）
+    // Git 推送配置：回填当前值（file 优先，实际生效值兜底；凭证只显示状态不回显）
     api('/api/git-config').then(function (g) {
       if (seq !== viewSeq) return
       var f = (g && g.file) || {}
       var live = (g && g.live) || {}
+      var cred = (g && g.cred) || {}
       $('gitName').value = f['user.name'] || live['user.name'] || ''
       $('gitEmail').value = f['user.email'] || live['user.email'] || ''
       $('gitHttp').value = f['http.version'] || live['http.version'] || 'HTTP/1.1'
+      $('gitUser').value = cred.username || f['github.username'] || ''
+      $('gitCred').textContent = cred.hasToken ? '凭证状态：已配置 ✓（留空保持不变）' : '凭证状态：未配置（首次推送会提示输入）'
+      if (cred.hasToken) $('gitToken').placeholder = '已配置，留空保持不变'
     }).catch(function () {})
     if (myRole === 'admin') {
       $('gitSave').addEventListener('click', function () {
@@ -1485,11 +1496,22 @@ onRoute('settings', function () {
         var at = email.indexOf('@')
         var dot = email.lastIndexOf('.')
         if (at < 1 || dot < at + 2 || dot >= email.length - 1) { toast('邮箱格式不对', true); return }
-        api('/api/git-config', { method: 'POST', body: { entries: {
+        var token = $('gitToken').value.trim()
+        if (token && (/[ \t\r\n]/.test(token) || token.length < 20)) { toast('Token 格式不对：不能含空格且长度至少 20 位', true); return }
+        var body = { entries: {
           'user.name': name,
           'user.email': email,
           'http.version': $('gitHttp').value,
-        } } }).then(function () {
+          'credential.helper': 'store',
+        } }
+        if (token) {
+          body.githubToken = token
+          body.githubUsername = $('gitUser').value.trim()
+        }
+        api('/api/git-config', { method: 'POST', body: body }).then(function () {
+          $('gitToken').value = ''
+          $('gitCred').textContent = token ? '凭证状态：已配置 ✓（留空保持不变）' : $('gitCred').textContent
+          if (token) $('gitToken').placeholder = '已配置，留空保持不变'
           $('gitMsg').textContent = '已保存 ✓ 本机 git 配置即刻生效'
           toast('Git 配置已保存并生效')
         }).catch(function (e) {
