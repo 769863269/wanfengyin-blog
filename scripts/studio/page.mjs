@@ -1444,8 +1444,9 @@ onRoute('settings', function () {
               '<input id="gitToken" type="password" autocomplete="off" class="mt-1 w-full rounded-lg border border-[#d2d2d7] bg-white px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" placeholder="粘贴 PAT（ghp_ / github_pat_ 开头）"' + (myRole !== 'admin' ? ' disabled' : '') + ' />' +
             '</label>' +
           '</div>' +
-          (myRole !== 'admin' ? '' : '<div class="mt-3 flex flex-wrap items-center gap-3">' +
-            '<button id="gitVerify" class="rounded-full border border-[#0071e3] px-4 py-1.5 text-[12.5px] font-medium text-[#0071e3] hover:bg-[#0071e3]/5">测试凭证是否可用</button>' +
+          (myRole !== 'admin' ? '' : '<style>@keyframes wfy-spin{to{transform:rotate(360deg)}}.wfy-spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(0,113,227,.25);border-top-color:#0071e3;border-radius:50%;animation:wfy-spin .7s linear infinite}@keyframes wfy-in{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}.wfy-in{animation:wfy-in .25s ease-out both}@keyframes wfy-shake{0%,100%{transform:none}20%{transform:translateX(-3px)}60%{transform:translateX(3px)}}.wfy-shake{animation:wfy-shake .3s ease-in-out}</style>' +
+          '<div class="mt-3 flex flex-wrap items-center gap-3">' +
+            '<button id="gitVerify" class="inline-flex min-w-[9.5rem] items-center justify-center gap-1.5 rounded-full border border-[#0071e3] px-4 py-1.5 text-[12.5px] font-medium text-[#0071e3] transition-all hover:bg-[#0071e3]/5">测试凭证是否可用</button>' +
             '<span id="gitVerifyMsg" class="text-[12.5px] text-[#6e6e73]"></span>' +
           '</div>') +
         '</div>' +
@@ -1520,18 +1521,28 @@ onRoute('settings', function () {
       if (cred.hasToken) $('gitToken').placeholder = '已配置，留空保持不变'
     }).catch(function () {})
     if (myRole === 'admin') {
+      var verifying = false
       $('gitVerify').addEventListener('click', function () {
         var btn = $('gitVerify')
+        if (verifying) return // 测试进行中，忽略重复点击
+        verifying = true
         btn.disabled = true
-        $('gitVerifyMsg').textContent = '测试中…（走真实推送鉴权链路，最多 30 秒）'
+        btn.classList.add('opacity-70', 'cursor-not-allowed')
+        btn.innerHTML = '<span class="wfy-spin"></span><span>测试中…</span>'
+        $('gitVerifyMsg').textContent = ''
         api('/api/git-config/verify', { method: 'POST', body: {} }).then(function (r) {
-          $('gitVerifyMsg').textContent = r.ok ? '✓ ' + r.message : '✗ ' + r.message
-          $('gitVerifyMsg').className = 'text-[12.5px] ' + (r.ok ? 'text-[#1d7a35]' : 'text-[#d70015]')
-          btn.disabled = false
+          var msg = $('gitVerifyMsg')
+          msg.innerHTML = '<span class="wfy-in' + (r.ok ? '' : ' wfy-shake') + '">' + (r.ok ? '✓ ' : '✗ ') + r.message + '</span>'
+          msg.className = 'text-[12.5px] ' + (r.ok ? 'text-[#1d7a35]' : 'text-[#d70015]')
         }).catch(function (e) {
-          $('gitVerifyMsg').textContent = '✗ ' + e.message
-          $('gitVerifyMsg').className = 'text-[12.5px] text-[#d70015]'
+          var msg = $('gitVerifyMsg')
+          msg.innerHTML = '<span class="wfy-in wfy-shake">✗ ' + e.message + '</span>'
+          msg.className = 'text-[12.5px] text-[#d70015]'
+        }).then(function () {
+          verifying = false
           btn.disabled = false
+          btn.classList.remove('opacity-70', 'cursor-not-allowed')
+          btn.innerHTML = '测试凭证是否可用'
         })
       })
       $('gitSave').addEventListener('click', function () {
