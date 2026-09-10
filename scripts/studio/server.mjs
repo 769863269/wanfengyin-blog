@@ -23,6 +23,7 @@ import {
 } from './store.mjs'
 import { page } from './page.mjs'
 import { readGitConfigFile, readGitConfigLive, saveGitConfig, readGithubCredStatus, saveGithubToken, verifyGithubCred } from './gitconfig.mjs'
+import { listPages, readPage, savePage, deletePage } from './store.mjs'
 
 const coversDir = join(ROOT, 'public', 'images', 'covers')
 // 预编译静态 CSS（构建期由 tailwind.config.cjs 生成），运行时零编译开销；
@@ -121,13 +122,8 @@ function pendingChanges() {
 const blogBuild = { building: false, builtAt: '', pending: false, lastError: '' }
 let blogWatchTimer = null
 
-function runBlogBuild() {
-  if (blogBuild.building) {
-    blogBuild.pending = true
-    return
-  }
-  blogBuild.building = true
-  const child = spawn(process.execPath, ['scripts/build-posts.mjs'], { cwd: ROOT, windowsHide: true })
+function runBuildScript(script, onDone) {
+  const child = spawn(process.execPath, ['scripts/' + script], { cwd: ROOT, windowsHide: true })
   let tail = []
   const onChunk = (b) => {
     tail.push(...b.toString('utf8').split('\n').filter((l) => l.trim()))
@@ -135,23 +131,42 @@ function runBlogBuild() {
   }
   child.stdout.on('data', onChunk)
   child.stderr.on('data', onChunk)
-  child.on('error', (err) => {
-    blogBuild.building = false
-    blogBuild.lastError = err.message
-  })
-  child.on('close', (code) => {
-    blogBuild.building = false
-    if (code === 0) {
-      blogBuild.builtAt = new Date().toISOString()
-      blogBuild.lastError = ''
-    } else {
-      blogBuild.lastError = tail.join(' | ').slice(-300)
+  child.on('error', (err) => onDone(1, err.message))
+  child.on('close', (code) => onDone(code, tail.join(' | ')))
+}
+
+function runBlogBuild() {
+  if (blogBuild.building) {
+    blogBuild.pending = true
+    return
+  }
+  blogBuild.building = true
+  // 链式：文章 → 自定义页面（任一失败都进 lastError）
+  runBuildScript('build-posts.mjs', (code, tail) => {
+    if (code !== 0) {
+      blogBuild.building = false
+      blogBuild.lastError = tail.slice(-300)
       console.error('[studio] 博客数据编译失败：', blogBuild.lastError)
+      if (blogBuild.pending) {
+        blogBuild.pending = false
+        runBlogBuild()
+      }
+      return
     }
-    if (blogBuild.pending) {
-      blogBuild.pending = false
-      runBlogBuild() // 构建期间又有新变动，补跑一次
-    }
+    runBuildScript('build-pages.mjs', (code2, tail2) => {
+      blogBuild.building = false
+      if (code2 === 0) {
+        blogBuild.builtAt = new Date().toISOString()
+        blogBuild.lastError = ''
+      } else {
+        blogBuild.lastError = tail2.slice(-300)
+        console.error('[studio] 自定义页面编译失败：', blogBuild.lastError)
+      }
+      if (blogBuild.pending) {
+        blogBuild.pending = false
+        runBlogBuild() // 构建期间又有新变动，补跑一次
+      }
+    })
   })
 }
 
@@ -161,9 +176,10 @@ function scheduleBlogBuild() {
 }
 
 function startBlogWatcher() {
-  const targets = [join(ROOT, 'articles'), join(ROOT, 'public', 'images', 'covers')]
+  const targets = [join(ROOT, 'articles'), join(ROOT, 'public', 'images', 'covers'), join(ROOT, 'content', 'pages')]
   for (const dir of targets) {
     try {
+      mkdirSync(dir, { recursive: true }) // 目录不存在先建（如首次启动还没有 content/pages），否则 watch 抛错被跳过
       watch(dir, scheduleBlogBuild)
     } catch (err) {
       console.warn(`[studio] 监听目录失败（跳过）：${dir} → ${err.message}`)
@@ -540,6 +556,39 @@ export function startStudio(port = 5199) {
       }
 
       /* ---------- 站点设置（content/site.json） ---------- */
+      /* ---------- 自定义页面（content/pages/*.md → 前台 /page/:slug） ---------- */
+      if (path === '/api/pages' && req.method === 'GET') {
+        return ok(res, { pages: listPages() })
+      }
+      if (path === '/api/pages' && req.method === 'PUT') {
+        if (role !== 'admin' && role !== 'editor') return deny(res, '自定义页面仅管理员/编辑可修改')
+        const body = JSON.parse(await readBody(req).catch(() => ({})))
+        try {
+          const result = savePage(body)
+          log(actor, result.created ? 'page:create' : 'page:update', `content/pages/${result.slug}.md`, `「${body.title || result.slug}」${result.created ? '新建' : '更新'}（${body.status === 'draft' ? '草稿' : '已发布'}）`)
+          return ok(res, { ...result, pages: listPages() })
+        } catch (e) {
+          return sendJson(res, 400, { ok: false, output: e.message })
+        }
+      }
+      const pageDel = path.match(/^\/api\/pages\/([a-z0-9][a-z0-9-]{0,49})$/)
+      if (pageDel && req.method === 'DELETE') {
+        if (role !== 'admin' && role !== 'editor') return deny(res, '自定义页面仅管理员/编辑可删除')
+        try {
+          const result = deletePage(pageDel[1])
+          log(actor, 'page:delete', `content/pages/${result.slug}.md`, `删除自定义页面「${result.slug}」`)
+          return ok(res, { ...result, pages: listPages() })
+        } catch (e) {
+          return sendJson(res, 400, { ok: false, output: e.message })
+        }
+      }
+      const pageGet = path.match(/^\/api\/pages\/([a-z0-9][a-z0-9-]{0,49})$/)
+      if (pageGet && req.method === 'GET') {
+        const page = readPage(pageGet[1])
+        if (!page) return sendJson(res, 404, { ok: false, output: '页面不存在' })
+        return ok(res, { page })
+      }
+
       if (path === '/api/site' && req.method === 'GET') {
         return ok(res, { site: readSiteConfig() })
       }

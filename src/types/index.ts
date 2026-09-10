@@ -57,6 +57,22 @@ export interface Post {
 // 预留：接后端 / CMS 后列表接口返回此结构，前端组件无需改动
 export type PostSummary = Omit<Post, 'body'>
 
+/* ===================== 自定义页面 ===================== */
+
+/**
+ * 后台「自定义页面」编译产物（content/pages/*.md → pages.generated.ts）。
+ * 渲染复用 ArticleBody 的结构化块，与文章同一套净化与高亮链路。
+ */
+export interface CustomPage {
+  /** URL 标识：content/pages/<slug>.md，对应前台 /page/<slug>，同时用作路由 name */
+  slug: string
+  title: string
+  /** SEO 描述，选填 */
+  description: string
+  /** 正文内容块（构建期已编译，含 Shiki 高亮） */
+  body: ArticleBlock[]
+}
+
 /* ===================== 侧边栏 ===================== */
 
 export interface HotPost {

@@ -30,7 +30,8 @@ export const siteConfig = {
 
 /**
  * 导航菜单数据源：content/site.json（Studio 后台「站点设置」页维护，可增删改查）。
- * kind = 'route'   → target 为路由 name（home/archive/tags/about/random）
+ * kind = 'route'   → target 为路由 name：内置 5 页（home/archive/tags/about/random）
+ *                    或已发布自定义页面的 slug（路由 name = slug，见 router/index.ts）
  * kind = 'external'→ target 为链接（http(s):// 或 / 开头）
  * kind = 'disabled'→ 未上线占位，渲染为不可点击
  */

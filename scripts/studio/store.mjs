@@ -20,9 +20,11 @@ const trashDir = join(stateDir, 'trash')
 const logsPath = join(stateDir, 'logs.jsonl')
 const authorsPath = join(stateDir, 'authors.json')
 const siteConfigPath = join(root, 'content', 'site.json')
+const pagesDir = join(root, 'content', 'pages')
 
 export const ROOT = root
 export const ARTICLES_DIR = articlesDir
+export const PAGES_DIR = pagesDir
 
 /* ---------------- 状态机与权限 ---------------- */
 
@@ -152,17 +154,37 @@ export const SITE_TEXT_FIELDS = ['name', 'fullName', 'tagline', 'description', '
 export const NAV_KINDS = ['route', 'external', 'disabled', 'hidden']
 export const NAV_ROUTES = ['home', 'archive', 'tags', 'about', 'random']
 
+/** 已发布的自定义页面 slug 列表（route kind 合法 target = 内置路由 + 这些） */
+export function publishedPageSlugs() {
+  try {
+    return readdirSync(pagesDir)
+      .filter((n) => n.endsWith('.md') && !n.startsWith('_'))
+      .map((n) => n.replace(/\.md$/, ''))
+      .filter((slug) => {
+        try {
+          const { data } = parseFrontmatter(readFileSync(join(pagesDir, slug + '.md'), 'utf8'))
+          return (data.status ?? 'published') === 'published'
+        } catch {
+          return false
+        }
+      })
+  } catch {
+    return []
+  }
+}
+
 function normalizeNavList(list, name) {
   if (!Array.isArray(list)) throw new Error(name + '格式错误：应为数组')
   if (list.length > 20) throw new Error(name + '最多 20 项')
+  const pageSlugs = publishedPageSlugs()
   return list.map((item, i) => {
     const label = String(item.label ?? '').trim()
     const kind = String(item.kind ?? 'disabled')
     const target = String(item.target ?? '').trim()
     if (!label) throw new Error(`${name}第 ${i + 1} 项名称不能为空`)
     if (!NAV_KINDS.includes(kind)) throw new Error(`${name}「${label}」类型非法`)
-    if (kind === 'route' && !NAV_ROUTES.includes(target)) {
-      throw new Error(`${name}「${label}」的页面必须是：${NAV_ROUTES.join(' / ')} 之一`)
+    if (kind === 'route' && !NAV_ROUTES.includes(target) && !pageSlugs.includes(target)) {
+      throw new Error(`${name}「${label}」的页面无效：内置页面为 ${NAV_ROUTES.join(' / ')}，自定义页面需先在「自定义页面」发布`)
     }
     if (kind === 'external' && !/^(https?:\/\/|\/)/.test(target)) {
       throw new Error(`${name}「${label}」的链接必须以 http(s):// 或 / 开头`)
@@ -779,3 +801,88 @@ export function runSchedule() {
 
 // 模块加载即初始化目录
 ensureDirs()
+
+/* ---------------- 自定义页面（content/pages/*.md，文件名即 slug） ---------------- */
+
+const SLUG_RE = /^[a-z0-9][a-z0-9-]{0,49}$/
+/** 保留 slug：与内置路由 / 关键路径冲突的禁止使用 */
+const RESERVED_SLUGS = [...NAV_ROUTES, 'post', 'page', 'admin', 'api', 'assets', 'feed']
+
+function assertSlug(slug) {
+  if (!SLUG_RE.test(slug)) throw new Error('slug 只能是小写字母 / 数字 / 连字符，且以字母或数字开头（最长 50 字符）')
+  if (RESERVED_SLUGS.includes(slug)) throw new Error(`slug "${slug}" 是保留字，请换一个`)
+}
+
+/** 页面文件完整路径（slug 已过正则校验，无路径注入风险） */
+function pagePath(slug) {
+  return join(pagesDir, slug + '.md')
+}
+
+/** 列出全部自定义页面（含草稿），按 slug 排序 */
+export function listPages() {
+  if (!existsSync(pagesDir)) return []
+  return readdirSync(pagesDir)
+    .filter((n) => n.endsWith('.md') && !n.startsWith('_'))
+    .sort()
+    .map((n) => {
+      const slug = n.replace(/\.md$/, '')
+      try {
+        const { data, body } = parseFrontmatter(readFileSync(pagePath(slug), 'utf8'))
+        return {
+          slug,
+          title: String(data.title ?? ''),
+          description: String(data.description ?? ''),
+          status: data.status ?? 'published',
+          bodyLength: (body || '').length,
+          updatedAt: statSync(pagePath(slug)).mtime.toISOString(),
+        }
+      } catch {
+        return { slug, title: '', description: '', status: 'published', bodyLength: 0, updatedAt: '', error: '解析失败' }
+      }
+    })
+}
+
+/** 读取单个页面（编辑器用，含正文） */
+export function readPage(slug) {
+  assertSlug(slug)
+  const file = pagePath(slug)
+  if (!existsSync(file)) return null
+  const { data, body } = parseFrontmatter(readFileSync(file, 'utf8'))
+  return {
+    slug,
+    title: String(data.title ?? ''),
+    description: String(data.description ?? ''),
+    status: data.status ?? 'published',
+    body: body || '',
+    updatedAt: statSync(file).mtime.toISOString(),
+  }
+}
+
+/** 保存页面（新建 / 更新一体）：校验后落盘，返回 { slug, created } */
+export function savePage(input) {
+  const slug = String(input.slug ?? '').trim()
+  assertSlug(slug)
+  const title = String(input.title ?? '').trim()
+  if (!title) throw new Error('页面标题不能为空')
+  if (title.length > 60) throw new Error('页面标题最长 60 字')
+  const description = String(input.description ?? '').trim()
+  if (description.length > 160) throw new Error('SEO 描述最长 160 字')
+  const status = input.status ?? 'published'
+  if (!['draft', 'published'].includes(status)) throw new Error('状态只能是 draft 或 published')
+  const body = String(input.body ?? '')
+  if (body.length > 100_000) throw new Error('正文过长（上限 10 万字符）')
+
+  const file = pagePath(slug)
+  const created = !existsSync(file)
+  writeFileSync(file, stringifyFrontmatter({ title, description, status }, body), 'utf8')
+  return { slug, created }
+}
+
+/** 删除页面文件（物理删除；自定义页面无需回收站） */
+export function deletePage(slug) {
+  assertSlug(slug)
+  const file = pagePath(slug)
+  if (!existsSync(file)) throw new Error('页面不存在')
+  unlinkSync(file)
+  return { slug }
+}

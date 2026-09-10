@@ -68,6 +68,7 @@ export function page(nonce) {
       <a href="#/list/offline"  data-nav="list/offline"  class="nav-item flex items-center justify-between rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]"><span>⏸ 已下线</span><span data-count="offline"  class="text-xs text-[#86868b]"></span></a>
       <p class="px-3 pb-1 pt-3 text-[11px] font-semibold text-[#a1a1a6]">系统</p>
       <a href="#/trash"    data-nav="trash"    class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">🗑 回收站</a>
+      <a href="#/pages"    data-nav="pages"    class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">📄 自定义页面</a>
       <a href="#/taxonomy" data-nav="taxonomy" class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">🏷 分类与标签</a>
       <a href="#/authors"  data-nav="authors"  class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">👥 作者与权限</a>
       <a href="#/logs"     data-nav="logs"     class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">📜 操作日志</a>
@@ -1133,6 +1134,127 @@ onRoute('trash', function () {
   })
 })
 
+/* ================= 视图：自定义页面 ================= */
+var PAGE_STATUS_LABEL = { draft: '草稿', published: '已发布' }
+
+onRoute('pages', function () {
+  var seq = viewSeq
+  var canEdit = myRole === 'admin' || myRole === 'editor'
+  api('/api/pages').then(function (d) {
+    if (seq !== viewSeq) return
+    var rows = d.pages.map(function (p) {
+      return '<tr class="border-b border-[#f0f0f2] last:border-0">' +
+        '<td class="px-5 py-3.5"><div class="font-medium">' + esc(p.title || '(无标题)') + '</div>' +
+        '<div class="text-[11.5px] text-[#a1a1a6]">/page/' + esc(p.slug) + (p.error ? ' · ⚠ ' + esc(p.error) : '') + '</div></td>' +
+        '<td class="px-5 py-3.5"><span class="rounded-full px-2.5 py-1 text-[11.5px] font-medium ' + (p.status === 'published' ? 'bg-[#e8f3ec] text-[#1d7a35]' : 'bg-[#f0f0f2] text-[#6e6e73]') + '">' + (PAGE_STATUS_LABEL[p.status] || p.status) + '</span></td>' +
+        '<td class="px-5 py-3.5 text-[12px] text-[#86868b]">' + (p.updatedAt ? esc(p.updatedAt.slice(0, 16).replace('T', ' ')) : '-') + '</td>' +
+        '<td class="px-5 py-3.5 text-right"><div class="flex justify-end gap-2">' +
+        (canEdit ? '<button data-edit="' + esc(p.slug) + '" class="rounded-full border border-[#0071e3] px-3.5 py-1 text-[12px] text-[#0071e3] hover:bg-[#e8f1fd]">编辑</button>' : '') +
+        (p.status === 'published' ? '<button data-view="' + esc(p.slug) + '" class="rounded-full border border-[#d2d2d7] px-3.5 py-1 text-[12px] text-[#6e6e73] hover:border-[#0071e3] hover:text-[#0071e3]">前台查看</button>' : '') +
+        (canEdit ? '<button data-del="' + esc(p.slug) + '" data-title="' + esc(p.title) + '" class="rounded-full border border-[#f0d0d0] px-3.5 py-1 text-[12px] text-[#c0392b] hover:bg-[#fdecec]">删除</button>' : '') +
+        '</div></td></tr>'
+    })
+    view.innerHTML =
+      '<div class="mb-5 flex flex-wrap items-center justify-between gap-3">' +
+        '<div><h2 class="text-[22px] font-semibold tracking-tight">自定义页面</h2>' +
+        '<p class="mt-0.5 text-[13px] text-[#86868b]">独立于文章的静态页（关于页之外的补充页）。发布后前台 /page/slug 可访问，导航菜单「页面」下拉自动可选</p></div>' +
+        (canEdit ? '<a href="#/pages/new" class="rounded-full bg-[#0071e3] px-5 py-2 text-[13.5px] font-semibold text-white shadow-[0_2px_10px_rgba(0,113,227,0.3)] hover:bg-[#0077ed]">＋ 新建页面</a>' : '') +
+      '</div>' +
+      '<div class="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]"><div class="overflow-x-auto"><table class="w-full text-left text-[13.5px]">' +
+        '<thead class="bg-[#fafafa] text-[12px] text-[#86868b]"><tr>' +
+          '<th class="px-5 py-3 font-medium">页面</th><th class="px-5 py-3 font-medium">状态</th><th class="px-5 py-3 font-medium">更新时间</th><th class="px-5 py-3 text-right font-medium">操作</th>' +
+        '</tr></thead><tbody>' +
+        (rows.length ? rows.join('') : '<tr><td colspan="4" class="px-5 py-14 text-center text-sm text-[#a1a1a6]">还没有自定义页面' + (canEdit ? '，点右上角「新建页面」创建' : '') + '</td></tr>') +
+      '</tbody></table></div></div>'
+
+    d.pages.forEach(function (p) {
+      var e = document.querySelector('[data-edit="' + p.slug + '"]')
+      if (e) e.onclick = function () { location.hash = '#/pages/edit/' + encodeURIComponent(p.slug) }
+      var v = document.querySelector('[data-view="' + p.slug + '"]')
+      if (v) v.onclick = function () { window.open('http://127.0.0.1:5173/page/' + encodeURIComponent(p.slug), '_blank') }
+      var del = document.querySelector('[data-del="' + p.slug + '"]')
+      if (del) del.onclick = function () {
+        confirmBox('删除页面「' + (p.title || p.slug) + '」？', '文件物理删除不可恢复；引用它的导航菜单项保存站点设置时会提示失效', function () {
+          api('/api/pages/' + encodeURIComponent(p.slug), { method: 'DELETE' })
+            .then(function () { toast('已删除'); navigate() })
+            .catch(function (e2) { toast(e2.message, true) })
+        })
+      }
+    })
+  })
+})
+
+onRoute('pages/*', function (arg) {
+  var seq = viewSeq
+  var canEdit = myRole === 'admin' || myRole === 'editor'
+  if (!canEdit) { view.innerHTML = '<p class="text-sm text-[#86868b]">自定义页面仅管理员/编辑可操作</p>'; return }
+  var isNew = arg === 'new'
+  var slug = isNew ? '' : decodeURIComponent(String(arg).replace('edit/', ''))
+  var load = isNew ? Promise.resolve({ page: null }) : api('/api/pages/' + encodeURIComponent(slug))
+
+  view.innerHTML =
+    '<div class="mb-5 flex flex-wrap items-center justify-between gap-3">' +
+      '<div><a href="#/pages" class="text-[13px] text-[#0071e3] hover:underline">← 返回列表</a>' +
+      '<h2 class="mt-1 text-[22px] font-semibold tracking-tight">' + (isNew ? '新建页面' : '编辑页面') + '</h2></div>' +
+    '</div>' +
+    '<div class="w-full rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+      '<div class="grid gap-4 md:grid-cols-3">' +
+        '<label class="block text-[12.5px] text-[#6e6e73] md:col-span-2">页面标题' +
+          '<input id="pgTitle" type="text" class="mt-1 w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" placeholder="如：常见问题" /></label>' +
+        '<label class="block text-[12.5px] text-[#6e6e73]">slug（URL 标识，建后不可改）' +
+          '<input id="pgSlug" type="text" class="mt-1 w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 font-mono text-[13px] outline-none focus:border-[#0071e3]" placeholder="如：faq"' + (isNew ? '' : ' disabled') + ' /></label>' +
+        '<label class="block text-[12.5px] text-[#6e6e73] md:col-span-2">SEO 描述（选填，最长 160 字）' +
+          '<input id="pgDesc" type="text" class="mt-1 w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" /></label>' +
+        '<label class="block text-[12.5px] text-[#6e6e73]">状态' +
+          '<select id="pgStatus" class="mt-1 w-40 rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"><option value="published">已发布（前台可见，菜单可选）</option><option value="draft">草稿（仅后台可见）</option></select></label>' +
+      '</div>' +
+      '<label class="mt-4 block text-[12.5px] text-[#6e6e73]">正文（Markdown）' +
+        '<textarea id="pgBody" rows="18" class="mt-1 w-full resize-y rounded-lg border border-[#d2d2d7] px-3 py-2.5 font-mono text-[13px] leading-relaxed outline-none focus:border-[#0071e3]" placeholder="支持与文章相同的 Markdown 语法"></textarea></label>' +
+      '<div class="mt-4 flex flex-wrap items-center gap-3 border-t border-[#f0f0f2] pt-4">' +
+        '<span id="pgMsg" class="text-[13px] text-[#1d7a35]"></span>' +
+        (isNew ? '' : '<button id="pgDel" class="rounded-full border border-[#f0d0d0] px-4 py-2 text-[12.5px] text-[#c0392b] hover:bg-[#fdecec]">删除此页面</button>') +
+        '<button id="pgSave" class="ml-auto rounded-full bg-[#0071e3] px-6 py-2.5 text-[13.5px] font-semibold text-white hover:bg-[#0077ed]">' + (isNew ? '创建页面' : '保存页面') + '</button>' +
+      '</div>' +
+    '</div>'
+
+  load.then(function (d) {
+    if (seq !== viewSeq) return
+    var p = d.page
+    $('pgTitle').value = p ? p.title : ''
+    $('pgSlug').value = p ? p.slug : ''
+    $('pgDesc').value = p ? p.description : ''
+    $('pgStatus').value = p ? p.status : 'published'
+    $('pgBody').value = p ? p.body : ''
+  }).catch(function (e) {
+    if (seq !== viewSeq) return
+    toast(e.message, true)
+    location.hash = '#/pages'
+  })
+
+  $('pgSave').onclick = function () {
+    var title = $('pgTitle').value.trim()
+    var s = (isNew ? $('pgSlug').value.trim() : slug)
+    var body = $('pgBody').value
+    if (!title) { toast('页面标题不能为空', true); return }
+    if (!s) { toast('slug 不能为空', true); return }
+    api('/api/pages', { method: 'PUT', body: { slug: s, title: title, description: $('pgDesc').value.trim(), status: $('pgStatus').value, body: body } })
+      .then(function () {
+        $('pgMsg').textContent = '已保存 ✓ 前台即时生效'
+        toast(isNew ? '页面已创建' : '页面已保存')
+        if (isNew) location.hash = '#/pages/edit/' + encodeURIComponent(s)
+      })
+      .catch(function (e) { toast(e.message, true) })
+  }
+  var delBtn = $('pgDel')
+  if (delBtn) delBtn.onclick = function () {
+    confirmBox('删除页面「' + slug + '」？', '文件物理删除不可恢复', function () {
+      api('/api/pages/' + encodeURIComponent(slug), { method: 'DELETE' })
+        .then(function () { toast('已删除'); location.hash = '#/pages' })
+        .catch(function (e) { toast(e.message, true) })
+    })
+  }
+})
+
 /* ================= 视图：分类与标签 ================= */
 onRoute('taxonomy', function () {
   loadMeta().then(function (meta) {
@@ -1231,7 +1353,10 @@ onRoute('logs', function () {
 /* ================= 视图：站点设置（content/site.json 增删改查） ================= */
 onRoute('site', function () {
   view.className = 'w-full' // 与全局统一：占满不留白
-  api('/api/site').then(function (d) {
+  // 站点配置 + 已发布自定义页面（导航「页面」下拉动态列出）
+  Promise.all([api('/api/site'), api('/api/pages').catch(function () { return { pages: [] } })]).then(function (rs) {
+    var d = rs[0]
+    var publishedPages = (rs[1].pages || []).filter(function (p) { return p.status === 'published' })
     var s = d.site.site
     var readOnly = myRole !== 'admin' && myRole !== 'editor'
     var NL = String.fromCharCode(10) // 客户端脚本经字符串内联，禁用转义序列，换行用 charCode 构造
@@ -1297,7 +1422,7 @@ onRoute('site', function () {
       '</div>' +
       '<div class="mt-5 rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
         '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">顶部导航菜单（web 顶栏）</p>' +
-        '<p class="mb-2 text-[11.5px] leading-relaxed text-[#a1a1a6]">「页面」=博客内页（首页/归档/标签/关于/随便看看）；「外链」=http(s):// 或 / 开头；「占位」=未上线不可点；「隐藏」=不出现在任何菜单（配置保留不删）。勾选 H5 = 同时出现在手机抽屉菜单</p>' +
+        '<p class="mb-2 text-[11.5px] leading-relaxed text-[#a1a1a6]">「页面」=站内页（内置 5 页 + 已发布的自定义页面）；「外链」=http(s):// 或 / 开头；「占位」=未上线不可点；「隐藏」=不出现在任何菜单（配置保留不删）。勾选 H5 = 同时出现在手机抽屉菜单</p>' +
         '<div id="navRows"></div>' +
         (readOnly ? '' : '<button id="navAdd" type="button" class="mt-2 rounded-full border border-[#d2d2d7] px-4 py-1.5 text-[12.5px] hover:border-[#0071e3] hover:text-[#0071e3]">＋ 添加菜单项</button>') +
       '</div>' +
@@ -1333,41 +1458,48 @@ onRoute('site', function () {
     function navRow(box, it, showMobileToggle) {
       it = it || {}
       var row = document.createElement('div')
-      row.className = 'nav-row mt-2 flex flex-wrap items-center gap-2'
-      row.innerHTML = '<input class="nv-icon w-12 shrink-0 rounded-lg border border-[#d2d2d7] px-2 py-1.5 text-center text-[14px] outline-none focus:border-[#0071e3]" placeholder="图标" value="' + esc(it.icon || '') + '"' + (readOnly ? ' disabled' : '') + ' />' +
-        '<input class="nv-label w-28 shrink-0 rounded-lg border border-[#d2d2d7] px-2.5 py-1.5 text-[13px] outline-none focus:border-[#0071e3]" placeholder="名称" value="' + esc(it.label || '') + '"' + (readOnly ? ' disabled' : '') + ' />' +
-        '<select class="nv-kind shrink-0 rounded-lg border border-[#d2d2d7] px-2 py-1.5 text-[13px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' +
+      // 行容器：浅灰圆角卡片，字段与按钮都在卡内，归属清晰
+      row.className = 'nav-row mt-2 flex flex-wrap items-center gap-2 rounded-xl bg-[#f5f5f7] px-3 py-2.5'
+      var routeOptions = '<option value="home">home · 首页</option><option value="archive">archive · 归档</option><option value="tags">tags · 标签</option><option value="about">about · 关于</option><option value="random">random · 随便看看</option>' +
+        publishedPages.map(function (p) { return '<option value="' + esc(p.slug) + '">' + esc(p.slug) + ' · ' + esc(p.title) + '</option>' }).join('')
+      row.innerHTML = '<input class="nv-icon w-12 shrink-0 rounded-lg border border-[#d2d2d7] bg-white px-2 py-1.5 text-center text-[14px] outline-none focus:border-[#0071e3]" placeholder="图标" value="' + esc(it.icon || '') + '"' + (readOnly ? ' disabled' : '') + ' />' +
+        '<input class="nv-label w-28 shrink-0 rounded-lg border border-[#d2d2d7] bg-white px-2.5 py-1.5 text-[13px] outline-none focus:border-[#0071e3]" placeholder="名称" value="' + esc(it.label || '') + '"' + (readOnly ? ' disabled' : '') + ' />' +
+        '<select class="nv-kind shrink-0 rounded-lg border border-[#d2d2d7] bg-white px-2 py-1.5 text-[13px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' +
           '<option value="route">页面</option><option value="external">外链</option><option value="disabled">占位</option><option value="hidden">隐藏</option>' +
         '</select>' +
-        '<select class="nv-route shrink-0 rounded-lg border border-[#d2d2d7] px-2 py-1.5 text-[13px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' +
-          '<option value="home">home · 首页</option><option value="archive">archive · 归档</option><option value="tags">tags · 标签</option><option value="about">about · 关于</option><option value="random">random · 随便看看</option>' +
-        '</select>' +
-        '<input class="nv-target min-w-[160px] flex-1 rounded-lg border border-[#d2d2d7] px-2.5 py-1.5 text-[13px] outline-none focus:border-[#0071e3]" value="' + esc(it.target || '') + '"' + (readOnly ? ' disabled' : '') + ' />' +
+        '<select class="nv-route min-w-[10rem] shrink-0 rounded-lg border border-[#d2d2d7] bg-white px-2 py-1.5 text-[13px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' + routeOptions + '</select>' +
+        '<input class="nv-target min-w-[200px] flex-1 rounded-lg border border-[#d2d2d7] bg-white px-2.5 py-1.5 text-[13px] outline-none focus:border-[#0071e3]" value="' + esc(it.target || '') + '"' + (readOnly ? ' disabled' : '') + ' />' +
+        '<span class="nv-hint flex-1 text-[12.5px] text-[#a1a1a6]"></span>' +
         (showMobileToggle ? '<label class="shrink-0 flex items-center gap-1 text-[12px] text-[#6e6e73]"><input type="checkbox" class="nv-mobile"' + (it.showOnMobile !== false ? ' checked' : '') + (readOnly ? ' disabled' : '') + ' />H5</label>' : '') +
-        '<button type="button" class="nv-del shrink-0 rounded-full px-2 py-1 text-[12px] text-[#c0392b] hover:bg-[#fdf0ef]">删除</button>'
+        '<button type="button" class="nv-del ml-auto shrink-0 rounded-full bg-white px-2.5 py-1 text-[12px] text-[#c0392b] border border-[#f0d0d0] hover:bg-[#fdecec]">删除</button>'
       var kindSel = row.querySelector('.nv-kind')
       var routeSel = row.querySelector('.nv-route')
       var targetInp = row.querySelector('.nv-target')
-      var ROUTES = ['home', 'archive', 'tags', 'about', 'random']
+      var hintEl = row.querySelector('.nv-hint')
+      var delBtn = row.querySelector('.nv-del')
+      // route 类型的合法 target：内置路由 + 已发布自定义页面（与后端白名单一致）
+      var ROUTES = ['home', 'archive', 'tags', 'about', 'random'].concat(publishedPages.map(function (p) { return p.slug }))
       function syncTarget() {
         var k = kindSel.value
-        var isRoute = k === 'route'
-        // 页面类型：下拉框选合法路由（自由输入会被后端白名单拒绝）；其余类型：文本框
-        routeSel.style.display = isRoute ? '' : 'none'
-        targetInp.style.display = isRoute ? 'none' : ''
-        targetInp.disabled = readOnly || k === 'disabled' || k === 'hidden'
-        if (isRoute) {
+        // 页面 → 下拉选合法路由；外链 → 文本框；占位/隐藏 → 短提示语（不再拉伸大输入框）
+        routeSel.style.display = k === 'route' ? '' : 'none'
+        targetInp.style.display = k === 'external' ? '' : 'none'
+        hintEl.style.display = k === 'disabled' || k === 'hidden' ? '' : 'none'
+        targetInp.disabled = true // 只在 external 显示且可编辑
+        if (k === 'external') targetInp.disabled = readOnly
+        if (k === 'route') {
           var cur = targetInp.value.trim()
           routeSel.value = ROUTES.indexOf(cur) >= 0 ? cur : 'home'
-        } else {
-          targetInp.placeholder = k === 'external' ? 'https:// 或 /feed.xml'
-            : k === 'hidden' ? '已隐藏，不出现在任何菜单' : '未上线，无需地址'
+        } else if (k === 'disabled') {
+          hintEl.textContent = '未上线占位 —— 菜单里显示但不可点击，无需地址'
+        } else if (k === 'hidden') {
+          hintEl.textContent = '已隐藏 —— 不出现在任何菜单（配置保留不删）'
         }
       }
       kindSel.value = it.kind || 'disabled'
       syncTarget()
       kindSel.addEventListener('change', syncTarget)
-      row.querySelector('.nv-del').addEventListener('click', function () { row.remove() })
+      delBtn.addEventListener('click', function () { row.remove() })
       box.appendChild(row)
     }
     var mainNavList = Array.isArray(d.site.mainNav) ? d.site.mainNav : []

@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { sortedPosts } from '@/data/posts'
+import { generatedPages } from '@/data/pages.generated'
 
 /**
  * 路由配置
@@ -49,6 +50,16 @@ const routes: RouteRecordRaw[] = [
         : { name: 'post', params: { slug: first.slug } }
     },
   },
+  // 自定义页面（后台「自定义页面」发布后自动出现在这里）：
+  // 路由 name 直接用 slug，导航菜单 route 类型的 target（=slug）经 NavLink 的
+  // { name: target } 即可命中，无需任何映射层。slug 与内置路由名冲突在
+  // store 层用保留字校验拦截，不会走到这里。
+  ...generatedPages.map((p) => ({
+    path: `/page/${p.slug}`,
+    name: p.slug,
+    component: () => import('@/views/PageView.vue'),
+    meta: { slug: p.slug },
+  })),
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
