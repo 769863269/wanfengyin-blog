@@ -1412,27 +1412,42 @@ onRoute('settings', function () {
       '</div>') +
       '<div class="mt-5 w-full rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
         '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">Git 推送配置</p>' +
-        '<p class="mb-3 text-[11.5px] leading-relaxed text-[#a1a1a6]">提交身份与网络协议存本机 git.config.local（不上传 GitHub），保存后本机立即生效；换电脑克隆后 npm run dev 自动生成。GitHub Token 存本机凭证库（用户主目录 ~/.git-credentials），同样永不上传</p>' +
-        '<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">' +
-          '<label class="block text-[12.5px] text-[#6e6e73]">提交用户名' +
-            '<input id="gitName" type="text" class="mt-1 w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" placeholder="如 WillowEcho"' + (myRole !== 'admin' ? ' disabled' : '') + ' />' +
-          '</label>' +
-          '<label class="block text-[12.5px] text-[#6e6e73]">提交邮箱' +
-            '<input id="gitEmail" type="text" class="mt-1 w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" placeholder="如 willowecho@163.com"' + (myRole !== 'admin' ? ' disabled' : '') + ' />' +
-          '</label>' +
-          '<label class="block text-[12.5px] text-[#6e6e73]">网络协议（推送抖动时选 HTTP/1.1）' +
-            '<select id="gitHttp" class="mt-1 w-48 rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"' + (myRole !== 'admin' ? ' disabled' : '') + '>' +
-              '<option value="HTTP/1.1">HTTP/1.1（稳定，推荐）</option>' +
-              '<option value="HTTP/2">HTTP/2（更快，偶发 TLS 抖动）</option>' +
-            '</select>' +
-          '</label>' +
-          '<label class="block text-[12.5px] text-[#6e6e73]">GitHub 账号名（推送鉴权用，留空自动取远程地址）' +
-            '<input id="gitUser" type="text" class="mt-1 w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" placeholder="如 769863269"' + (myRole !== 'admin' ? ' disabled' : '') + ' />' +
-          '</label>' +
-          '<label class="block text-[12.5px] text-[#6e6e73]">GitHub Token（PAT，填一次新机免输）' +
-            '<input id="gitToken" type="password" autocomplete="off" class="mt-1 w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" placeholder="粘贴 PAT（ghp_ / github_pat_ 开头）"' + (myRole !== 'admin' ? ' disabled' : '') + ' />' +
-            '<span id="gitCred" class="mt-1 block text-[11.5px] text-[#a1a1a6]"></span>' +
-          '</label>' +
+        '<p class="mb-4 text-[11.5px] leading-relaxed text-[#a1a1a6]">提交身份存本机 git.config.local、推送凭证存本机凭证库，均不上传 GitHub，保存后本机立即生效；换电脑克隆后 npm run dev 自动生成，凭证在后台粘贴一次即可</p>' +
+        '<div class="rounded-xl border border-black/5 bg-[#f5f5f7] p-4">' +
+          '<p class="mb-3 text-[12px] font-semibold text-[#1d1d1f]">提交身份</p>' +
+          '<div class="grid grid-cols-1 gap-3 sm:grid-cols-3">' +
+            '<label class="block text-[12px] text-[#6e6e73]">用户名' +
+              '<input id="gitName" type="text" class="mt-1 w-full rounded-lg border border-[#d2d2d7] bg-white px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" placeholder="如 WillowEcho"' + (myRole !== 'admin' ? ' disabled' : '') + ' />' +
+            '</label>' +
+            '<label class="block text-[12px] text-[#6e6e73]">邮箱' +
+              '<input id="gitEmail" type="text" class="mt-1 w-full rounded-lg border border-[#d2d2d7] bg-white px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" placeholder="如 willowecho@163.com"' + (myRole !== 'admin' ? ' disabled' : '') + ' />' +
+            '</label>' +
+            '<label class="block text-[12px] text-[#6e6e73]">网络协议（推送抖动时选 HTTP/1.1）' +
+              '<select id="gitHttp" class="mt-1 w-full rounded-lg border border-[#d2d2d7] bg-white px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"' + (myRole !== 'admin' ? ' disabled' : '') + '>' +
+                '<option value="HTTP/1.1">HTTP/1.1（稳定，推荐）</option>' +
+                '<option value="HTTP/2">HTTP/2（更快，偶发 TLS 抖动）</option>' +
+              '</select>' +
+            '</label>' +
+          '</div>' +
+        '</div>' +
+        '<div class="mt-3 rounded-xl border border-black/5 bg-[#f5f5f7] p-4">' +
+          '<div class="mb-3 flex flex-wrap items-center gap-2">' +
+            '<p class="text-[12px] font-semibold text-[#1d1d1f]">GitHub 推送凭证（PAT）</p>' +
+            '<span id="gitCredBadge" class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium"></span>' +
+          '</div>' +
+          '<p class="mb-3 text-[11.5px] leading-relaxed text-[#a1a1a6]">填一次推送全程免输；Token 保存后不可查看，只能替换。获取：GitHub → Settings → Developer settings → Personal access tokens（授权本仓库 Contents 读写）</p>' +
+          '<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">' +
+            '<label class="block text-[12px] text-[#6e6e73]">账号名（留空自动取远程地址）' +
+              '<input id="gitUser" type="text" class="mt-1 w-full rounded-lg border border-[#d2d2d7] bg-white px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" placeholder="如 769863269"' + (myRole !== 'admin' ? ' disabled' : '') + ' />' +
+            '</label>' +
+            '<label class="block text-[12px] text-[#6e6e73]">Token（留空保持不变）' +
+              '<input id="gitToken" type="password" autocomplete="off" class="mt-1 w-full rounded-lg border border-[#d2d2d7] bg-white px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" placeholder="粘贴 PAT（ghp_ / github_pat_ 开头）"' + (myRole !== 'admin' ? ' disabled' : '') + ' />' +
+            '</label>' +
+          '</div>' +
+          (myRole !== 'admin' ? '' : '<div class="mt-3 flex flex-wrap items-center gap-3">' +
+            '<button id="gitVerify" class="rounded-full border border-[#0071e3] px-4 py-1.5 text-[12.5px] font-medium text-[#0071e3] hover:bg-[#0071e3]/5">测试凭证是否可用</button>' +
+            '<span id="gitVerifyMsg" class="text-[12.5px] text-[#6e6e73]"></span>' +
+          '</div>') +
         '</div>' +
         (myRole !== 'admin' ? '<p class="mt-3 text-[12px] text-[#a1a1a6]">Git 配置仅管理员可修改</p>' : '') +
       '</div>' +
@@ -1475,6 +1490,16 @@ onRoute('settings', function () {
     }
 
     // Git 推送配置：回填当前值（file 优先，实际生效值兜底；凭证只显示状态不回显）
+    function renderCredBadge(hasToken) {
+      var b = $('gitCredBadge')
+      if (hasToken) {
+        b.className = 'inline-flex items-center gap-1.5 rounded-full bg-[#e8f5e9] px-2.5 py-0.5 text-[11px] font-medium text-[#1d7a35]'
+        b.innerHTML = '<span class="h-1.5 w-1.5 rounded-full bg-[#1d7a35]"></span>已配置'
+      } else {
+        b.className = 'inline-flex items-center gap-1.5 rounded-full bg-[#f5f5f7] px-2.5 py-0.5 text-[11px] font-medium text-[#a1a1a6]'
+        b.innerHTML = '<span class="h-1.5 w-1.5 rounded-full bg-[#a1a1a6]"></span>未配置'
+      }
+    }
     api('/api/git-config').then(function (g) {
       if (seq !== viewSeq) return
       var f = (g && g.file) || {}
@@ -1484,10 +1509,24 @@ onRoute('settings', function () {
       $('gitEmail').value = f['user.email'] || live['user.email'] || ''
       $('gitHttp').value = f['http.version'] || live['http.version'] || 'HTTP/1.1'
       $('gitUser').value = cred.username || f['github.username'] || ''
-      $('gitCred').textContent = cred.hasToken ? '凭证状态：已配置 ✓（留空保持不变）' : '凭证状态：未配置（首次推送会提示输入）'
+      renderCredBadge(!!cred.hasToken)
       if (cred.hasToken) $('gitToken').placeholder = '已配置，留空保持不变'
     }).catch(function () {})
     if (myRole === 'admin') {
+      $('gitVerify').addEventListener('click', function () {
+        var btn = $('gitVerify')
+        btn.disabled = true
+        $('gitVerifyMsg').textContent = '测试中…（走真实推送鉴权链路，最多 30 秒）'
+        api('/api/git-config/verify', { method: 'POST', body: {} }).then(function (r) {
+          $('gitVerifyMsg').textContent = r.ok ? '✓ ' + r.message : '✗ ' + r.message
+          $('gitVerifyMsg').className = 'text-[12.5px] ' + (r.ok ? 'text-[#1d7a35]' : 'text-[#d70015]')
+          btn.disabled = false
+        }).catch(function (e) {
+          $('gitVerifyMsg').textContent = '✗ ' + e.message
+          $('gitVerifyMsg').className = 'text-[12.5px] text-[#d70015]'
+          btn.disabled = false
+        })
+      })
       $('gitSave').addEventListener('click', function () {
         var name = $('gitName').value.trim()
         var email = $('gitEmail').value.trim()
@@ -1511,8 +1550,11 @@ onRoute('settings', function () {
         }
         api('/api/git-config', { method: 'POST', body: body }).then(function () {
           $('gitToken').value = ''
-          $('gitCred').textContent = token ? '凭证状态：已配置 ✓（留空保持不变）' : $('gitCred').textContent
-          if (token) $('gitToken').placeholder = '已配置，留空保持不变'
+          if (token) {
+            renderCredBadge(true)
+            $('gitToken').placeholder = '已配置，留空保持不变'
+            $('gitVerifyMsg').textContent = ''
+          }
           $('gitMsg').textContent = '已保存 ✓ 本机 git 配置即刻生效'
           toast('Git 配置已保存并生效')
         }).catch(function (e) {

@@ -160,3 +160,28 @@ export function saveGithubToken(token, username) {
   upsertFileLine('github.username', user)
   return { username: user }
 }
+
+/**
+ * 实测凭证可用性：用存储的凭证跑 git ls-remote origin（与 push 完全相同的鉴权链路，
+ * 同时覆盖 helper / http.version / 代理等真实环境），比调 GitHub API 更贴近推送实战
+ * @returns {{ok: boolean, kind: string, message: string}}
+ */
+export function verifyGithubCred() {
+  if (!readGithubCredStatus().hasToken) {
+    return { ok: false, kind: 'missing', message: '尚未配置凭证' }
+  }
+  try {
+    execFileSync('git', ['ls-remote', '--heads', 'origin'], { cwd: ROOT, timeout: 30000, stdio: ['ignore', 'pipe', 'pipe'] })
+    return { ok: true, kind: 'ok', message: '凭证可用，已通过远程仓库鉴权' }
+  } catch (e) {
+    const err = String((e.stderr || '') + (e.stdout || '') + (e.message || ''))
+    if (/authentication|401|403|permission denied/i.test(err)) {
+      return { ok: false, kind: 'auth', message: '凭证无效或无此仓库权限，请重新生成 PAT 并保存' }
+    }
+    if (/could not resolve|failed to connect|timed out|timeout|ssl|tls|proxy/i.test(err)) {
+      return { ok: false, kind: 'network', message: '网络不通（凭证未测到），检查代理后重试' }
+    }
+    const first = err.trim().split('\n')[0] || '未知错误'
+    return { ok: false, kind: 'unknown', message: '验证失败：' + first.slice(0, 120) }
+  }
+}

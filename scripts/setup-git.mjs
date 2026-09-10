@@ -70,6 +70,7 @@ for (const line of lines) {
   const key = line.slice(0, eq).trim()
   const value = line.slice(eq + 1).trim()
   if (!key || !value) continue
+  if (key.startsWith('github.')) continue // 元数据行（如 github.username），不是 git 配置，跳过
   if (PLACEHOLDERS.has(value)) {
     console.warn(`[setup:git] ${key} 仍是占位值，未应用——请在后台「系统设置 → Git 推送配置」填写真实身份`)
     continue

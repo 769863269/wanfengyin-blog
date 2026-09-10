@@ -22,7 +22,7 @@ import {
   readSiteConfig, saveSiteConfig, getPagination,
 } from './store.mjs'
 import { page } from './page.mjs'
-import { readGitConfigFile, readGitConfigLive, saveGitConfig, readGithubCredStatus, saveGithubToken } from './gitconfig.mjs'
+import { readGitConfigFile, readGitConfigLive, saveGitConfig, readGithubCredStatus, saveGithubToken, verifyGithubCred } from './gitconfig.mjs'
 
 const coversDir = join(ROOT, 'public', 'images', 'covers')
 // 预编译静态 CSS（构建期由 tailwind.config.cjs 生成），运行时零编译开销；
@@ -574,6 +574,13 @@ export function startStudio(port = 5199) {
         } catch (e) {
           return sendJson(res, 400, { error: e.message })
         }
+      }
+
+      if (path === '/api/git-config/verify' && req.method === 'POST') {
+        if (role !== 'admin') return deny(res, 'Git 配置仅管理员可操作')
+        const r = verifyGithubCred()
+        log(actor, 'git-config:verify', 'origin', '验证推送凭证: ' + (r.ok ? '可用' : r.message))
+        return ok(res, r)
       }
 
       /* ---------- 推送上线（git commit + push，流式任务） ---------- */
