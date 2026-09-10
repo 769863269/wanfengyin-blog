@@ -1,4 +1,6 @@
-# 复制为 git.config.local 并填入你自己的值（git.config.local 已被 gitignore，不会上传）
+# 本文件仅为模板参考，无需复制改名：npm run dev / studio 启动时会自动生成 git.config.local
+# （身份优先取全局 git 配置；若为占位值，去 Studio「系统设置 → Git 推送配置」填写即可）
+# git.config.local 已被 gitignore，不会上传
 http.version=HTTP/1.1
 user.name=你的名字
 user.email=you@example.com
