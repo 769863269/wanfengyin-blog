@@ -1497,7 +1497,8 @@ onRoute('settings', function () {
         var dot = email.lastIndexOf('.')
         if (at < 1 || dot < at + 2 || dot >= email.length - 1) { toast('邮箱格式不对', true); return }
         var token = $('gitToken').value.trim()
-        if (token && (/[ \t\r\n]/.test(token) || token.length < 20)) { toast('Token 格式不对：不能含空格且长度至少 20 位', true); return }
+        var hasWs = token.split('').some(function (ch) { return ch <= ' ' }) // 含空格/制表/换行等空白
+        if (token && (hasWs || token.length < 20)) { toast('Token 格式不对：不能含空格且长度至少 20 位', true); return }
         var body = { entries: {
           'user.name': name,
           'user.email': email,
