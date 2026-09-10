@@ -1234,6 +1234,22 @@ onRoute('site', function () {
   api('/api/site').then(function (d) {
     var s = d.site.site
     var readOnly = myRole !== 'admin' && myRole !== 'editor'
+    var NL = String.fromCharCode(10) // 客户端脚本经字符串内联，禁用转义序列，换行用 charCode 构造
+    var abPage = d.site.aboutPage || { intro: '', techStack: [], milestones: [] }
+    // 每行「A | B」解析为对象数组；缺竖线的行报错提示
+    function parseRows(raw, label, kName, vName) {
+      var rows = []
+      var lines = raw.split(NL).map(function (l) { return l.trim() }).filter(Boolean)
+      for (var i = 0; i < lines.length; i++) {
+        var idx = lines[i].indexOf('|')
+        if (idx === -1) { toast(label + '第 ' + (i + 1) + ' 行缺少竖线 | 分隔', true); return null }
+        var row = {}
+        row[kName] = lines[i].slice(0, idx).trim()
+        row[vName] = lines[i].slice(idx + 1).trim()
+        rows.push(row)
+      }
+      return rows
+    }
     var field = function (label, id, val, type) {
       return '<label class="mt-3 block text-[12.5px] text-[#6e6e73]">' + label +
         '<input id="' + id + '" type="text" value="' + esc(String(val ?? '')) + '" class="mt-1 w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + ' /></label>'
@@ -1265,6 +1281,18 @@ onRoute('site', function () {
             '<div id="flRows"></div>' +
             (readOnly ? '' : '<button id="flAdd" type="button" class="mt-2 rounded-full border border-[#d2d2d7] px-4 py-1.5 text-[12.5px] hover:border-[#0071e3] hover:text-[#0071e3]">＋ 添加友链</button>') +
           '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="mt-5 rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+        '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">关于页内容（前台「关于博客」页）</p>' +
+        '<p class="mb-3 text-[11.5px] leading-relaxed text-[#a1a1a6]">介绍支持占位符：{{fullName}} 完整站名、{{tagline}} 副标题、{{count}} 文章数。技术栈/大事记每行一条，用竖线 | 分隔两列</p>' +
+        '<label class="block text-[12.5px] text-[#6e6e73]">介绍段落' +
+          '<textarea id="sAbIntro" rows="3" class="mt-1 w-full resize-y rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' + esc(abPage.intro) + '</textarea></label>' +
+        '<div class="mt-3 grid gap-3 lg:grid-cols-2">' +
+          '<label class="block text-[12.5px] text-[#6e6e73]">技术栈（每行：名称 | 作用）' +
+            '<textarea id="sAbStack" rows="7" class="mt-1 w-full resize-y rounded-lg border border-[#d2d2d7] px-2.5 py-2 font-mono text-[12.5px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' + esc(abPage.techStack.map(function (t) { return t.name + ' | ' + t.role }).join(NL)) + '</textarea></label>' +
+          '<label class="block text-[12.5px] text-[#6e6e73]">大事记（每行：日期 | 事件）' +
+            '<textarea id="sAbMiles" rows="7" class="mt-1 w-full resize-y rounded-lg border border-[#d2d2d7] px-2.5 py-2 font-mono text-[12.5px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' + esc(abPage.milestones.map(function (m) { return m.date + ' | ' + m.text }).join(NL)) + '</textarea></label>' +
         '</div>' +
       '</div>' +
       '<div class="mt-5 rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
@@ -1356,6 +1384,10 @@ onRoute('site', function () {
           var hrefInp = flRows.querySelectorAll('.fl-href')[i]
           return { label: inp.value.trim(), href: hrefInp.value.trim() }
         }).filter(function (l) { return l.label || l.href })
+        var abStack = parseRows($('sAbStack').value, '技术栈', 'name', 'role')
+        if (!abStack) return
+        var abMiles = parseRows($('sAbMiles').value, '大事记', 'date', 'text')
+        if (!abMiles) return
         api('/api/site', {
           method: 'PUT',
           body: {
@@ -1365,6 +1397,7 @@ onRoute('site', function () {
             icp: $('sIcp').value.trim(), about: $('sAbout').value.trim(),
             footerDesc: $('sFooterDesc').value.trim(), friendLinks: links,
             mainNav: collectNav(navRows), mobileExtraNav: collectNav(mnavRows),
+            aboutPage: { intro: $('sAbIntro').value.trim(), techStack: abStack, milestones: abMiles },
           },
         }).then(function () {
           $('sMsg').textContent = '已保存 ✓ 本地博客已即时生效'

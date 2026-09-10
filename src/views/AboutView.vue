@@ -2,10 +2,11 @@
 /**
  * 关于页
  *
- * 介绍博客与博主，列出技术栈。纯静态内容，数据取 siteConfig。
+ * 介绍博客与博主，列出技术栈。内容来自 content/site.json 的 aboutPage
+ * （Studio 后台「站点设置 → 关于页内容」维护），缺失时回退内置默认。
  */
 import { RouterLink } from 'vue-router'
-import { siteConfig } from '@/config/site'
+import { siteConfig, aboutPage as aboutPageConfig, type AboutPageContent } from '@/config/site'
 import { posts } from '@/data/posts'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 
@@ -14,21 +15,38 @@ useSeoMeta({
   description: `关于 ${siteConfig.fullName}：定位、技术栈与联系方式的自我介绍。`,
 })
 
-const techStack = [
-  { name: 'Vite 8（Rolldown）', role: '构建引擎，秒级冷启动' },
-  { name: 'Vue 3.5', role: '<script setup> 组合式 API' },
-  { name: 'TypeScript 6', role: 'strict 全开，类型即文档' },
-  { name: 'Shiki', role: '构建期代码高亮，零运行时成本' },
-  { name: '自研 Studio CMS', role: '后台写文章、发布管理、一键推送上线' },
-  { name: 'DOMPurify + CSP', role: '前后台双层 XSS 防护' },
-  { name: 'Vitest + jsdom', role: '39 项单测 + 21 项冒烟回归' },
-]
+/** 配置缺失/损坏时的兜底（与 site.json 初始内容一致） */
+const fallback: AboutPageContent = {
+  intro: '{{fullName}}，「{{tagline}}」——记录开发中的实战笔记、踩坑复盘与一些技术碎碎念。目前已有 {{count}} 篇文章，持续更新中。',
+  techStack: [
+    { name: 'Vite 8（Rolldown）', role: '构建引擎，秒级冷启动' },
+    { name: 'Vue 3.5', role: '<script setup> 组合式 API' },
+    { name: 'TypeScript 6', role: 'strict 全开，类型即文档' },
+    { name: 'Shiki', role: '构建期代码高亮，零运行时成本' },
+    { name: '自研 Studio CMS', role: '后台写文章、发布管理、一键推送上线' },
+    { name: 'DOMPurify + CSP', role: '前后台双层 XSS 防护' },
+    { name: 'Vitest + jsdom', role: '39 项单测 + 21 项冒烟回归' },
+  ],
+  milestones: [
+    { date: '2026-04', text: '博客上线，第一篇文章发布' },
+    { date: '2026-08', text: '整套架构从静态 HTML 迁移到 Vite + Vue 3 + TS，支持 Markdown 发文、RSS、预渲染与自动部署' },
+    { date: '2026-09', text: '自研 Studio CMS 后台上线：后台写文章、发布状态机、回收站与操作日志，一键推送上线；全站 DOMPurify + CSP 双层防护，热门榜按真实阅读动态排序' },
+  ],
+}
 
-const milestones = [
-  { date: '2026-04', text: '博客上线，第一篇文章发布' },
-  { date: '2026-08', text: '整套架构从静态 HTML 迁移到 Vite + Vue 3 + TS，支持 Markdown 发文、RSS、预渲染与自动部署' },
-  { date: '2026-09', text: '自研 Studio CMS 后台上线：后台写文章、发布状态机、回收站与操作日志，一键推送上线；全站 DOMPurify + CSP 双层防护，热门榜按真实阅读动态排序' },
-]
+const cfg: AboutPageContent =
+  aboutPageConfig && typeof aboutPageConfig.intro === 'string' && Array.isArray(aboutPageConfig.techStack)
+    ? aboutPageConfig
+    : fallback
+
+/** 介绍段落占位符替换：{{fullName}} / {{tagline}} / {{count}} */
+const intro = cfg.intro
+  .replace(/\{\{fullName\}\}/g, siteConfig.fullName)
+  .replace(/\{\{tagline\}\}/g, siteConfig.tagline)
+  .replace(/\{\{count\}\}/g, String(posts.length))
+
+const techStack = cfg.techStack
+const milestones = cfg.milestones
 </script>
 
 <template>
@@ -39,11 +57,7 @@ const milestones = [
 
         <section class="about-page__section">
           <h2>这个站是做什么的</h2>
-          <p>
-            {{ siteConfig.fullName }}，「{{ siteConfig.tagline }}」——
-            记录开发中的实战笔记、踩坑复盘与一些技术碎碎念。
-            目前已有 {{ posts.length }} 篇文章，持续更新中。
-          </p>
+          <p>{{ intro }}</p>
         </section>
 
         <section class="about-page__section">

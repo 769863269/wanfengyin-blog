@@ -85,6 +85,13 @@ export const footerFriendLinks: readonly NavItem[] = siteData.friendLinks.map((l
   href: l.href,
 }))
 
+/** 关于页内容：content/site.json 的 aboutPage（Studio 后台「站点设置 → 关于页内容」维护） */
+export type AboutStackItem = { name: string; role: string }
+export type AboutMilestone = { date: string; text: string }
+export type AboutPageContent = { intro: string; techStack: AboutStackItem[]; milestones: AboutMilestone[] }
+
+export const aboutPage: AboutPageContent = siteData.aboutPage
+
 export const socialLinks: readonly SocialLink[] = [
   {
     id: 'github',

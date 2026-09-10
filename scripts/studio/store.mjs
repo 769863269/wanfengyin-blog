@@ -199,6 +199,33 @@ export function getPagination() {
   return { sizes: useSizes, defaultSize: useSizes.includes(def) ? def : useSizes[0] }
 }
 
+/** 键值行数组校验（技术栈/大事记共用）：每行 { [keyName]: string, [valName]: string } */
+function normalizePairRows(list, name, keyName, valName, maxRows) {
+  if (!Array.isArray(list)) throw new Error(name + '格式错误：应为数组')
+  if (list.length > maxRows) throw new Error(name + '最多 ' + maxRows + ' 行')
+  return list.map((row, i) => {
+    const k = String(row?.[keyName] ?? '').trim()
+    const v = String(row?.[valName] ?? '').trim()
+    if (!k) throw new Error(`${name}第 ${i + 1} 行「${keyName}」不能为空`)
+    if (!v) throw new Error(`${name}第 ${i + 1} 行「${valName}」不能为空`)
+    if (k.length > 80) throw new Error(`${name}第 ${i + 1} 行「${keyName}」过长（最多 80 字）`)
+    if (v.length > 300) throw new Error(`${name}第 ${i + 1} 行「${valName}」过长（最多 300 字）`)
+    return { [keyName]: k, [valName]: v }
+  })
+}
+
+/** 关于页内容校验（前台「关于博客」页，AboutView 读 siteConfig 渲染） */
+function normalizeAboutPage(a) {
+  const intro = String(a?.intro ?? '').trim()
+  if (!intro) throw new Error('关于页介绍不能为空')
+  if (intro.length > 2000) throw new Error('关于页介绍最长 2000 字')
+  return {
+    intro,
+    techStack: normalizePairRows(a?.techStack, '关于页技术栈', 'name', 'role', 30),
+    milestones: normalizePairRows(a?.milestones, '关于页大事记', 'date', 'text', 50),
+  }
+}
+
 /** 保存站点设置：字段白名单过滤 + 友链结构校验，返回保存后的完整配置 */
 export function saveSiteConfig(input) {
   const current = readSiteConfig()
@@ -232,6 +259,8 @@ export function saveSiteConfig(input) {
     if (!Number.isInteger(def) || !sizes.includes(def)) throw new Error('默认每页条数必须是选项之一')
     next.pagination = { sizes, defaultSize: def }
   }
+
+  if (input.aboutPage !== undefined) next.aboutPage = normalizeAboutPage(input.aboutPage)
 
   writeFileSync(siteConfigPath, JSON.stringify(next, null, 2) + '\n', 'utf8')
   return next
