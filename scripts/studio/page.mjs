@@ -52,7 +52,7 @@ export function page(nonce) {
   <!-- 侧边栏 -->
   <aside class="fixed inset-y-0 left-0 z-20 flex w-[228px] flex-col border-r border-black/5 bg-white px-3 py-5">
     <div class="mb-6 flex items-center gap-2.5 px-2">
-      <div class="flex h-9 w-9 items-center justify-center rounded-[10px] bg-gradient-to-b from-[#3a8ffe] to-[#0071e3] text-[16px] font-bold text-white shadow-[0_3px_10px_rgba(0,113,227,0.35)]">风</div>
+      <div class="flex h-9 w-9 items-center justify-center rounded-[10px] bg-gradient-to-b from-[#3a8ffe] to-[#0071e3] text-[16px] font-bold text-white shadow-[0_3px_10px_rgba(0,113,227,0.35)]">晚</div>
       <div>
         <div class="text-[15px] font-semibold leading-tight">晚风吟 CMS</div>
         <div class="text-[11px] text-[#86868b]">内容全生命周期管理</div>
