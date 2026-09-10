@@ -1409,6 +1409,29 @@ onRoute('settings', function () {
       (readOnly ? '' : '<div class="sticky bottom-4 z-10 mt-5 flex w-full items-center gap-3 rounded-2xl border border-black/5 bg-white/95 px-5 py-3.5 shadow-[0_4px_24px_rgba(0,0,0,0.1)] backdrop-blur">' +
         '<span id="pgMsg" class="text-[13px] text-[#1d7a35]"></span>' +
         '<button id="pgSave" class="ml-auto rounded-full bg-[#1d1d1f] px-6 py-2.5 text-[13.5px] font-semibold text-white hover:opacity-85">保存系统设置</button>' +
+      '</div>') +
+      '<div class="mt-5 w-full rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+        '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">Git 推送配置</p>' +
+        '<p class="mb-3 text-[11.5px] leading-relaxed text-[#a1a1a6]">推送上线的提交身份与网络协议，保存在本机 git.config.local（不上传 GitHub），保存后本机立即生效；换电脑后克隆仓库，复制 git.config.local.example 改名填入即可</p>' +
+        '<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">' +
+          '<label class="block text-[12.5px] text-[#6e6e73]">提交用户名' +
+            '<input id="gitName" type="text" class="mt-1 w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" placeholder="如 WillowEcho"' + (myRole !== 'admin' ? ' disabled' : '') + ' />' +
+          '</label>' +
+          '<label class="block text-[12.5px] text-[#6e6e73]">提交邮箱' +
+            '<input id="gitEmail" type="text" class="mt-1 w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" placeholder="如 willowecho@163.com"' + (myRole !== 'admin' ? ' disabled' : '') + ' />' +
+          '</label>' +
+          '<label class="block text-[12.5px] text-[#6e6e73]">网络协议（推送抖动时选 HTTP/1.1）' +
+            '<select id="gitHttp" class="mt-1 w-48 rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"' + (myRole !== 'admin' ? ' disabled' : '') + '>' +
+              '<option value="HTTP/1.1">HTTP/1.1（稳定，推荐）</option>' +
+              '<option value="HTTP/2">HTTP/2（更快，偶发 TLS 抖动）</option>' +
+            '</select>' +
+          '</label>' +
+        '</div>' +
+        (myRole !== 'admin' ? '<p class="mt-3 text-[12px] text-[#a1a1a6]">Git 配置仅管理员可修改</p>' : '') +
+      '</div>' +
+      (myRole !== 'admin' ? '' : '<div class="sticky bottom-4 z-10 mt-5 flex w-full items-center gap-3 rounded-2xl border border-black/5 bg-white/95 px-5 py-3.5 shadow-[0_4px_24px_rgba(0,0,0,0.1)] backdrop-blur" id="gitBar">' +
+        '<span id="gitMsg" class="text-[13px] text-[#1d7a35]"></span>' +
+        '<button id="gitSave" class="ml-auto rounded-full bg-[#1d1d1f] px-6 py-2.5 text-[13.5px] font-semibold text-white hover:opacity-85">保存 Git 配置</button>' +
       '</div>')
 
     // 默认条数下拉 = 当前勾选的档位；勾选变化时重建
@@ -1441,6 +1464,38 @@ onRoute('settings', function () {
             $('pgMsg').textContent = ''
             toast(e.message, true)
           })
+      })
+    }
+
+    // Git 推送配置：回填当前值（file 优先，实际生效值兜底）
+    api('/api/git-config').then(function (g) {
+      if (seq !== viewSeq) return
+      var f = (g && g.file) || {}
+      var live = (g && g.live) || {}
+      $('gitName').value = f['user.name'] || live['user.name'] || ''
+      $('gitEmail').value = f['user.email'] || live['user.email'] || ''
+      $('gitHttp').value = f['http.version'] || live['http.version'] || 'HTTP/1.1'
+    }).catch(function () {})
+    if (myRole === 'admin') {
+      $('gitSave').addEventListener('click', function () {
+        var name = $('gitName').value.trim()
+        var email = $('gitEmail').value.trim()
+        if (!name || !email) { toast('提交用户名和邮箱不能为空', true); return }
+        // 邮箱校验：必须含 @，@ 后至少一个点且点不在结尾（避免正则转义在本文件的解析歧义）
+        var at = email.indexOf('@')
+        var dot = email.lastIndexOf('.')
+        if (at < 1 || dot < at + 2 || dot >= email.length - 1) { toast('邮箱格式不对', true); return }
+        api('/api/git-config', { method: 'POST', body: { entries: {
+          'user.name': name,
+          'user.email': email,
+          'http.version': $('gitHttp').value,
+        } } }).then(function () {
+          $('gitMsg').textContent = '已保存 ✓ 本机 git 配置即刻生效'
+          toast('Git 配置已保存并生效')
+        }).catch(function (e) {
+          $('gitMsg').textContent = ''
+          toast(e.message, true)
+        })
       })
     }
   })

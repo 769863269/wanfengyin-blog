@@ -22,6 +22,7 @@ import {
   readSiteConfig, saveSiteConfig, getPagination,
 } from './store.mjs'
 import { page } from './page.mjs'
+import { readGitConfigFile, readGitConfigLive, saveGitConfig } from './gitconfig.mjs'
 
 const coversDir = join(ROOT, 'public', 'images', 'covers')
 // 预编译静态 CSS（构建期由 tailwind.config.cjs 生成），运行时零编译开销；
@@ -552,6 +553,22 @@ export function startStudio(port = 5199) {
           const saved = saveSiteConfig(body)
           log(actor, 'site:update', 'content/site.json', '更新站点设置/友链')
           return ok(res, { site: saved })
+        } catch (e) {
+          return sendJson(res, 400, { error: e.message })
+        }
+      }
+
+      /* ---------- 本地 git 配置（后台界面直改，存 git.config.local 不上传） ---------- */
+      if (path === '/api/git-config' && req.method === 'GET') {
+        return ok(res, { file: readGitConfigFile(), live: readGitConfigLive() })
+      }
+      if (path === '/api/git-config' && req.method === 'POST') {
+        if (role !== 'admin') return deny(res, 'Git 配置仅管理员可修改')
+        const body = JSON.parse(await readBody(req).catch(() => ({})))
+        try {
+          const { applied } = saveGitConfig(body.entries)
+          log(actor, 'git-config:update', 'git.config.local', '更新本地 git 配置: ' + applied.join(', '))
+          return ok(res, { file: readGitConfigFile(), live: readGitConfigLive(), applied })
         } catch (e) {
           return sendJson(res, 400, { error: e.message })
         }
