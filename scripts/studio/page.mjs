@@ -1554,7 +1554,7 @@ onRoute('site', function () {
       '</div>' +
       '<div class="mt-5 rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
         '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">导航菜单（web + H5 全通用）</p>' +
-        '<p class="mb-2 text-[11.5px] leading-relaxed text-[#a1a1a6]">同一份列表同时作用于电脑端顶栏与手机端抽屉，改一次两端都变。「页面」=站内页（内置 5 页 + 已发布的自定义页面）；「外链」=http(s):// 或 / 开头；「占位」=未上线不可点；「隐藏」=两端都不出现（配置保留不删）</p>' +
+        '<p class="mb-2 text-[11.5px] leading-relaxed text-[#a1a1a6]">同一份列表同时作用于电脑端顶栏与手机端抽屉，改一次两端都变。「页面」=站内页（内置 5 页 + 已发布的自定义页面）；「外链」=http(s):// 或 / 开头；「占位」=未上线不可点；「隐藏」=两端都不出现（配置保留不删）。按住每行左侧的 ⠿ 拖到目标位置即可调整顺序，松手后点「保存站点设置」生效</p>' +
         '<div id="navRows"></div>' +
         (readOnly ? '' : '<button id="navAdd" type="button" class="mt-2 rounded-full border border-[#d2d2d7] px-4 py-1.5 text-[12.5px] hover:border-[#0071e3] hover:text-[#0071e3]">＋ 添加菜单项</button>') +
       '</div>' +
@@ -1581,6 +1581,14 @@ onRoute('site', function () {
 
     // 导航菜单动态行（web 顶栏与 H5 抽屉同源，增删改查）
     var navRows = $('navRows')
+    var dragRow = null // 正在被拖动的行
+    var navOrderNoted = false // 拖动提示只提示一次，避免反复刷屏
+    function noteNavReordered() {
+      if (navOrderNoted) return
+      navOrderNoted = true
+      var msgEl = $('sMsg')
+      if (msgEl) msgEl.textContent = '菜单顺序已调整 —— 点下方「保存站点设置」生效'
+    }
     function navRow(box, it) {
       it = it || {}
       var row = document.createElement('div')
@@ -1597,6 +1605,21 @@ onRoute('site', function () {
         '<input class="nv-target min-w-[200px] flex-1 rounded-lg border border-[#d2d2d7] bg-white px-2.5 py-1.5 text-[13px] outline-none focus:border-[#0071e3]" value="' + esc(it.target || '') + '"' + (readOnly ? ' disabled' : '') + ' />' +
         '<span class="nv-hint flex-1 text-[12.5px] text-[#a1a1a6]"></span>' +
         '<button type="button" class="nv-del ml-auto shrink-0 rounded-full bg-white px-2.5 py-1 text-[12px] text-[#c0392b] border border-[#f0d0d0] hover:bg-[#fdecec]">删除</button>'
+      // 拖拽排序手柄：只有按住这个把手才能拖动整行。
+      // 不把 draggable 挂到整行上 —— 行内含输入框，draggable 容器会吃掉浏览器
+      // 原生的文本选择/拖选行为，用户就没法在输入框里划词了。
+      var handle = document.createElement('span')
+      handle.className = 'nv-drag shrink-0 select-none text-[15px] leading-none text-[#c7c7cc] hover:text-[#6e6e73]'
+      handle.textContent = '⠿'
+      handle.style.padding = '0 4px' // 内联，避免依赖 Tailwind 重编译
+      if (readOnly) {
+        handle.style.opacity = '0.3'
+      } else {
+        handle.draggable = true
+        handle.style.cursor = 'grab'
+        handle.title = '按住拖动调整顺序'
+      }
+      row.insertBefore(handle, row.firstChild)
       var kindSel = row.querySelector('.nv-kind')
       var routeSel = row.querySelector('.nv-route')
       var targetInp = row.querySelector('.nv-target')
@@ -1625,12 +1648,47 @@ onRoute('site', function () {
       syncTarget()
       kindSel.addEventListener('change', syncTarget)
       delBtn.addEventListener('click', function () { row.remove() })
+      if (!readOnly) {
+        // 拖动开始：记住这一行，整行降透明度表示"正在搬运"
+        handle.addEventListener('dragstart', function (e) {
+          dragRow = row
+          row.style.opacity = '0.4'
+          if (e.dataTransfer) {
+            e.dataTransfer.effectAllowed = 'move'
+            // Firefox 必须 setData 才会真正启动拖拽流程
+            e.dataTransfer.setData('text/plain', 'nav-row')
+          }
+        })
+        handle.addEventListener('dragend', function () {
+          row.style.opacity = ''
+          dragRow = null
+          noteNavReordered()
+        })
+      }
       box.appendChild(row)
     }
     var mainNavList = Array.isArray(d.site.mainNav) ? d.site.mainNav : []
     // 兼容旧配置：曾把「仅手机抽屉」的项单独存在 mobileExtraNav，这里合并进同一列表
     var legacyExtraList = Array.isArray(d.site.mobileExtraNav) ? d.site.mobileExtraNav : []
     mainNavList.concat(legacyExtraList).forEach(function (n) { navRow(navRows, n) })
+
+    // 拖拽排序：手柄 dragstart 记下当前行 → dragover 按鼠标 Y 与各行中线比较，
+    // 实时 insertBefore 到目标位置（所见即所得，松手即定）。
+    // 保存时 collectNav 本身就是按 DOM 顺序读的，所以顺序不需要额外存储。
+    navRows.addEventListener('dragover', function (e) {
+      if (!dragRow) return
+      e.preventDefault()
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
+      var others = [].slice.call(navRows.querySelectorAll('.nav-row')).filter(function (r) { return r !== dragRow })
+      var next = null
+      for (var i = 0; i < others.length; i++) {
+        var rect = others[i].getBoundingClientRect()
+        if (e.clientY < rect.top + rect.height / 2) { next = others[i]; break }
+      }
+      if (next) navRows.insertBefore(dragRow, next)
+      else navRows.appendChild(dragRow)
+    })
+    navRows.addEventListener('drop', function (e) { e.preventDefault() })
     function collectNav(box) {
       return [].slice.call(box.querySelectorAll('.nav-row')).map(function (row) {
         var tSel = row.querySelector('.nv-route')
@@ -1669,6 +1727,7 @@ onRoute('site', function () {
             aboutPage: { intro: $('sAbIntro').value.trim(), techStack: abStack, milestones: abMiles },
           },
         }).then(function () {
+          navOrderNoted = false // 已落盘，下次拖动重新提示
           $('sMsg').textContent = '已保存 ✓ 本地博客已即时生效'
           toast('站点设置已保存')
         }).catch(function (e) {

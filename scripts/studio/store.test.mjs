@@ -182,6 +182,29 @@ try {
   let navBad2 = false
   try { saveSiteConfig({ mainNav: [{ label: '坏链', kind: 'external', target: 'ftp://x' }] }) } catch { navBad2 = true }
   assert('非 http(s) 外链被拦截', navBad2)
+
+  // 顺序保真：后台拖拽排序只改 DOM 顺序，保存时 collectNav 按 DOM 顺序读出来，
+  // 所以 store 必须原样按数组顺序落盘、绝不重排 —— 否则"拖动排序"拖了也白拖。
+  saveSiteConfig({
+    mainNav: [
+      { label: '标签', icon: '🏷', kind: 'route', target: 'tags' },
+      { label: '首页', icon: '🏠', kind: 'route', target: 'home' },
+      { label: '归档', icon: '🗂', kind: 'route', target: 'archive' },
+    ],
+  })
+  const navOrder = readSiteConfig().mainNav.map((n) => n.target).join('>')
+  assert('导航顺序原样落盘（拖动排序生效前提）', navOrder === 'tags>home>archive', navOrder)
+  // 再倒一次，确认不是"恰好没动"
+  saveSiteConfig({
+    mainNav: [
+      { label: '归档', icon: '🗂', kind: 'route', target: 'archive' },
+      { label: '标签', icon: '🏷', kind: 'route', target: 'tags' },
+    ],
+  })
+  assert(
+    '二次重排仍按传入顺序',
+    readSiteConfig().mainNav.map((n) => n.target).join('>') === 'archive>tags',
+  )
 } finally {
   writeFileSync(siteFile, siteBackup, 'utf8')
 }
