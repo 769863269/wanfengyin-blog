@@ -164,7 +164,8 @@ async function main() {
   for (const p of listed) {
     window.history.pushState({}, '', '/page/' + p.slug)
     window.dispatchEvent(new window.PopStateEvent('popstate'))
-    await waitFor(() => $('.custom-page__title'))
+    // 必须等到标题「文本」匹配 —— 只等元素存在会立刻命中上一个页面残留的标题（连续切页时必踩）
+    await waitFor(() => $('.custom-page__title')?.textContent.includes(p.title))
     check(`已上线页面 /page/${p.slug} 渲染`, $('.custom-page__title')?.textContent.includes(p.title))
   }
   window.history.pushState({}, '', '/page/__unlisted_probe__')
