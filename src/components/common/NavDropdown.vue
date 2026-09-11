@@ -2,7 +2,9 @@
 /**
  * 顶栏多级下拉菜单（递归组件）
  *
- * 父项渲染为「点击展开」的分支节点：点击切换面板，本身不再跳转。
+ * 桌面端（有 hover 能力）滑过父项即展开面板，移出整块约 160ms 后收起——
+ * 延时是为了跨过按钮与面板之间的 6px 间隙时不闪断。
+ * 触屏端（hover: none）没有滑动事件，退化为点击切换。
  * 面板内叶子走 NavLink，分支递归自身（二级以上向右侧弹出）。
  * 展开/收起状态集中在 useNavMenu 单例，全站同时只展开一个节点。
  */
@@ -19,18 +21,46 @@ interface Props {
 
 const { item, depth = 0 } = defineProps<Props>()
 
-const { openId, toggle } = useNavMenu()
+const { openId, open, toggle, close } = useNavMenu()
 const isOpen = computed(() => openId.value === item.id)
+
+/**
+ * 是否具备 hover 能力：hover: none 的触屏设备走点击切换。
+ * matchMedia 需能力探测——jsdom 等测试环境不实现该方法，直接判空兜底。
+ */
+const canHover =
+  typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(hover: hover)').matches
+
+/** 延时收起计时器：滑入时取消，滑出后延迟执行 */
+let closeTimer: ReturnType<typeof setTimeout> | undefined
+const CLOSE_DELAY = 160
+
+function onEnter() {
+  if (!canHover) return
+  clearTimeout(closeTimer)
+  open(item.id)
+}
+
+function onLeave() {
+  if (!canHover) return
+  clearTimeout(closeTimer)
+  closeTimer = setTimeout(() => {
+    if (openId.value === item.id) close()
+  }, CLOSE_DELAY)
+}
 
 function onToggle(event: Event) {
   // 阻止冒泡：避免触发 AppHeader 的「点外部收起」监听把刚展开的面板立刻关掉
   event.stopPropagation()
+  clearTimeout(closeTimer)
   toggle(item.id)
 }
 </script>
 
 <template>
-  <div class="nav-dd" :class="{ 'nav-dd--open': isOpen }" @click.stop>
+  <div class="nav-dd" :class="{ 'nav-dd--open': isOpen }" @click.stop @mouseenter="onEnter" @mouseleave="onLeave">
     <button
       class="nav-dd__toggle"
       type="button"
