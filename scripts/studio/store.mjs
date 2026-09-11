@@ -901,6 +901,7 @@ export function readPage(slug) {
     description: String(data.description ?? ''),
     status,
     body: body || '',
+    fullHtml: isTrue(data.fullHtml),
     updatedAt: statSync(file).mtime.toISOString(),
     ...pageAccess(slug, status, isTrue(data.directAccess), navRefSlugs()),
   }
@@ -918,16 +919,18 @@ export function savePage(input) {
   const status = input.status ?? 'published'
   if (!['draft', 'published'].includes(status)) throw new Error('状态只能是 draft 或 published')
   const directAccess = isTrue(input.directAccess)
+  const fullHtml = isTrue(input.fullHtml)
   const body = String(input.body ?? '')
   if (body.length > 100_000) throw new Error('正文过长（上限 10 万字符）')
 
   const file = pagePath(slug)
   const created = !existsSync(file)
-  // 只有开启直链才写该字段：关闭 = 文件里没有这行，保持 frontmatter 干净
+  // 只有开启时才写该字段：关闭 = 文件里没有这行，保持 frontmatter 干净
   const front = { title, description, status }
   if (directAccess) front.directAccess = 'true'
+  if (fullHtml) front.fullHtml = 'true'
   writeFileSync(file, stringifyFrontmatter(front, body), 'utf8')
-  return { slug, created, status, ...pageAccess(slug, status, directAccess, navRefSlugs()) }
+  return { slug, created, status, fullHtml, ...pageAccess(slug, status, directAccess, navRefSlugs()) }
 }
 
 /** 删除页面文件（物理删除；自定义页面无需回收站） */

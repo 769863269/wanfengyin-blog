@@ -1415,7 +1415,7 @@ onRoute('pages/*', function (arg) {
         '<label class="block text-[12.5px] text-[#6e6e73]">状态' +
           '<select id="pgStatus" class="mt-1 w-40 rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"><option value="published">已发布</option><option value="draft">草稿（仅后台可见）</option></select></label>' +
         '<div class="rounded-xl bg-[#f5f5f7] px-4 py-3 md:col-span-3">' +
-          '<label class="flex items-center gap-2.5 text-[13px] font-medium text-[#1d1d1f]"><input id="pgDirect" type="checkbox" class="h-4 w-4 shrink-0" />允许直接访问（分享 /page/slug 链接即可打开）</label>' +
+          '<label class="flex items-center gap-2.5 text-[13px] font-medium text-[#1d1d1f]"><input id="pgDirect" type="checkbox" class="h-4 w-4 shrink-0" />允许直接访问（分享 /page/slug 链接即可打开）</label>' +          '<label class="flex items-center gap-2.5 text-[13px] font-medium text-[#1d1d1f]" style="margin-top:12px"><input id="pgFullHtml" type="checkbox" class="h-4 w-4 shrink-0" />完整 HTML 独立页（iframe 隔离渲染，支持 &lt;script&gt; 交互）</label>' +          '<p class="mt-1.5 text-[11.5px] leading-relaxed text-[#86868b]">开启后正文按「完整 HTML 文档」渲染（可含 DOCTYPE / &lt;script&gt; 点击事件等），用 sandbox iframe 隔离，不影响主站安全；关闭则按「Markdown + HTML 片段」规则渲染</p>' +
           '<p class="mt-1.5 text-[11.5px] leading-relaxed text-[#86868b]">关闭时：只有出现在导航菜单里的页面，前台才能访问（该菜单在电脑顶栏与手机抽屉同时生效）；不在菜单里 → 前台 404，无法用 URL 强行打开</p>' +
           '<p class="mt-2.5 flex flex-wrap items-center gap-2"><span id="pgAccess" class="text-[12px] font-medium"></span>' +
             '<button id="pgCopy" class="rounded-full border border-[#d2d2d7] bg-white px-2.5 py-0.5 text-[11.5px] text-[#6e6e73] hover:border-[#0071e3] hover:text-[#0071e3]">复制地址</button></p>' +
@@ -1499,7 +1499,7 @@ onRoute('pages/*', function (arg) {
     var body = $('pgBody').value
     if (!title) { toast('页面标题不能为空', true); return }
     if (!s) { toast('slug 不能为空', true); return }
-    api('/api/pages', { method: 'PUT', body: { slug: s, title: title, description: $('pgDesc').value.trim(), status: $('pgStatus').value, directAccess: $('pgDirect').checked, body: body } })
+    api('/api/pages', { method: 'PUT', body: { slug: s, title: title, description: $('pgDesc').value.trim(), status: $('pgStatus').value, directAccess: $('pgDirect').checked, fullHtml: $('pgFullHtml').checked, body: body } })
       .then(function (r) {
         referenced = !!r.referenced
         $('pgMsg').textContent = r.status !== 'published'
