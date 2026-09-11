@@ -2051,6 +2051,9 @@ onRoute('settings', function () {
         b.innerHTML = '<span class="h-1.5 w-1.5 rounded-full bg-[#a1a1a6]"></span>未配置'
       }
     }
+    // git 生效值是子进程读的（本机约 2 秒），先给个加载提示；服务端有 30 秒缓存 +
+    // 后台刷新，所以第二次及以后进这个页面是瞬时的。页面本身早已渲染完，不等它。
+    if ($('gitMsg')) $('gitMsg').textContent = '正在读取本机 git 配置…'
     api('/api/git-config').then(function (g) {
       if (seq !== viewSeq) return
       var f = (g && g.file) || {}
@@ -2062,7 +2065,8 @@ onRoute('settings', function () {
       $('gitUser').value = cred.username || f['github.username'] || ''
       renderCredBadge(!!cred.hasToken)
       if (cred.hasToken) $('gitToken').placeholder = '已配置，留空保持不变'
-    }).catch(function () {})
+      if ($('gitMsg')) $('gitMsg').textContent = ''
+    }).catch(function () { if ($('gitMsg')) $('gitMsg').textContent = '' })
     if (myRole === 'admin') {
       var verifying = false
       $('gitVerify').addEventListener('click', function () {

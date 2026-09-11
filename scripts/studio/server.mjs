@@ -620,19 +620,21 @@ export function startStudio(port = 5199) {
         }
       }
 
-      /* ---------- 本地 git 配置（后台界面直改，存 git.config.local 不上传） ---------- */
+      /* ---------- 本地 git 配置（后台界面直改，存 git.config.local 不上传） ----------
+       * 注意：这几个读值都是异步的（git 子进程在本机约 2 秒），绝不能写成同步版 ——
+       * 同步会把事件循环按住十几秒，整个后台（切菜单、拉列表）全部排队卡死。 */
       if (path === '/api/git-config' && req.method === 'GET') {
-        return ok(res, { file: readGitConfigFile(), live: readGitConfigLive(), cred: readGithubCredStatus() })
+        return ok(res, { file: readGitConfigFile(), live: await readGitConfigLive(), cred: readGithubCredStatus() })
       }
       if (path === '/api/git-config' && req.method === 'POST') {
         if (role !== 'admin') return deny(res, 'Git 配置仅管理员可修改')
         const body = JSON.parse(await readBody(req).catch(() => ({})))
         try {
-          const { applied } = saveGitConfig(body.entries)
+          const { applied } = await saveGitConfig(body.entries)
           // PAT 可选：填了才写凭证库；日志永不包含 token
-          if (body.githubToken) saveGithubToken(body.githubToken, body.githubUsername)
+          if (body.githubToken) await saveGithubToken(body.githubToken, body.githubUsername)
           log(actor, 'git-config:update', 'git.config.local', '更新本地 git 配置: ' + applied.join(', ') + (body.githubToken ? '；保存 GitHub 推送凭证' : ''))
-          return ok(res, { file: readGitConfigFile(), live: readGitConfigLive(), applied, cred: readGithubCredStatus() })
+          return ok(res, { file: readGitConfigFile(), live: await readGitConfigLive(), applied, cred: readGithubCredStatus() })
         } catch (e) {
           return sendJson(res, 400, { ok: false, output: e.message })
         }
@@ -640,7 +642,7 @@ export function startStudio(port = 5199) {
 
       if (path === '/api/git-config/verify' && req.method === 'POST') {
         if (role !== 'admin') return deny(res, 'Git 配置仅管理员可操作')
-        const r = verifyGithubCred()
+        const r = await verifyGithubCred()
         log(actor, 'git-config:verify', 'origin', '验证推送凭证: ' + (r.ok ? '可用' : r.message))
         return ok(res, r)
       }

@@ -14,6 +14,7 @@
     "studio": "node scripts/studio.mjs",
     "test:studio": "node scripts/studio/store.test.mjs",
     "test:studio:ui": "node scripts/studio/ui.test.mjs",
+    "test:studio:git": "node scripts/studio/gitconfig.test.mjs",
     "studio:css": "tailwindcss -c tailwind.config.cjs -o scripts/studio-assets/studio.css --minify",
     "setup:git": "node scripts/setup-git.mjs",
     "new": "node scripts/new-post.mjs",

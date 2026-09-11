@@ -82,6 +82,15 @@ const jSite = {
   },
 }
 const jPages = { ok: true, pages: [{ slug: 'dome', title: '测试页', status: 'published', reachable: true }] }
+const jGit = {
+  ok: true,
+  file: {
+    'user.name': 'WillowEcho', 'user.email': 'willowecho@163.com',
+    'http.version': 'HTTP/1.1', 'github.username': '769863269',
+  },
+  live: { 'user.name': 'WillowEcho', 'user.email': 'willowecho@163.com', 'http.version': 'HTTP/1.1' },
+  cred: { hasToken: true, username: '769863269' },
+}
 const jArticle = {
   ok: true,
   article: {
@@ -130,6 +139,8 @@ const dom = new JSDOM(html, {
       else if (p.indexOf('/api/articles') === 0) body = { ok: true, articles: [], total: 0, totalPages: 1, page: 1 }
       else if (p.indexOf('/api/site') === 0) body = jSite
       else if (p.indexOf('/api/pages') === 0) body = jPages
+      else if (p.indexOf('/api/git-config/verify') === 0) body = { ok: true, message: '凭证可用' }
+      else if (p.indexOf('/api/git-config') === 0) body = jGit
       else if (p.indexOf('/api/authors') === 0) body = { ok: true, me: { role: 'admin' }, authors: jMeta.authors }
       return Promise.resolve({ json: () => Promise.resolve(body) })
     }
@@ -220,7 +231,28 @@ check('二次进入编辑器正常渲染（无残留实例干扰）', !!$('#eTit
 window.location.hash = '#/list/all'
 await sleep(250)
 
-console.log('\n[7] 性能回归：meta 缓存与视图清理契约')
+console.log('\n[7] 系统设置：Git 配置卡片（异步读取，页面不被阻塞）')
+// 背景：/api/git-config 曾经稳定耗时 12~17 秒（7 次同步 git 子进程），
+// 把整个后台事件循环按住。现在服务端直读 .git/config（约 1ms），前端也保证
+// 页面先渲染、卡片后填充。这组断言锁住"进设置页不会卡住、提示会收尾"的契约。
+window.__fetchLog.length = 0
+window.location.hash = '#/settings'
+await sleep(420)
+check('Git 配置卡片渲染', !!$('#gitName') && !!$('#gitEmail') && !!$('#gitHttp') && !!$('#gitUser'))
+check('提交身份已回填', ($('#gitName') || {}).value === 'WillowEcho', ($('#gitName') || {}).value)
+check('邮箱已回填', ($('#gitEmail') || {}).value === 'willowecho@163.com', ($('#gitEmail') || {}).value)
+check('协议已回填', ($('#gitHttp') || {}).value === 'HTTP/1.1', ($('#gitHttp') || {}).value)
+check('GitHub 账号名已回填', ($('#gitUser') || {}).value === '769863269', ($('#gitUser') || {}).value)
+check('凭证徽标显示「已配置」',
+  (($('#gitCredBadge') || {}).textContent || '').indexOf('已配置') >= 0,
+  (($('#gitCredBadge') || {}).textContent || '').trim())
+check('加载提示已收尾（不残留「正在读取」）',
+  (($('#gitMsg') || {}).textContent || '').indexOf('正在读取') < 0,
+  ($('#gitMsg') || {}).textContent)
+const gitHits = window.__fetchLog.filter((u) => u.indexOf('/api/git-config') === 0).length
+check('进设置页只请求一次 git 配置', gitHits === 1, '请求 ' + gitHits + ' 次')
+
+console.log('\n[8] 性能回归：meta 缓存与视图清理契约')
 window.__fetchLog.length = 0
 for (const h of ['#/trash', '#/taxonomy', '#/authors', '#/logs', '#/list/all']) {
   window.location.hash = h
@@ -235,7 +267,7 @@ check('存在状态标签页组件 statusTabs', html.indexOf('function statusTab
 const pasteBinds = html.split("document.addEventListener('paste'").length - 1
 check('document 上只绑一次 paste 监听（防每次进编辑器叠加）', pasteBinds === 1, '实际 ' + pasteBinds + ' 处')
 
-console.log('\n[8] 页面运行时报错')
+console.log('\n[9] 页面运行时报错')
 check('无未捕获报错', errors.length === 0, errors.slice(0, 3).join(' | '))
 
 console.log('\n结果：' + pass + ' 通过，' + fail + ' 失败')
