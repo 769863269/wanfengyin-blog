@@ -5,7 +5,7 @@
  * 全站标签按出现次数排序，点击进入首页对应标签筛选。
  */
 import { computed } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { RouterLink } from 'vue-router'
 import { posts } from '@/data/posts'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { siteConfig } from '@/config/site'
@@ -14,16 +14,6 @@ useSeoMeta({
   title: `标签 · ${siteConfig.name}`,
   description: `${siteConfig.fullName}的全部文章标签。`,
 })
-
-const router = useRouter()
-
-function goBack(): void {
-  if (router.options.history.state.back !== null) {
-    router.back()
-  } else {
-    void router.push({ name: 'home' })
-  }
-}
 
 /** 标签 → 文章数，降序；tagCloud 已按名称排好，这里按热度重排 */
 const tagCounts = computed(() => {
@@ -49,11 +39,6 @@ function sizeClass(count: number): string {
   <div class="layout__main">
     <div class="layout__content tags-page">
       <div class="card">
-        <button class="tags-page__back" type="button" @click="goBack">
-          <span aria-hidden="true">←</span>
-          返回上一页
-        </button>
-
         <header class="tags-page__header">
           <h1 class="tags-page__title">🏷 全部标签</h1>
           <p class="tags-page__desc">共 {{ tagCounts.length }} 个标签，点击查看同类文章</p>
@@ -77,30 +62,6 @@ function sizeClass(count: number): string {
 </template>
 
 <style scoped>
-.tags-page__back {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 18px;
-  padding: 6px 14px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  cursor: pointer;
-  transition:
-    color var(--duration-base) var(--ease-standard),
-    border-color var(--duration-base) var(--ease-standard),
-    background-color var(--duration-base) var(--ease-standard);
-}
-
-.tags-page__back:hover {
-  color: var(--brand);
-  border-color: var(--brand);
-  background: var(--brand-soft);
-}
-
 .tags-page__header {
   margin-bottom: 22px;
 }

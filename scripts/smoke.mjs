@@ -234,18 +234,17 @@ async function main() {
     check('侧栏标签链接存在（回归前提）', false, '未找到 ?tag= 链接')
   }
 
-  console.log('\n[5.6] 标签页布局：返回按钮在卡片内')
-  // 回归：标签页的「返回上一页」曾落在卡片外（悬在页面灰底上），
-  // 与归档页/文章详情页不一致。此处锁定它必须在 .card 内。
+  console.log('\n[5.6] 标签页：标题在卡片内、无返回按钮')
+  // 回归 1：标签页标题曾悬在卡片外，与归档页/文章详情页不一致 → 锁定必须在 .card 内。
+  // 回归 2：标签页曾有一个「返回上一页」按钮，后按需求移除（顶部导航已足够），
+  //        锁定它不再出现，避免后续误加回来。
   window.history.pushState({}, '', '/tags')
   window.dispatchEvent(new window.PopStateEvent('popstate'))
-  await waitFor(() => $('.tags-page__back'))
-  const tagsBack = $('.tags-page__back')
-  check('标签页返回按钮渲染', !!tagsBack)
-  check(
-    '返回按钮位于卡片内（与归档页/文章页一致）',
-    !!tagsBack && tagsBack.closest('.card') !== null,
-  )
+  await waitFor(() => $('.tags-page__title'))
+  const tagsTitle = $('.tags-page__title')
+  check('标签页标题渲染', !!tagsTitle)
+  check('标签页标题位于卡片内（与归档页/文章页一致）', tagsTitle?.closest('.card') !== null)
+  check('标签页不渲染「返回上一页」按钮', $('.tags-page__back') === null)
   check('标签云渲染', $$('.tag-chip').length > 0, `共 ${$$('.tag-chip').length} 个标签`)
 
   console.log('\n[6] 页面 JS 报错')
