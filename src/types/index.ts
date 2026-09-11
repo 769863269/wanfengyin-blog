@@ -21,7 +21,13 @@ export type ArticleBlock =
   | { type: 'table'; head: string[]; rows: string[][] }
   | { type: 'code'; lang: string; text: string; /** 构建期 Shiki 高亮的 <code> 内部 HTML（可选，缺省走纯文本） */ codeHtml?: string }
 
-export interface Post {
+/**
+ * 文章元数据（不含正文）—— 列表页与首屏使用。
+ *
+ * 正文单独编译到 posts.body.generated.ts 按需加载：正文占全部文章数据的 97%，
+ * 却只有详情页用得上；混在元数据里会让每个访客先下载全部文章全文。
+ */
+export interface PostSummary {
   /** URL 友好标识，同时用作路由参数 */
   slug: string
   title: string
@@ -37,8 +43,11 @@ export interface Post {
   views: number
   commentCount: number
   tags: string[]
-  /** 正文内容块 */
-  body: ArticleBlock[]
+  /**
+   * 阅读时长（分钟）。构建期由 build-posts.mjs 算好，
+   * 让归档页这类列表不必为了显示时长去加载正文。
+   */
+  readingMinutes: number
   /** 是否置顶轮播 */
   featured?: boolean
   /** 是否列表置顶（Studio CMS，置顶文章排在列表最前） */
@@ -53,9 +62,11 @@ export interface Post {
   seoDescription?: string
 }
 
-/** 列表项：不含正文，减轻列表渲染负担 */
-// 预留：接后端 / CMS 后列表接口返回此结构，前端组件无需改动
-export type PostSummary = Omit<Post, 'body'>
+/** 文章详情：元数据 + 正文块（运行时由 loadPostBody 合并） */
+export interface Post extends PostSummary {
+  /** 正文内容块 */
+  body: ArticleBlock[]
+}
 
 /* ===================== 自定义页面 ===================== */
 

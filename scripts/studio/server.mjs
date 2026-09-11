@@ -682,9 +682,18 @@ export function startStudio(port = 5199) {
         }
         const base64 = String(body.dataBase64 || '').replace(/^data:[^;]+;base64,/, '')
         if (!base64) return sendJson(res, 400, { ok: false, output: '图片数据为空' })
+        // 图片级体积校验：readBody 的 12MB 只兜请求体，base64 解码后仍可能是近 9MB 的图，
+        // 直接落进 public/ 会拖垮前台加载，也把仓库撑大。卡 4MB 原图上限。
+        const bytes = Buffer.from(base64, 'base64')
+        if (bytes.length > 4 * 1024 * 1024) {
+          return sendJson(res, 400, {
+            ok: false,
+            output: `图片 ${(bytes.length / 1024 / 1024).toFixed(1)}MB，超过 4MB 上限，请先压缩`,
+          })
+        }
         mkdirSync(coversDir, { recursive: true })
         const fileName = `${(body.slug || `cover-${Date.now()}`).toString().toLowerCase().replace(/[^a-z0-9-]/g, '')}${ext === '.jpeg' ? '.jpg' : ext}`
-        writeFileSync(join(coversDir, fileName), Buffer.from(base64, 'base64'))
+        writeFileSync(join(coversDir, fileName), bytes)
         return ok(res, { fileName })
       }
 

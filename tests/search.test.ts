@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { searchPosts } from '@/utils/search'
-import type { Post } from '@/types'
+import type { ArticleBlock, PostSummary } from '@/types'
 
-function makePost(overrides: Partial<Post>): Post {
+function makePost(overrides: Partial<PostSummary>): PostSummary {
   return {
     slug: 'demo',
     title: '默认标题',
@@ -12,16 +12,21 @@ function makePost(overrides: Partial<Post>): Post {
     views: 0,
     commentCount: 0,
     tags: ['生活'],
-    body: [{ type: 'paragraph', text: '默认正文' }],
+    readingMinutes: 1,
     ...overrides,
   }
 }
 
 const posts = [
   makePost({ slug: 'a', title: '无锡的甜', tags: ['生活', '工作'] }),
-  makePost({ slug: 'b', title: '牛马生活', body: [{ type: 'paragraph', text: '提到无锡的排骨' }] }),
+  makePost({ slug: 'b', title: '牛马生活' }),
   makePost({ slug: 'c', title: '无关文章', excerpt: '完全不同的内容' }),
 ]
+
+/** 正文不在首屏数据里，搜索时由调用方按需加载后传入 */
+const bodies: Record<string, ArticleBlock[]> = {
+  b: [{ type: 'paragraph', text: '提到无锡的排骨' }],
+}
 
 describe('searchPosts', () => {
   it('空关键词返回原数组', () => {
@@ -38,7 +43,10 @@ describe('searchPosts', () => {
   })
 
   it('匹配正文', () => {
-    expect(searchPosts(posts, '排骨').map((p) => p.slug)).toEqual(['b'])
+    // 正文未加载时只覆盖元数据，正文里的词不应命中
+    expect(searchPosts(posts, '排骨').map((p) => p.slug)).toEqual([])
+    // 传入已加载的正文后正常命中
+    expect(searchPosts(posts, '排骨', bodies).map((p) => p.slug)).toEqual(['b'])
   })
 
   it('大小写不敏感', () => {

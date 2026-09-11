@@ -5,17 +5,18 @@
  * 数据层为本地静态数据，找不到 slug 时由路由层处理 404，
  * 这里只渲染存在的文章。评论区按当前路径动态挂载 Giscus。
  */
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import ArticleBody from '@/components/article/ArticleBody.vue'
 import CommentSection from '@/components/article/CommentSection.vue'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import { domain, siteConfig } from '@/config/site'
-import { findPost, getNeighbors, postPlainText } from '@/data/posts'
+import { findPost, getNeighbors, loadPostBody } from '@/data/posts'
 import { useSeoMeta } from '@/composables/useSeoMeta'
-import { estimateReadingTime, formatCount, formatDateTime, formatRelativeTime } from '@/utils/format'
+import { formatCount, formatDateTime, formatRelativeTime } from '@/utils/format'
 import { withBase } from '@/utils/asset'
 import { recordView, totalViews } from '@/utils/viewStats'
+import type { ArticleBlock } from '@/types'
 import NotFoundView from './NotFoundView.vue'
 
 const props = defineProps<{ slug: string }>()
@@ -41,20 +42,53 @@ function goBack(): void {
 
 const post = computed(() => findPost(props.slug))
 
+/**
+ * 正文按需加载（不在首屏元数据里，见 data/posts.ts）。
+ *
+ * 直接访问 /post/xxx 时，预渲染页已把该篇正文内联在 DOM 的 #post-body-data 里，
+ * 优先复用它 —— 否则 Vue 挂载会先清空预渲染内容，再等异步 chunk 到达，页面闪一下。
+ */
+const body = ref<ArticleBlock[] | undefined>(undefined)
+
+/** 读取预渲染页内联的正文数据（仅直接访问/刷新时存在；slug 必须对得上） */
+function readPrerenderedBody(slug: string): ArticleBlock[] | undefined {
+  const el = document.getElementById('post-body-data')
+  if (!el || el.dataset.slug !== slug) return undefined
+  try {
+    const parsed: unknown = JSON.parse(el.textContent ?? '')
+    return Array.isArray(parsed) ? (parsed as ArticleBlock[]) : undefined
+  } catch {
+    return undefined // 数据异常就退回异步加载，不影响可用性
+  }
+}
+
+async function syncBody(slug: string): Promise<void> {
+  const prerendered = readPrerenderedBody(slug)
+  if (prerendered) {
+    body.value = prerendered
+    // 一次性数据：读到即移除，避免站内返回时误命中上一篇的正文
+    document.getElementById('post-body-data')?.remove()
+    return
+  }
+  body.value = undefined
+  const blocks = await loadPostBody(slug)
+  if (props.slug !== slug) return // 加载期间已切到别的文章，丢弃这次结果
+  body.value = blocks
+}
+
+watch(() => props.slug, syncBody, { immediate: true })
+
 /** 文章目录：标题块抽取，少于 2 个不渲染目录 */
 const toc = computed(() =>
-  post.value
-    ? post.value.body
-        .filter((block): block is Extract<typeof block, { type: 'heading' }> => block.type === 'heading')
-        .map((block) => ({ id: block.id, text: block.text }))
-    : [],
+  (body.value ?? [])
+    .filter((block): block is Extract<ArticleBlock, { type: 'heading' }> => block.type === 'heading')
+    .map((block) => ({ id: block.id, text: block.text })),
 )
 
 const neighbors = computed(() => (post.value ? getNeighbors(post.value.slug) : undefined))
 
-const readingTime = computed(() =>
-  post.value ? estimateReadingTime(postPlainText(post.value)) : 0,
-)
+/** 阅读时长：构建期算好写进元数据，列表页也不必为它加载正文 */
+const readingTime = computed(() => post.value?.readingMinutes ?? 0)
 
 /** 展示用阅读数：frontmatter 基数 + 本机真实浏览增量（动态） */
 const displayViews = computed(() => (post.value ? totalViews(post.value.views, post.value.slug) : 0))
@@ -131,7 +165,8 @@ useSeoMeta({
           </ol>
         </details>
 
-        <ArticleBody :blocks="post.body" />
+        <ArticleBody v-if="body" :blocks="body" />
+        <p v-else class="post-detail__loading">正文加载中…</p>
 
         <footer class="post-detail__tags">
           <RouterLink
@@ -188,6 +223,14 @@ useSeoMeta({
 </template>
 
 <style scoped>
+/* 正文按需加载期间的占位，避免布局跳动 */
+.post-detail__loading {
+  padding: 48px 0;
+  font-size: 14px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
 .post-detail__back {
   display: inline-flex;
   align-items: center;

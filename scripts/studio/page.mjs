@@ -867,6 +867,63 @@ onRoute('editor/*', function (file) {
       hint.textContent = reason
     }
 
+    /* 图片上传：粘贴 / 选择图片 → 传到 /api/upload 落成文件 → 正文只留 URL
+     *
+     * Vditor 在「没配 upload」时会自作主张把粘贴的截图转成 data URI 直接写进正文，
+     * 那种写法会被原样编译进前端 bundle（一张 200KB 的图就顶起首屏体积一大截），
+     * 所以这里必须接住所有图片入口。
+     */
+    var MAX_UPLOAD_BYTES = 4 * 1024 * 1024
+    var UPLOAD_EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif']
+
+    function uploadImageHandler(files) {
+      var file = files && files[0]
+      if (!file) return null
+      if (file.size > MAX_UPLOAD_BYTES) {
+        toast('图片超过 4MB，请先压缩再上传', true)
+        return null
+      }
+      var rawName = String(file.name || 'pasted.png')
+      var dot = rawName.lastIndexOf('.')
+      var ext = dot >= 0 ? rawName.slice(dot).toLowerCase() : ''
+      if (UPLOAD_EXTS.indexOf(ext) < 0) {
+        toast('仅支持 jpg / png / webp / gif / avif', true)
+        return null
+      }
+      return new Promise(function (resolve) {
+        var reader = new FileReader()
+        reader.onload = function () {
+          var dataUrl = String(reader.result || '')
+          var comma = dataUrl.indexOf(',')
+          var base64 = comma >= 0 ? dataUrl.slice(comma + 1) : ''
+          if (!base64) {
+            toast('图片读取失败', true)
+            resolve(null)
+            return
+          }
+          var slugBase = ($('eSlug') && $('eSlug').value.trim()) || 'img'
+          api('/api/upload', {
+            method: 'POST',
+            // 带时间戳：正文里可能插多张图，只用 slug 会互相覆盖（封面重传覆盖是另一条路径）
+            body: { name: rawName, dataBase64: base64, slug: slugBase + '-' + Date.now() },
+          })
+            .then(function (r) {
+              toast('图片已上传')
+              resolve('/images/covers/' + r.fileName)
+            })
+            .catch(function (e) {
+              toast(e.message || '图片上传失败', true)
+              resolve(null)
+            })
+        }
+        reader.onerror = function () {
+          toast('图片读取失败', true)
+          resolve(null)
+        }
+        reader.readAsDataURL(file)
+      })
+    }
+
     function initVditor() {
       if (!window.Vditor || typeof window.Vditor !== 'function') return fallbackToTextarea('（编辑器脚本加载失败，已降级为纯文本输入）')
       try {
@@ -880,9 +937,11 @@ onRoute('editor/*', function (file) {
           toolbar: [
             'headings', 'bold', 'italic', 'strike', '|',
             'list', 'ordered-list', 'check', 'quote', '|',
-            'link', 'table', 'code', 'inline-code', '|',
+            'link', 'upload', 'table', 'code', 'inline-code', '|',
             'undo', 'redo', '|', 'edit-mode', 'fullscreen', 'export', '|', 'help',
           ],
+          // 所有图片入口都走这里，正文只存 /images/covers/xxx 地址，绝不落 data URI
+          upload: { handler: uploadImageHandler },
           input: function (v) { onContentChange(v) },
           after: function () {
             // Vditor 异步初始化完成后同步一次初始状态
@@ -915,6 +974,8 @@ onRoute('editor/*', function (file) {
         ['分类', Boolean($('eCategory').value.trim())],
         ['SEO 描述', Boolean($('eSeoDesc').value.trim())],
         ['slug 规范（小写字母/数字/连字符，留空自动生成）', $('eSlug').value.trim() === '' || /^[a-z0-9][a-z0-9-]*$/.test($('eSlug').value.trim())],
+        // 内联 base64 图片会被整段打进前台 bundle，构建期也会直接报错拦下
+        ['正文无内联图片（一律走上传）', getContent().indexOf('data:image') < 0],
       ]
       $('eCheck').innerHTML = rows.map(function (r) {
         return '<div class="flex items-center gap-2"><span>' + (r[1] ? '✅' : '⬜') + '</span><span class="' + (r[1] ? 'text-[#1d7a35]' : 'text-[#86868b]') + '">' + r[0] + '</span></div>'

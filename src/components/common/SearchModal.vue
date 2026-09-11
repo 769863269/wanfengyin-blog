@@ -8,11 +8,12 @@
  */
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { sortedPosts } from '@/data/posts'
+import { loadPostBodies, sortedPosts } from '@/data/posts'
 import { useSearch } from '@/composables/useSearch'
 import { searchPosts } from '@/utils/search'
 import { formatDate } from '@/utils/format'
 import { lockBodyScroll, unlockBodyScroll } from '@/utils/scrollLock'
+import type { ArticleBlock } from '@/types'
 
 const MAX_RESULTS = 8
 
@@ -21,13 +22,19 @@ const { isOpen, keyword, close } = useSearch()
 
 const inputRef = ref<HTMLInputElement | null>(null)
 
+/**
+ * 全文搜索要用正文，而正文不在首屏数据里 —— 弹窗首次打开时才加载，
+ * 未就绪期间搜索自动只覆盖标题 / 摘要 / 标签，到位后正文命中即时补上。
+ */
+const bodies = ref<Record<string, ArticleBlock[]> | undefined>(undefined)
+
 const query = computed(() => keyword.value.trim())
 const results = computed(() => {
   if (!query.value) return []
-  return searchPosts(sortedPosts, query.value).slice(0, MAX_RESULTS)
+  return searchPosts(sortedPosts, query.value, bodies.value).slice(0, MAX_RESULTS)
 })
 const totalMatched = computed(() =>
-  query.value ? searchPosts(sortedPosts, query.value).length : 0,
+  query.value ? searchPosts(sortedPosts, query.value, bodies.value).length : 0,
 )
 
 watch(isOpen, async (open) => {
@@ -36,6 +43,18 @@ watch(isOpen, async (open) => {
   else unlockBodyScroll()
 
   if (!open) return
+
+  // 首次打开时拉正文；失败静默降级为「只搜元数据」，不阻塞搜索框可用
+  if (!bodies.value) {
+    loadPostBodies()
+      .then((map) => {
+        bodies.value = map
+      })
+      .catch(() => {
+        /* 静默降级 */
+      })
+  }
+
   // 等元素挂载完成再聚焦，否则 inputRef 仍为 null
   await nextTick()
   inputRef.value?.focus()

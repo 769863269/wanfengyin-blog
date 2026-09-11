@@ -16,11 +16,12 @@
  * rewrite，刷新 /post/xxx 会 404 —— 404.html 返回 SPA 壳后，
  * vue-router 根据 pathname 正常渲染对应页面。
  */
-import { mkdirSync, readFileSync, writeFileSync, readdirSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { parseFrontmatter, markdownToBlocks, blocksToHtml, escapeHtml } from './lib/markdown.mjs'
+import { markdownToBlocks, blocksToHtml, escapeHtml } from './lib/markdown.mjs'
 import { highlightToCodeHtml } from './lib/highlight.mjs'
+import { ArticleError, readAllArticles } from './lib/articles.mjs'
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const distDir = join(root, 'dist')
@@ -42,34 +43,22 @@ const siteDomain = domainMatch ? domainMatch[1] : ''
 // 否则子路径部署下静态 HTML 里的 <img src="/images/..."> 会 404
 const basePath = siteDomain ? new URL(siteDomain).pathname.replace(/\/$/, '') : ''
 
-/* ---------- 从 articles/*.md 重建文章数据（与 build-posts.mjs 同源） ---------- */
+/* ---------- 文章数据：与 build-posts.mjs 共用同一解析层，避免两处漂移 ---------- */
 
 const articlesDir = join(root, 'articles')
-// README.md 与 _ 开头文件是文档，不是文章（与 build-posts.mjs 保持一致）
-const files = readdirSync(articlesDir).filter(
-  (name) => name.endsWith('.md') && name !== 'README.md' && !name.startsWith('_'),
-)
 
-const posts = files
-  .map((file) => {
-    const { data, body } = parseFrontmatter(readFileSync(join(articlesDir, file), 'utf8'))
-    return {
-      slug: data.slug,
-      title: data.title,
-      excerpt: data.excerpt,
-      cover: data.cover ?? '',
-      publishedAt: data.publishedAt,
-      views: Number(data.views ?? 0),
-      commentCount: Number(data.commentCount ?? 0),
-      keywords: Array.isArray(data.keywords) ? data.keywords : [],
-      seoDescription: String(data.seoDescription ?? ''),
-      // 与 build-posts.mjs 一致：无 status 视为已发布，其余状态不预渲染
-      status: data.status ?? 'published',
-      blocks: markdownToBlocks(body),
-    }
-  })
-  .filter((p) => p.status === 'published')
-  .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+let articles
+try {
+  ;({ articles } = readAllArticles(articlesDir))
+} catch (err) {
+  if (err instanceof ArticleError) {
+    console.error(`[prerender] ${err.message}`)
+    process.exit(1)
+  }
+  throw err
+}
+
+const posts = articles.map(({ meta, body }) => ({ ...meta, blocks: markdownToBlocks(body) }))
 
 // 代码块高亮与 build-posts.mjs 同步：静态 HTML 里的代码也带 Shiki 配色
 for (const post of posts) {
@@ -130,6 +119,20 @@ ${blocksToHtml(post.blocks)}
       </article></div>`
 }
 
+/**
+ * 正文数据块：让客户端首帧直接复用，避免「Vue 挂载清空预渲染内容 → 再等异步
+ * chunk 到达」造成的闪烁。
+ *
+ * 用 type="application/json" 而非可执行脚本：浏览器不执行它，CSP 的 script-src
+ * 也就不适用（站点 CSP 是 script-src 'self'，没有内联脚本额度）。
+ * 必须放在 #app 之外，否则会被 Vue 挂载时一并清掉。
+ */
+function bodyDataTag(post) {
+  // '<' 转义，防止正文里出现 </script> 把标签提前闭合
+  const json = JSON.stringify(post.blocks).replaceAll('<', '\\u003c')
+  return `  <script type="application/json" id="post-body-data" data-slug="${escapeHtml(post.slug)}">${json}</script>`
+}
+
 function prerenderPost(post) {
   const path = `/post/${post.slug}`
   let html = shell
@@ -147,6 +150,9 @@ function prerenderPost(post) {
 
   // 3. 注入静态正文（Vue 挂载后会整体接管 #app，此内容仅供爬虫与首屏）
   html = html.replace('<div id="app"></div>', `<div id="app">${renderArticle(post)}</div>`)
+
+  // 4. 内联本篇正文数据（见 bodyDataTag 注释）
+  html = html.replace('</body>', `${bodyDataTag(post)}\n</body>`)
 
   const outDir = join(distDir, 'post', post.slug)
   mkdirSync(outDir, { recursive: true })

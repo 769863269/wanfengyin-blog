@@ -60,6 +60,23 @@ describe('markdownToBlocks', () => {
     expect(blocks[1]).toEqual({ type: 'image', src: '/img/a.png', alt: '说明' })
   })
 
+  it('图片 src 走协议白名单：放行相对路径与 http(s)', () => {
+    expect(markdownToBlocks('![x](./a.png)')[0]).toEqual({ type: 'image', src: './a.png', alt: 'x' })
+    expect(markdownToBlocks('![x](../a/b.png)')[0]?.type).toBe('image')
+    expect(markdownToBlocks('![x](https://cdn.example.com/a.png)')[0]).toEqual({
+      type: 'image',
+      src: 'https://cdn.example.com/a.png',
+      alt: 'x',
+    })
+  })
+
+  it('图片 src 危险协议降级为纯文本（不留可加载地址）', () => {
+    // block 的 src 由模板直接绑定到 <img src>，不经 v-html 净化，协议判断必须在这里拦
+    expect(markdownToBlocks('![x](javascript:alert)')[0]?.type).toBe('paragraph')
+    expect(markdownToBlocks('![x](data:image/png;base64,iVBORw0KGgo)')[0]?.type).toBe('paragraph')
+    expect(markdownToBlocks('![x](vbscript:msgbox)')[0]?.type).toBe('paragraph')
+  })
+
   it('空输入返回空数组', () => {
     expect(markdownToBlocks('')).toEqual([])
   })

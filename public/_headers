@@ -2,11 +2,20 @@
 # CSP 说明：
 #   script-src 'self' https://giscus.app —— 仅本站脚本与 giscus 评论组件，无内联脚本
 #   style-src 'unsafe-inline' —— Vue SFC scoped 样式与主题变量以 <style>/style 注入，必须放行
-#   img-src https: http: —— 文章允许外链图片（如商品图床）， Cover 预览用 data:
+#   img-src https: —— 文章允许外链图片（如商品图床）。不再放行 http：本站是 https，
+#                    明文图片本来就会被浏览器拦或升级，写了也只是放宽攻击面
 #   frame-src giscus —— 评论 iframe；frame-ancestors 'none' 禁止被任何站嵌入
 /*
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://giscus.app; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:; font-src 'self' data:; connect-src 'self' https://giscus.app; frame-src https://giscus.app; media-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://giscus.app; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://giscus.app; frame-src https://giscus.app; media-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+
+# 构建产物文件名带内容哈希：改内容必改文件名，可以放心长缓存
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# public/ 下的图片与脚本文件名无哈希（改动可能同名）：缓存 30 天，短于构建产物
+/images/*
+  Cache-Control: public, max-age=2592000

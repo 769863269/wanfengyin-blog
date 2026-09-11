@@ -9,9 +9,9 @@ import { RouterLink } from 'vue-router'
 import { CAROUSEL_INTERVAL } from '@/config/site'
 import { useCarousel } from '@/composables/useCarousel'
 import { withBase } from '@/utils/asset'
-import type { Post } from '@/types'
+import type { PostSummary } from '@/types'
 
-const { slides } = defineProps<{ slides: readonly Post[] }>()
+const { slides } = defineProps<{ slides: readonly PostSummary[] }>()
 
 const { activeIndex, isHovered, select, next, prev } = useCarousel(() => slides.length, CAROUSEL_INTERVAL)
 

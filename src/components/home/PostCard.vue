@@ -11,9 +11,9 @@ import { RouterLink } from 'vue-router'
 import { formatCount, formatRelativeTime } from '@/utils/format'
 import { withBase } from '@/utils/asset'
 import { totalViews } from '@/utils/viewStats'
-import type { Post } from '@/types'
+import type { PostSummary } from '@/types'
 
-const { post } = defineProps<{ post: Post }>()
+const { post } = defineProps<{ post: PostSummary }>()
 
 const hasThumb = computed(() => Boolean(post.cover))
 const thumbSrc = computed(() => withBase(post.cover))

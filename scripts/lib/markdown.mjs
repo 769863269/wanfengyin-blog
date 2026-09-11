@@ -47,6 +47,23 @@ function safeHref(href) {
 }
 
 /**
+ * 独占一行图片的地址白名单。
+ *
+ * 结构化 block 的 src 最终由模板直接绑定到 <img src>（不走 v-html 净化），
+ * 所以协议判断必须在这里做 —— 与行内链接的 safeHref 是同一条防线。
+ * 只放行站内相对路径与 http(s)：data: / javascript: / vbscript: 一律拒绝
+ * （内联 base64 另有构建期门禁直接报错，见 lib/articles.mjs）。
+ */
+function safeImageSrc(raw) {
+  const url = String(raw).trim()
+  if (!url) return null
+  if (url.startsWith('/') || url.startsWith('./') || url.startsWith('../')) return url
+  const probe = url.toLowerCase().replaceAll(/\s+/g, '')
+  if (probe.startsWith('http://') || probe.startsWith('https://')) return url
+  return null
+}
+
+/**
  * 行内 Markdown → 受控 HTML。
  * 流程：先整体 escapeHtml，再只挂白名单标签（strong/em/del/code/a/img），
  * 任何未识别内容保持转义后的纯文本 —— 不可能注入。
@@ -230,7 +247,10 @@ export function markdownToBlocks(markdown) {
     const image = line.match(/^!\[([^\]]*)\]\(([^)\s]+)\)$/)
     if (image) {
       flushParagraph()
-      blocks.push({ type: 'image', src: image[2], alt: image[1] })
+      const src = safeImageSrc(image[2])
+      // 协议不在白名单内：整行降级为纯文本，绝不让危险地址进到 <img src>
+      if (src) blocks.push({ type: 'image', src, alt: image[1] })
+      else blocks.push({ type: 'paragraph', text: line })
       continue
     }
 

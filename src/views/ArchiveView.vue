@@ -6,10 +6,9 @@
  */
 import { computed } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
-import { sortedPosts, postPlainText } from '@/data/posts'
+import { sortedPosts } from '@/data/posts'
 import { useSeoMeta } from '@/composables/useSeoMeta'
 import { siteConfig } from '@/config/site'
-import { estimateReadingTime } from '@/utils/format'
 
 /**
  * 返回上一页。
@@ -54,7 +53,7 @@ const groups = computed<YearGroup[]>(() => {
       slug: post.slug,
       title: post.title,
       date: post.publishedAt.slice(5).replace('-', ' 月 ') + ' 日',
-      minutes: estimateReadingTime(postPlainText(post)),
+      minutes: post.readingMinutes,
       tags: post.tags,
     })
   }

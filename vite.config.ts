@@ -1,14 +1,18 @@
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, type Plugin } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
-import { sortedPosts } from './src/data/posts'
+// 只取元数据（纯数据文件、无 Vue 运行时依赖）：构建配置在 Node 侧运行，
+// 引 posts.ts 会连带引出 vue 与 localStorage 相关模块，容易在这里炸。
+import { generatedPosts } from './src/data/posts.generated'
+import { generatedPages } from './src/data/pages.generated'
 import { domain, siteConfig } from './src/config/site'
 
 /**
  * 构建时生成 sitemap.xml
  *
- * 文章列表来自 src/data/posts.ts —— 单一数据源，新增文章自动进入 sitemap，
- * 不需要像原静态版那样手工同步（原版的 sitemap 因此早已过期）。
+ * 文章列表来自 src/data/posts.generated.ts —— 单一数据源，新增文章自动进入
+ * sitemap，不需要像原静态版那样手工同步（原版的 sitemap 因此早已过期）。
+ * 自定义页面同样收录（generatedPages 只包含「前台可访问」的页面）。
  * 域名占位时同样生成，上线前在 config/site.ts 改 domain 即可。
  */
 function sitemapPlugin(): Plugin {
@@ -18,9 +22,13 @@ function sitemapPlugin(): Plugin {
     generateBundle() {
       const urls = [
         { loc: `${domain}/`, lastmod: undefined },
-        ...sortedPosts.map((post) => ({
+        ...generatedPosts.map((post) => ({
           loc: `${domain}/post/${post.slug}`,
           lastmod: post.publishedAt,
+        })),
+        ...generatedPages.map((page) => ({
+          loc: `${domain}/page/${page.slug}`,
+          lastmod: undefined,
         })),
       ]
         .map(({ loc, lastmod }) =>
@@ -52,19 +60,17 @@ function xmlEscape(text: string) {
  * 构建时生成 feed.xml（RSS 2.0）
  *
  * 与 sitemap 同一数据源：新增文章自动进入订阅流，无需维护。
- * fullContent = false 时 item 只带摘要，避免全文抓取纠纷。
+ * item 只带摘要 —— 正文拆到了 posts.body.generated.ts，且全文输出也容易
+ * 招来内容抓取纠纷。
  */
-function rssPlugin({ fullContent = false } = {}): Plugin {
+function rssPlugin(): Plugin {
   return {
     name: 'generate-rss',
     apply: 'build',
     generateBundle() {
-      const items = sortedPosts
+      const items = generatedPosts
         .map((post) => {
           const link = `${domain}/post/${post.slug}`
-          const description = fullContent
-            ? `<description><![CDATA[${post.body.map((b) => ('text' in b ? b.text : '')).join(' ')}]]></description>`
-            : `<description>${xmlEscape(post.excerpt)}</description>`
 
           return [
             '    <item>',
@@ -73,7 +79,7 @@ function rssPlugin({ fullContent = false } = {}): Plugin {
             `      <guid isPermaLink="true">${link}</guid>`,
             `      <pubDate>${new Date(post.publishedAt).toUTCString()}</pubDate>`,
             `      <category>${xmlEscape(post.tags.join(' / '))}</category>`,
-            description,
+            `      <description>${xmlEscape(post.excerpt)}</description>`,
             '    </item>',
           ].join('\n')
         })
@@ -102,7 +108,8 @@ function rssPlugin({ fullContent = false } = {}): Plugin {
 
 export default defineConfig({
   test: {
-    include: ['tests/**/*.test.ts'],
+    // 构建脚本是 .mjs（Node 侧），一并纳入测试范围
+    include: ['tests/**/*.test.ts', 'tests/**/*.test.mjs'],
   },
   plugins: [vue(), sitemapPlugin(), rssPlugin()],
 
