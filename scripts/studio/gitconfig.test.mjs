@@ -7,6 +7,8 @@
  * 于是 /api/git-config 稳定耗时 12~17 秒，并且同步阻塞事件循环：
  * 实测 /api/articles 平时 7ms，被挡住时变成 12000ms（整个后台切菜单全部卡住）。
  * 下面第 1 组断言就是防止有人再把它写回同步版本。
+ * 第 5 组守的是 server.mjs 的同类契约：git status 缓存 TTL 与写后失效钩子
+ * （本机 spawn git 约 2~3 秒，任何高频或无缓存的 git 子进程都会拖慢整个后台）。
  */
 import { readFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
@@ -93,6 +95,22 @@ const t0 = performance.now()
 await readGitConfigLive()
 const warm = performance.now() - t0
 assert('第二次调用 < 50ms', warm < 50, Math.round(warm) + 'ms')
+
+console.log('\n[5] server 端 git status 缓存契约（后台唯一的常态子进程开销）')
+// 本机 spawn 一次 git 约 2~3 秒，meta 每次过期都会在后台起一次 git status。
+// TTL 从 15 秒放宽到 60 秒后，触发频率降到 1/4；写操作另有主动失效兜底。
+// 这组断言防止有人把它悄悄改回高频（或删掉失效钩子导致角标 1 分钟不更新）。
+const serverPath = join(dirname(fileURLToPath(import.meta.url)), 'server.mjs')
+const serverCode = readFileSync(serverPath, 'utf8')
+  .replace(/\/\*[\s\S]*?\*\//g, '')
+  .replace(/^\s*\/\/.*$/gm, '')
+const ttlMatch = serverCode.match(/PENDING_TTL\s*=\s*([\d_]+)/)
+const ttlMs = ttlMatch ? Number(ttlMatch[1].replace(/_/g, '')) : 0
+assert('PENDING_TTL 存在且 ≥ 60 秒', ttlMs >= 60_000, 'ttl=' + ttlMs + 'ms')
+assert('不再残留 15 秒硬编码', serverCode.indexOf('15_000') === -1)
+assert('pendingChanges 走 PENDING_TTL（不是字面量）', /Date\.now\(\)\s*-\s*pendingCache\.at\s*>\s*PENDING_TTL/.test(serverCode))
+assert('存在写操作后的主动失效函数', serverCode.indexOf('function invalidatePending') !== -1)
+assert('guard 内已挂上主动失效', /const guard[\s\S]{0,500}?invalidatePending\(\)/.test(serverCode))
 
 console.log(failed ? `\n${failed} FAILED` : '\nALL PASS')
 process.exit(failed ? 1 : 0)

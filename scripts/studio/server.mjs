@@ -85,8 +85,13 @@ function startSyncJob(message, actor) {
  *
  * 性能关键：这台机器上 git status 子进程要 ~3 秒，绝不能 execSync 阻塞事件循环
  * （之前 meta 接口被它拖到 2.5~3s，前端每次导航都调 meta → 页面每点一下卡 3 秒）。
- * 改为异步 spawn + 15 秒缓存：meta 立即返回上次结果，过期则在后台刷新。
+ * 改为异步 spawn + 60 秒缓存：meta 立即返回上次结果，过期则在后台刷新。
+ *
+ * TTL 为什么是 60 秒：本机 spawn 一次 git 约 2~3 秒，是后台唯一的常态子进程开销。
+ * 放宽到 60 秒把它的触发频率降到 1/4（15 秒时每次 meta 过期都要起一次），
+ * 代价只是侧栏「未推送」角标最多晚 1 分钟刷新 —— 写操作后另有主动失效兜底。
  */
+const PENDING_TTL = 60_000
 const pendingCache = { value: 0, at: 0, inflight: false }
 
 function refreshPending() {
@@ -111,8 +116,13 @@ function refreshPending() {
 }
 
 function pendingChanges() {
-  if (Date.now() - pendingCache.at > 15_000) refreshPending() // 过期就后台刷新，不阻塞当前请求
+  if (Date.now() - pendingCache.at > PENDING_TTL) refreshPending() // 过期就后台刷新，不阻塞当前请求
   return pendingCache.value
+}
+
+/** 写操作落盘后调用：把缓存标记为立即过期，下次 meta 顺带刷新角标（不等 60 秒 TTL） */
+function invalidatePending() {
+  pendingCache.at = 0
 }
 
 /* ---------------- 博客数据自动同步：articles/covers 变动 → 重编译 posts.generated.ts ----------------
@@ -275,6 +285,9 @@ export function startStudio(port = 5199) {
         deny(res)
         return false
       }
+      // 已授权的动作都是写操作（保存/删除/推送…）→ 让「未推送」角标缓存立即过期，
+      // 下次 meta 顺带刷新。这样 60 秒 TTL 只影响「外部改动」，不影响你自己的操作。
+      invalidatePending()
       return true
     }
 
