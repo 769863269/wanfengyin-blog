@@ -30,17 +30,19 @@ export const siteConfig = {
 
 /**
  * 导航菜单数据源：content/site.json（Studio 后台「站点设置」页维护，可增删改查）。
+ *
+ * 全通用：同一份列表同时驱动 web 顶栏与 H5 抽屉，不再区分「仅桌面 / 仅手机」。
  * kind = 'route'   → target 为路由 name：内置 5 页（home/archive/tags/about/random）
  *                    或已发布自定义页面的 slug（路由 name = slug，见 router/index.ts）
  * kind = 'external'→ target 为链接（http(s):// 或 / 开头）
  * kind = 'disabled'→ 未上线占位，渲染为不可点击
+ * kind = 'hidden'  → 配置保留但任何菜单都不渲染
  */
 type SiteNavItem = {
   label: string
   icon?: string
   kind: 'route' | 'external' | 'disabled' | 'hidden'
   target: string
-  showOnMobile?: boolean
 }
 
 function toNavItems(list: readonly SiteNavItem[], prefix: string): NavItem[] {
@@ -51,23 +53,15 @@ function toNavItems(list: readonly SiteNavItem[], prefix: string): NavItem[] {
     kind: item.kind,
     ...(item.kind === 'route' ? { to: item.target } : {}),
     ...(item.kind === 'external' ? { href: item.target } : {}),
-    showOnMobile: item.showOnMobile !== false,
   }))
 }
 
-/** web 顶栏主导航（hidden 项保留在配置里但不渲染；H5 抽屉里勾选了「H5」的也会出现） */
+/**
+ * 全站导航（hidden 项保留在配置里但不渲染）。
+ * web 顶栏（AppHeader）与移动端抽屉（MobileDrawer）共用这一份，改一处两端同时生效。
+ */
 export const mainNav: readonly NavItem[] = toNavItems(siteData.mainNav as readonly SiteNavItem[], 'nav').filter(
   (item) => item.kind !== 'hidden',
-)
-
-/** H5 抽屉额外入口（仅移动端抽屉显示） */
-export const mobileExtraNav: readonly NavItem[] = toNavItems(siteData.mobileExtraNav as readonly SiteNavItem[], 'mnav').filter(
-  (item) => item.kind !== 'hidden',
-)
-
-/** 移动端抽屉：顶栏项（勾选 H5 的）+ 抽屉专属项 */
-export const drawerNav: readonly NavItem[] = [...mainNav, ...mobileExtraNav].filter(
-  (item) => item.showOnMobile !== false,
 )
 
 export const footerQuickLinks: readonly NavItem[] = [

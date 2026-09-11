@@ -9,7 +9,7 @@ import {
   createArticle, getArticle, updateArticle, changeStatus, setFlags,
   trashArticle, restoreFromTrash, purgeTrash, listTrash,
   renameTaxonomy, queryArticles, statusCounts, runSchedule, roleOf,
-  MAX_FEATURED, featuredCount, saveSiteConfig, getPagination, ROOT,
+  MAX_FEATURED, featuredCount, saveSiteConfig, getPagination, readSiteConfig, ROOT,
 } from './store.mjs'
 
 // 随机后缀：避免与本机正在运行的 studio 调度器或上次崩溃残留抢 slug
@@ -160,6 +160,28 @@ try {
   let pgBad2 = false
   try { saveSiteConfig({ pagination: { sizes: [], defaultSize: 10 } }) } catch { pgBad2 = true }
   assert('空档位被拦截', pgBad2)
+
+  // 导航：合并为「全通用」单列表（web 顶栏 + H5 抽屉同源）
+  // showOnMobile 开关退役、独立的 mobileExtraNav 一并清理，防止旧字段回流
+  saveSiteConfig({
+    mainNav: [
+      { label: '首页', icon: '🏠', kind: 'route', target: 'home', showOnMobile: false },
+      { label: '归档', icon: '🗂', kind: 'route', target: 'archive' },
+      { label: '外链', icon: '', kind: 'external', target: 'https://example.com' },
+    ],
+  })
+  const navAfter = readSiteConfig().mainNav
+  assert('导航单列表落盘', Array.isArray(navAfter) && navAfter.length === 3)
+  assert('showOnMobile 字段已退役', navAfter.every((n) => !('showOnMobile' in n)))
+  assert('mobileExtraNav 遗留键已清除', !('mobileExtraNav' in readSiteConfig()))
+  assert('导航项字段完整', navAfter[0].label === '首页' && navAfter[0].target === 'home'
+    && navAfter[1].target === 'archive' && navAfter[2].kind === 'external' && navAfter[2].target === 'https://example.com')
+  let navBad = false
+  try { saveSiteConfig({ mainNav: [{ label: '坏页', kind: 'route', target: 'no-such-page' }] }) } catch { navBad = true }
+  assert('无效页面 target 被拦截', navBad)
+  let navBad2 = false
+  try { saveSiteConfig({ mainNav: [{ label: '坏链', kind: 'external', target: 'ftp://x' }] }) } catch { navBad2 = true }
+  assert('非 http(s) 外链被拦截', navBad2)
 } finally {
   writeFileSync(siteFile, siteBackup, 'utf8')
 }

@@ -195,7 +195,6 @@ function normalizeNavList(list, name) {
       icon: String(item.icon ?? '').trim(),
       kind,
       target: kind === 'disabled' || kind === 'hidden' ? '' : target,
-      showOnMobile: item.showOnMobile !== false,
     }
   })
 }
@@ -269,8 +268,10 @@ export function saveSiteConfig(input) {
     })
   }
 
-  if (input.mainNav !== undefined) next.mainNav = normalizeNavList(input.mainNav, '顶部导航')
-  if (input.mobileExtraNav !== undefined) next.mobileExtraNav = normalizeNavList(input.mobileExtraNav, 'H5 抽屉入口')
+  // 导航已合并为「全通用」单列表：web 顶栏与 H5 抽屉同源。
+  // 旧的 mobileExtraNav（仅手机抽屉）与 showOnMobile 开关随之退役，顺带清掉遗留键。
+  if (input.mainNav !== undefined) next.mainNav = normalizeNavList(input.mainNav, '导航菜单')
+  delete next.mobileExtraNav
 
   if (input.pagination !== undefined) {
     const p = input.pagination || {}

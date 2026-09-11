@@ -96,6 +96,15 @@ async function main() {
   check('#app 已挂载内容', ($('#app')?.children.length ?? 0) > 0)
   check('PC 顶栏渲染', !!$('.app-header__bar--pc'))
   check('导航菜单渲染', $$('.nav-menu a').length > 0)
+  // 导航「全通用」回归：web 顶栏与 H5 抽屉必须同源同量同序
+  // （旧的「仅手机抽屉」列表与 showOnMobile 开关已退役，两端不该再出现分叉）
+  const headerNav = $$('.nav-menu a').map((a) => a.textContent.trim())
+  const drawerNavList = $$('.drawer__list a').map((a) => a.textContent.trim())
+  check(
+    '导航全通用：抽屉与顶栏同源同量',
+    drawerNavList.length > 0 && drawerNavList.join('|') === headerNav.join('|'),
+    `顶栏 ${headerNav.length} 项 / 抽屉 ${drawerNavList.length} 项`,
+  )
   check('文章卡片渲染', $$('.post-card').length > 0)
   check('页脚渲染', !!$('footer'))
   check(

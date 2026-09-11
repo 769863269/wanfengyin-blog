@@ -6,4 +6,16 @@
  */
 import type { CustomPage } from '@/types'
 
-export const generatedPages: CustomPage[] = []
+export const generatedPages: CustomPage[] = [
+  {
+    "slug": "dome",
+    "title": "测试菜单",
+    "description": "测试测试当前页面是否可用",
+    "body": [
+      {
+        "type": "paragraph",
+        "text": "测试"
+      }
+    ]
+  }
+]

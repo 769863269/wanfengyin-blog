@@ -8,7 +8,7 @@
  */
 import { nextTick, ref, watch } from 'vue'
 import NavLink from '@/components/common/NavLink.vue'
-import { drawerNav, siteConfig } from '@/config/site'
+import { mainNav, siteConfig } from '@/config/site'
 import { useDrawer } from '@/composables/useDrawer'
 
 const { isOpen, close } = useDrawer()
@@ -57,7 +57,7 @@ watch(isOpen, async (open) => {
     </div>
 
     <ul class="drawer__list">
-      <li v-for="item in drawerNav" :key="item.id">
+      <li v-for="item in mainNav" :key="item.id">
         <NavLink :item="item" @click="close" />
       </li>
     </ul>

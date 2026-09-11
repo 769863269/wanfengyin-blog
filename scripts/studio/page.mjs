@@ -1281,7 +1281,7 @@ onRoute('pages/*', function (arg) {
           '<select id="pgStatus" class="mt-1 w-40 rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"><option value="published">已发布</option><option value="draft">草稿（仅后台可见）</option></select></label>' +
         '<div class="rounded-xl bg-[#f5f5f7] px-4 py-3 md:col-span-3">' +
           '<label class="flex items-center gap-2.5 text-[13px] font-medium text-[#1d1d1f]"><input id="pgDirect" type="checkbox" class="h-4 w-4 shrink-0" />允许直接访问（分享 /page/slug 链接即可打开）</label>' +
-          '<p class="mt-1.5 text-[11.5px] leading-relaxed text-[#86868b]">关闭时：只有出现在导航菜单（桌面顶栏或 H5 抽屉）里的页面，前台才能访问；两者都没有 → 前台 404，无法用 URL 强行打开</p>' +
+          '<p class="mt-1.5 text-[11.5px] leading-relaxed text-[#86868b]">关闭时：只有出现在导航菜单里的页面，前台才能访问（该菜单在电脑顶栏与手机抽屉同时生效）；不在菜单里 → 前台 404，无法用 URL 强行打开</p>' +
           '<p class="mt-2.5 flex flex-wrap items-center gap-2"><span id="pgAccess" class="text-[12px] font-medium"></span>' +
             '<button id="pgCopy" class="rounded-full border border-[#d2d2d7] bg-white px-2.5 py-0.5 text-[11.5px] text-[#6e6e73] hover:border-[#0071e3] hover:text-[#0071e3]">复制地址</button></p>' +
         '</div>' +
@@ -1553,15 +1553,10 @@ onRoute('site', function () {
         '</div>' +
       '</div>' +
       '<div class="mt-5 rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
-        '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">顶部导航菜单（web 顶栏）</p>' +
-        '<p class="mb-2 text-[11.5px] leading-relaxed text-[#a1a1a6]">「页面」=站内页（内置 5 页 + 已发布的自定义页面）；「外链」=http(s):// 或 / 开头；「占位」=未上线不可点；「隐藏」=不出现在任何菜单（配置保留不删）。勾选 H5 = 同时出现在手机抽屉菜单</p>' +
+        '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">导航菜单（web + H5 全通用）</p>' +
+        '<p class="mb-2 text-[11.5px] leading-relaxed text-[#a1a1a6]">同一份列表同时作用于电脑端顶栏与手机端抽屉，改一次两端都变。「页面」=站内页（内置 5 页 + 已发布的自定义页面）；「外链」=http(s):// 或 / 开头；「占位」=未上线不可点；「隐藏」=两端都不出现（配置保留不删）</p>' +
         '<div id="navRows"></div>' +
         (readOnly ? '' : '<button id="navAdd" type="button" class="mt-2 rounded-full border border-[#d2d2d7] px-4 py-1.5 text-[12.5px] hover:border-[#0071e3] hover:text-[#0071e3]">＋ 添加菜单项</button>') +
-      '</div>' +
-      '<div class="mt-5 rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
-        '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">H5 抽屉额外入口（仅手机抽屉显示）</p>' +
-        '<div id="mnavRows"></div>' +
-        (readOnly ? '' : '<button id="mnavAdd" type="button" class="mt-2 rounded-full border border-[#d2d2d7] px-4 py-1.5 text-[12.5px] hover:border-[#0071e3] hover:text-[#0071e3]">＋ 添加抽屉入口</button>') +
       '</div>' +
       (readOnly ? '' : '<div class="sticky bottom-4 z-10 mt-5 flex items-center gap-3 rounded-2xl border border-black/5 bg-white/95 px-5 py-3.5 shadow-[0_4px_24px_rgba(0,0,0,0.1)] backdrop-blur">' +
         '<span id="sMsg" class="text-[13px] text-[#1d7a35]"></span>' +
@@ -1584,10 +1579,9 @@ onRoute('site', function () {
       $('flAdd').addEventListener('click', function () { flRow('', '') })
     }
 
-    // 导航菜单动态行（web 顶栏 + H5 抽屉，增删改查）
+    // 导航菜单动态行（web 顶栏与 H5 抽屉同源，增删改查）
     var navRows = $('navRows')
-    var mnavRows = $('mnavRows')
-    function navRow(box, it, showMobileToggle) {
+    function navRow(box, it) {
       it = it || {}
       var row = document.createElement('div')
       // 行容器：浅灰圆角卡片，字段与按钮都在卡内，归属清晰
@@ -1602,7 +1596,6 @@ onRoute('site', function () {
         '<select class="nv-route min-w-[10rem] shrink-0 rounded-lg border border-[#d2d2d7] bg-white px-2 py-1.5 text-[13px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' + routeOptions + '</select>' +
         '<input class="nv-target min-w-[200px] flex-1 rounded-lg border border-[#d2d2d7] bg-white px-2.5 py-1.5 text-[13px] outline-none focus:border-[#0071e3]" value="' + esc(it.target || '') + '"' + (readOnly ? ' disabled' : '') + ' />' +
         '<span class="nv-hint flex-1 text-[12.5px] text-[#a1a1a6]"></span>' +
-        (showMobileToggle ? '<label class="shrink-0 flex items-center gap-1 text-[12px] text-[#6e6e73]"><input type="checkbox" class="nv-mobile"' + (it.showOnMobile !== false ? ' checked' : '') + (readOnly ? ' disabled' : '') + ' />H5</label>' : '') +
         '<button type="button" class="nv-del ml-auto shrink-0 rounded-full bg-white px-2.5 py-1 text-[12px] text-[#c0392b] border border-[#f0d0d0] hover:bg-[#fdecec]">删除</button>'
       var kindSel = row.querySelector('.nv-kind')
       var routeSel = row.querySelector('.nv-route')
@@ -1635,12 +1628,11 @@ onRoute('site', function () {
       box.appendChild(row)
     }
     var mainNavList = Array.isArray(d.site.mainNav) ? d.site.mainNav : []
-    var extraNavList = Array.isArray(d.site.mobileExtraNav) ? d.site.mobileExtraNav : []
-    mainNavList.forEach(function (n) { navRow(navRows, n, true) })
-    extraNavList.forEach(function (n) { navRow(mnavRows, n, false) })
+    // 兼容旧配置：曾把「仅手机抽屉」的项单独存在 mobileExtraNav，这里合并进同一列表
+    var legacyExtraList = Array.isArray(d.site.mobileExtraNav) ? d.site.mobileExtraNav : []
+    mainNavList.concat(legacyExtraList).forEach(function (n) { navRow(navRows, n) })
     function collectNav(box) {
       return [].slice.call(box.querySelectorAll('.nav-row')).map(function (row) {
-        var mobileBox = row.querySelector('.nv-mobile')
         var tSel = row.querySelector('.nv-route')
         var tInp = row.querySelector('.nv-target')
         return {
@@ -1648,13 +1640,11 @@ onRoute('site', function () {
           label: row.querySelector('.nv-label').value.trim(),
           kind: row.querySelector('.nv-kind').value,
           target: tSel.style.display !== 'none' ? tSel.value : tInp.value.trim(),
-          showOnMobile: mobileBox ? mobileBox.checked : true,
         }
       }).filter(function (n) { return n.label })
     }
     if (!readOnly) {
-      $('navAdd').addEventListener('click', function () { navRow(navRows, { kind: 'route' }, true) })
-      $('mnavAdd').addEventListener('click', function () { navRow(mnavRows, { kind: 'route' }, false) })
+      $('navAdd').addEventListener('click', function () { navRow(navRows, { kind: 'route' }) })
     }
 
     if (!readOnly) {
@@ -1675,7 +1665,7 @@ onRoute('site', function () {
             author: $('sAuthor').value.trim(), email: $('sEmail').value.trim(),
             icp: $('sIcp').value.trim(), about: $('sAbout').value.trim(),
             footerDesc: $('sFooterDesc').value.trim(), friendLinks: links,
-            mainNav: collectNav(navRows), mobileExtraNav: collectNav(mnavRows),
+            mainNav: collectNav(navRows),
             aboutPage: { intro: $('sAbIntro').value.trim(), techStack: abStack, milestones: abMiles },
           },
         }).then(function () {

@@ -8,7 +8,9 @@
  *   - 已发布 + 在菜单里       → 从前台菜单可进入
  *   - 已发布，两者都没有      → 不注册路由 → /page/<slug> 走 404（"发布了但没上线"）
  *
- * 菜单引用 = content/site.json 的 mainNav / mobileExtraNav 中 kind='route' 的 target。
+ * 菜单引用 = content/site.json 的 mainNav 中 kind='route' 的 target
+ *（导航已合并为「全通用」，web 顶栏与 H5 抽屉同一份列表；旧配置里独立的
+ *  mobileExtraNav 仍会被读取，避免历史配置的页面突然掉线）。
  * 这套判定必须被 build-pages.mjs（决定是否注册路由）与 store.mjs（后台列表展示、
  * 保存后提示）共用，否则会出现「后台说能开、前台 404」这类不一致。
  */
@@ -18,7 +20,7 @@ export function isTrue(value) {
   return value === true || value === 'true'
 }
 
-/** 从 site.json 里取出所有被导航菜单引用的 slug（含桌面顶栏与 H5 抽屉） */
+/** 从 site.json 里取出所有被导航菜单引用的 slug（mainNav 为全通用列表，mobileExtraNav 为旧配置兼容） */
 export function navReferencedSlugs(site) {
   const slugs = new Set()
   for (const list of [site?.mainNav, site?.mobileExtraNav]) {

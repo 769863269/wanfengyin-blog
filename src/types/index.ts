@@ -111,8 +111,6 @@ export interface NavItem {
   /** route: 路由 name；external: 完整 URL；disabled: 为空 */
   to?: string
   href?: string
-  /** 移动端抽屉是否展示 */
-  showOnMobile?: boolean
 }
 
 /* ===================== 站点配置 ===================== */
