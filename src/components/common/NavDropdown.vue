@@ -9,9 +9,11 @@
  * 展开/收起状态集中在 useNavMenu 单例，全站同时只展开一个节点。
  */
 import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import NavLink from '@/components/common/NavLink.vue'
 import type { NavItem } from '@/types'
 import { useNavMenu } from '@/composables/useNavMenu'
+import { navSubtreeHas } from '@/utils/navTree'
 
 interface Props {
   item: NavItem
@@ -21,8 +23,11 @@ interface Props {
 
 const { item, depth = 0 } = defineProps<Props>()
 
+const route = useRoute()
 const { openId, open, toggle, close } = useNavMenu()
 const isOpen = computed(() => openId.value === item.id)
+/** 子树内有叶子指向当前页 → 父项持久高亮（面板收起也能看出所在板块） */
+const subtreeActive = computed(() => navSubtreeHas(item, String(route.name ?? '')))
 
 /**
  * 是否具备 hover 能力：hover: none 的触屏设备走点击切换。
@@ -63,6 +68,7 @@ function onToggle(event: Event) {
   <div class="nav-dd" :class="{ 'nav-dd--open': isOpen }" @click.stop @mouseenter="onEnter" @mouseleave="onLeave">
     <button
       class="nav-dd__toggle"
+      :class="{ 'nav-dd__toggle--active': subtreeActive }"
       type="button"
       aria-haspopup="true"
       :aria-expanded="isOpen"
@@ -102,7 +108,8 @@ function onToggle(event: Event) {
 }
 
 .nav-dd__toggle:hover,
-.nav-dd--open .nav-dd__toggle {
+.nav-dd--open .nav-dd__toggle,
+.nav-dd__toggle--active {
   color: var(--brand);
   background: var(--brand-soft);
 }

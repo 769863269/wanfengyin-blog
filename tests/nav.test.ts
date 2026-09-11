@@ -1,5 +1,36 @@
 import { describe, expect, it } from 'vitest'
 import { isPageReachable, navReferencedSlugs } from '../scripts/lib/nav.mjs'
+import { navSubtreeHas } from '../src/utils/navTree'
+import type { NavItem } from '../src/types'
+
+/** 分支节点高亮：子树内是否有叶子指向当前路由（顶栏下拉 / 抽屉折叠组共用） */
+describe('navSubtreeHas', () => {
+  const tree: NavItem = {
+    id: 'n0', label: '测试', icon: '', kind: 'disabled',
+    children: [
+      { id: 'n0-0', label: '混合布局', icon: '', kind: 'route', to: 'html-mixed' },
+      {
+        id: 'n0-1', label: '更深', icon: '', kind: 'disabled',
+        children: [{ id: 'n0-1-0', label: '单页', icon: '', kind: 'route', to: 'html-showcase' }],
+      },
+    ],
+  }
+
+  it('直接子叶子命中', () => {
+    expect(navSubtreeHas(tree, 'html-mixed')).toBe(true)
+  })
+  it('深层子叶子命中（递归）', () => {
+    expect(navSubtreeHas(tree, 'html-showcase')).toBe(true)
+  })
+  it('不在子树内 → false', () => {
+    expect(navSubtreeHas(tree, 'home')).toBe(false)
+  })
+  it('空路由名兜底 false；叶子项自身可比对', () => {
+    expect(navSubtreeHas(tree, '')).toBe(false)
+    const leaf: NavItem = { id: 'l', label: '首页', icon: '', kind: 'route', to: 'home' }
+    expect(navSubtreeHas(leaf, 'home')).toBe(true)
+  })
+})
 
 /** 多级导航的可达性规则：子菜单里的引用算数、hidden 整枝不算（与 build-pages 共用） */
 describe('navReferencedSlugs', () => {

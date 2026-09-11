@@ -6,9 +6,11 @@
  * 叶子走 NavLink，点击后通过注入的 closeDrawer 关掉抽屉。
  * 层级缩进按 depth 递增，保证多级在窄屏上依然可读。
  */
-import { inject, ref } from 'vue'
+import { computed, inject, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import NavLink from '@/components/common/NavLink.vue'
 import type { NavItem } from '@/types'
+import { navSubtreeHas } from '@/utils/navTree'
 
 interface Props {
   item: NavItem
@@ -20,7 +22,11 @@ const { item, depth = 0 } = defineProps<Props>()
 // MobileDrawer provide 注入；兜底空函数（组件单测等无抽屉环境不炸）
 const closeDrawer = inject<() => void>('drawer:close', () => {})
 
-const open = ref(false)
+const route = useRoute()
+/** 子树内有叶子指向当前页 → 父项高亮，且抽屉打开时该组默认展开 */
+const subtreeActive = computed(() => navSubtreeHas(item, String(route.name ?? '')))
+
+const open = ref(subtreeActive.value)
 
 /** 每级固定缩进，与抽屉行的 22px 内边距对齐 */
 const indentStyle = { paddingLeft: `calc(22px + ${depth} * 18px)` }
@@ -30,6 +36,7 @@ const indentStyle = { paddingLeft: `calc(22px + ${depth} * 18px)` }
   <div class="dgroup">
     <button
       class="dgroup__toggle"
+      :class="{ 'dgroup__toggle--active': subtreeActive }"
       type="button"
       :style="indentStyle"
       :aria-expanded="open"
@@ -67,6 +74,12 @@ const indentStyle = { paddingLeft: `calc(22px + ${depth} * 18px)` }
 .dgroup__toggle:active {
   color: var(--brand);
   background: var(--bg-subtle);
+}
+
+/* 当前页在本组子树内：父项持久高亮（不依赖按住/展开状态） */
+.dgroup__toggle--active {
+  color: var(--brand);
+  font-weight: 600;
 }
 
 .dgroup__icon {

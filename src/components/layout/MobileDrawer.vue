@@ -138,6 +138,13 @@ watch(isOpen, async (open) => {
   color: var(--brand);
 }
 
+/* 当前页对应的菜单项：持久高亮（不只按下一瞬间），打开抽屉即可看出位置 */
+.drawer__list :deep(.nav-link.router-link-active) {
+  color: var(--brand);
+  font-weight: 600;
+  background: var(--brand-soft);
+}
+
 .drawer__foot {
   padding: 16px;
   text-align: center;
