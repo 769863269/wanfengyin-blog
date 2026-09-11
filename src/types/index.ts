@@ -8,7 +8,10 @@
  * 正文内容块。
  * 用结构化数据而非 HTML 字符串，渲染时无需 v-html，
  * 从根上杜绝 XSS，同时天然获得类型检查。
- * 例外：code.codeHtml（Shiki 构建产物）与行内格式（renderInline 受控 HTML）。
+ * 三处受控例外（均为白名单产物，渲染端仍过一遍 DOMPurify）：
+ *   - code.codeHtml —— 构建期 Shiki 高亮产物；
+ *   - 行内格式 —— renderInline 先转义再挂白名单标签；
+ *   - html.html —— 生成端 sanitizeHtmlBlock 净化的 HTML 片段。
  */
 export type ArticleListItem = string | { text: string; children: string[]; childrenOrdered: boolean }
 
@@ -20,6 +23,7 @@ export type ArticleBlock =
   | { type: 'list'; ordered: boolean; items: ArticleListItem[] }
   | { type: 'table'; head: string[]; rows: string[][] }
   | { type: 'code'; lang: string; text: string; /** 构建期 Shiki 高亮的 <code> 内部 HTML（可选，缺省走纯文本） */ codeHtml?: string }
+  | { type: 'html'; /** 已按白名单净化的 HTML 片段（生成端 sanitizeHtmlBlock 产物） */ html: string }
 
 /**
  * 文章元数据（不含正文）—— 列表页与首屏使用。

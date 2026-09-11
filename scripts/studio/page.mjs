@@ -1421,8 +1421,9 @@ onRoute('pages/*', function (arg) {
             '<button id="pgCopy" class="rounded-full border border-[#d2d2d7] bg-white px-2.5 py-0.5 text-[11.5px] text-[#6e6e73] hover:border-[#0071e3] hover:text-[#0071e3]">复制地址</button></p>' +
         '</div>' +
       '</div>' +
-      '<label class="mt-4 block text-[12.5px] text-[#6e6e73]">正文（Markdown）' +
-        '<textarea id="pgBody" rows="18" class="mt-1 w-full resize-y rounded-lg border border-[#d2d2d7] px-3 py-2.5 font-mono text-[13px] leading-relaxed outline-none focus:border-[#0071e3]" placeholder="支持与文章相同的 Markdown 语法"></textarea></label>' +
+      '<label class="mt-4 block text-[12.5px] text-[#6e6e73]">正文（Markdown + HTML 片段）' +
+        '<textarea id="pgBody" rows="18" class="mt-1 w-full resize-y rounded-lg border border-[#d2d2d7] px-3 py-2.5 font-mono text-[13px] leading-relaxed outline-none focus:border-[#0071e3]" placeholder="支持与文章相同的 Markdown 语法；行首写块级 HTML 标签（如 &lt;div&gt;）可搭自定义版式"></textarea></label>' +
+      '<p class="mt-2 text-[11.5px] leading-relaxed text-[#a1a1a6]">HTML 片段规则：行首以白名单标签开头（div / span / p / table / figure 等）即视为 HTML 块；可用 class / id / style 等属性（style 里不能有站外 url() 与表达式）；script / style / iframe / form 等连同内容整体丢弃，未知标签只丢标签保文字；h1 自动归一为 h2。写法示例：&lt;div class="card" style="padding:12px"&gt;…&lt;/div&gt;</p>' +
       '<div class="mt-4 flex flex-wrap items-center gap-3 border-t border-[#f0f0f2] pt-4">' +
         '<span id="pgMsg" class="text-[13px] text-[#1d7a35]"></span>' +
         (isNew ? '' : '<button id="pgDel" class="rounded-full border border-[#f0d0d0] px-4 py-2 text-[12.5px] text-[#c0392b] hover:bg-[#fdecec]">删除此页面</button>') +

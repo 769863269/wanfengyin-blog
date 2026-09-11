@@ -15,6 +15,7 @@
  *   **粗体** *斜体* ~~删除~~ `行内代码` [文字](链接)   行内格式
  *   ```lang 围栏代码块（``` 结束；未闭合时取到文末）
  *   普通段落
+ *   块级 HTML 片段    <div class="…">…</div>（白名单净化，可带内联 style）
  *
  * 输出为结构化 ArticleBlock 而非 HTML 字符串 —— 与 ArticleBody.vue 的
  * 渲染约定一致，从根上杜绝 XSS。
@@ -61,6 +62,251 @@ function safeImageSrc(raw) {
   const probe = url.toLowerCase().replaceAll(/\s+/g, '')
   if (probe.startsWith('http://') || probe.startsWith('https://')) return url
   return null
+}
+
+/* ===================== 块级 HTML 片段 =====================
+ *
+ * 允许在 Markdown 里直接写块级 HTML，用来搭 Markdown 表达不了的版式
+ * （卡片、分栏、徽标、自定义表格样式…），并且可以带内联 style。
+ *
+ * 安全模型与行内格式完全一致 —— **生成端白名单 + 渲染端 DOMPurify 双层**：
+ *   1. 生成端 sanitizeHtmlBlock 在解析期就把原始 HTML 过一遍白名单，
+ *      所以写进 posts.body.generated.ts / pages.generated.ts 的已经是干净内容，
+ *      预渲染（prerender.mjs → blocksToHtml）直接输出也不会带进危险标记。
+ *   2. 渲染端 ArticleBody.vue 仍走 sanitizeHtml（DOMPurify），
+ *      即使将来生成端被绕过，危险内容也会在这里被剥离。
+ *
+ * 下面两个数组是**唯一来源**，sanitize.ts 直接 import —— 预渲染产物与客户端
+ * hydration 的保留集合必须一致，不一致会导致水合前后 DOM 跳变。
+ *
+ * ⚠️ 硬边界：CSP 的 script-src 是 'self'，内联 <script> 由浏览器直接拒绝执行；
+ *    本模块也把 script / style / iframe 等标签连同内容整体剥离。
+ *    HTML 片段只能表达静态结构与样式，不能携带行为。
+ */
+
+/** HTML 片段可用的标签 */
+export const HTML_TAG_ALLOWLIST = [
+  'a', 'b', 'blockquote', 'br', 'caption', 'code', 'del', 'div', 'em', 'figcaption',
+  'figure', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img', 'li', 'mark',
+  'ol', 'p', 'pre', 's', 'span', 'strong', 'sub', 'sup', 'table', 'tbody', 'td',
+  'th', 'thead', 'tr', 'u', 'ul',
+]
+
+/**
+ * HTML 片段可用的属性。
+ * style 显式放行（CSP 本就允许内联样式），值另经 safeStyleValue 过滤；
+ * width / height 让 img 能按原始尺寸展示。
+ */
+export const HTML_ATTR_ALLOWLIST = [
+  'alt', 'class', 'colspan', 'decoding', 'height', 'href', 'id', 'loading', 'rel',
+  'rowspan', 'src', 'srcset', 'style', 'target', 'title', 'width',
+]
+
+/** 连同内容一起丢弃：留着标签就等于留下执行面或外链面 */
+const HTML_DROP_WITH_CONTENT = new Set([
+  'script', 'style', 'iframe', 'object', 'embed', 'link', 'meta', 'base', 'form',
+  'input', 'button', 'textarea', 'select', 'option', 'svg', 'math', 'template',
+  'noscript', 'frame', 'frameset', 'applet',
+])
+
+/** 自闭合标签：没有闭合标签，不参与配平 */
+const HTML_VOID = new Set([
+  'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta',
+  'param', 'source', 'track', 'wbr',
+])
+
+/** 页面自身占用的 id：用户写了会顶掉 Vue 挂载点或预渲染数据块 */
+const HTML_RESERVED_IDS = new Set(['app', 'post-body-data'])
+
+/** 文本节点转义：只转尖括号，已写好的 HTML 实体不重复转义 */
+function escapeHtmlText(text) {
+  return String(text)
+    .replace(/&(?!(?:[a-zA-Z][a-zA-Z0-9]{0,10}|#\d{1,7}|#[xX][0-9a-fA-F]{1,6});)/g, '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+}
+
+/** 拆分标签内部文本（已去掉首尾尖括号）；注释 / DOCTYPE / 处理指令返回 null */
+function parseHtmlTag(inner) {
+  const text = inner.trim()
+  if (!text || text.startsWith('!') || text.startsWith('?')) return null
+  const closing = text.startsWith('/')
+  const rest = closing ? text.slice(1).trimStart() : text
+  const m = rest.match(/^([a-zA-Z][a-zA-Z0-9:-]*)/)
+  if (!m) return null
+  const tail = rest.slice(m[1].length)
+  return {
+    name: m[1].toLowerCase(),
+    closing,
+    selfClosing: /\/\s*$/.test(tail),
+    attrs: tail.replace(/\/\s*$/, ''),
+  }
+}
+
+/** URL 属性值：与行内链接同口径，拦 javascript / vbscript / data */
+function safeAttrUrl(raw) {
+  const value = String(raw)
+  if (value.includes('<') || value.includes('>')) return null
+  const probe = value.toLowerCase().replace(/[\s\u0000-\u001f]/g, '')
+  const hit = probe.split(',').some((part) => UNSAFE_SCHEMES.some((s) => part.startsWith(s)))
+  return hit ? null : value
+}
+
+/**
+ * style 值：挡掉表达式、脚本协议、@import，以及站外的 url()。
+ * url() 只放行 https 与站内相对路径 —— 与 public/_headers 的 img-src
+ * （'self' data: blob: https:，不含 http:）口径一致，避免写出必然被 CSP 拦的地址。
+ */
+function safeStyleValue(raw) {
+  const value = String(raw)
+  if (/[<>\\]/.test(value)) return null
+  if (/expression\s*\(|javascript:|vbscript:|behavior\s*:|@import|binding\s*:/i.test(value)) return null
+  if (/url\s*\(\s*['"]?\s*(?!https:\/\/|\/|\.\.?\/)/i.test(value)) return null
+  return value
+}
+
+/** 属性列表：只保留白名单项，值重新转义 */
+function sanitizeHtmlAttrs(tagName, attrText) {
+  const kept = []
+  let i = 0
+  while (i < attrText.length) {
+    while (i < attrText.length && /\s/.test(attrText[i])) i++
+    if (i >= attrText.length) break
+    const nameStart = i
+    while (i < attrText.length && !/[\s=]/.test(attrText[i])) i++
+    const name = attrText.slice(nameStart, i).toLowerCase()
+    if (!name) {
+      i++
+      continue
+    }
+    while (i < attrText.length && /\s/.test(attrText[i])) i++
+    let value = ''
+    if (attrText[i] === '=') {
+      i++
+      while (i < attrText.length && /\s/.test(attrText[i])) i++
+      const quote = attrText[i]
+      if (quote === '"' || quote === "'") {
+        i++
+        const end = attrText.indexOf(quote, i)
+        value = end < 0 ? attrText.slice(i) : attrText.slice(i, end)
+        i = end < 0 ? attrText.length : end + 1
+      } else {
+        const valueStart = i
+        while (i < attrText.length && !/\s/.test(attrText[i])) i++
+        value = attrText.slice(valueStart, i)
+      }
+    }
+    if (!HTML_ATTR_ALLOWLIST.includes(name)) continue
+    if (name.startsWith('on')) continue // 事件处理器属性：CSP 会拦，但更该在这里就丢掉
+    if (name === 'style') {
+      const ok = safeStyleValue(value)
+      if (ok === null) continue
+      value = ok
+    }
+    if (name === 'href' || name === 'src' || name === 'srcset') {
+      const ok = safeAttrUrl(value)
+      if (ok === null) continue
+      value = ok
+    }
+    if (name === 'id' && HTML_RESERVED_IDS.has(value.trim())) continue
+    kept.push([name, value])
+  }
+  // 新窗口打开的外链补 noopener，与 renderInline 的链接同规则
+  const isBlank = kept.some(([n, v]) => n === 'target' && v === '_blank')
+  if (tagName === 'a' && isBlank && !kept.some(([n]) => n === 'rel')) {
+    kept.push(['rel', 'noopener noreferrer'])
+  }
+  return kept.map(([n, v]) => n + '="' + escapeHtml(v) + '"').join(' ')
+}
+
+/** h1 归一到 h2：页面级 h1 属于标题，正文里再出现会打乱标题大纲 */
+function normalizeHtmlTagName(name) {
+  return name === 'h1' ? 'h2' : name
+}
+
+/**
+ * 块级 HTML 净化（生成端；与渲染端 DOMPurify 共用同一份白名单）。
+ * 保留白名单标签与属性；script / style / iframe 等连同内容整体丢弃；
+ * 未知标签只丢标签、保留其中文字（标签名写错不会让整段内容消失）。
+ */
+export function sanitizeHtmlBlock(raw) {
+  const src = String(raw)
+  let out = ''
+  let i = 0
+  let dropping = null // 正在整体丢弃内容的标签名（script / style / …）
+
+  while (i < src.length) {
+    const lt = src.indexOf('<', i)
+    if (lt < 0) {
+      if (!dropping) out += escapeHtmlText(src.slice(i))
+      break
+    }
+    if (!dropping) out += escapeHtmlText(src.slice(i, lt))
+
+    // 找标签结束位置：引号里的 > 不算结束
+    let j = lt + 1
+    let quote = null
+    while (j < src.length) {
+      const ch = src[j]
+      if (quote) {
+        if (ch === quote) quote = null
+      } else if (ch === '"' || ch === "'") quote = ch
+      else if (ch === '>') break
+      j++
+    }
+    if (j >= src.length) {
+      // 没闭合的尖括号，按文本处理
+      if (!dropping) out += escapeHtmlText(src.slice(lt))
+      break
+    }
+
+    const inner = src.slice(lt + 1, j)
+    i = j + 1
+
+    if (dropping) {
+      if (new RegExp('^/\\s*' + dropping + '(?![a-zA-Z0-9-])', 'i').test(inner.trim())) dropping = null
+      continue
+    }
+
+    const tag = parseHtmlTag(inner)
+    if (!tag) continue
+
+    if (tag.closing) {
+      if (HTML_TAG_ALLOWLIST.includes(tag.name)) out += '</' + normalizeHtmlTagName(tag.name) + '>'
+      continue
+    }
+    if (HTML_DROP_WITH_CONTENT.has(tag.name)) {
+      if (!tag.selfClosing && !HTML_VOID.has(tag.name)) dropping = tag.name
+      continue
+    }
+    if (!HTML_TAG_ALLOWLIST.includes(tag.name)) continue
+
+    const attrs = sanitizeHtmlAttrs(tag.name, tag.attrs)
+    out += '<' + normalizeHtmlTagName(tag.name) + (attrs ? ' ' + attrs : '') + (tag.selfClosing ? ' />' : '>')
+  }
+  return out
+}
+
+/**
+ * HTML 片段的标签配平状态：判断「块写完了没有」。
+ * 注释内的尖括号不参与配平；未闭合的注释视为块未结束。
+ */
+function htmlBlockState(text) {
+  const opens = (text.match(/<!--/g) || []).length
+  const closes = (text.match(/-->/g) || []).length
+  const stripped = text.replace(/<!--[\s\S]*?-->/g, '').replace(/<!--[\s\S]*$/, '')
+  let depth = 0
+  const re = /<(\/?)([a-zA-Z][a-zA-Z0-9-]*)((?:"[^"]*"|'[^']*'|[^>])*)>/g
+  let m
+  while ((m = re.exec(stripped)) !== null) {
+    if (m[1] === '/') {
+      depth--
+      continue
+    }
+    if (HTML_VOID.has(m[2].toLowerCase()) || /\/\s*$/.test(m[3])) continue
+    depth++
+  }
+  return { depth: Math.max(depth, 0), commentOpen: opens > closes }
 }
 
 /**
@@ -205,6 +451,26 @@ export function markdownToBlocks(markdown) {
       continue
     }
 
+    // HTML 片段块：以白名单块级标签开头，写到「标签配平」或空行为止。
+    // 净化在 sanitizeHtmlBlock 里做，此处只负责切出完整的一段。
+    const htmlOpen = line.match(/^<([a-zA-Z][a-zA-Z0-9-]*)[\s/>]/)
+    if (htmlOpen && HTML_TAG_ALLOWLIST.includes(htmlOpen[1].toLowerCase())) {
+      flushParagraph()
+      const chunk = []
+      while (i < lines.length) {
+        const cur = lines[i].trim()
+        if (!cur) break
+        chunk.push(cur)
+        i++
+        const state = htmlBlockState(chunk.join('\n'))
+        if (state.depth <= 0 && !state.commentOpen) break
+      }
+      i-- // 退一格，让外层循环的 i++ 落在正确位置
+      const clean = sanitizeHtmlBlock(chunk.join('\n'))
+      if (clean.trim()) blocks.push({ type: 'html', html: clean })
+      continue
+    }
+
     // 表格：首行 | a | b | + 分隔行 |---|---|
     const headCells = rowLine(lines[i])
     if (headCells && i + 1 < lines.length && isSeparatorRow(lines[i + 1])) {
@@ -333,6 +599,9 @@ export function blocksToHtml(blocks) {
           // 构建期已高亮（block.codeHtml 为 Shiki 生成的 token span，构建产物可信）；
           // 未高亮的（语言不支持/降级）走纯文本转义
           return `<pre class="article-body__code" data-lang="${escapeHtml(block.lang)}"><code>${block.codeHtml ?? escapeHtml(block.text)}</code></pre>`
+        case 'html':
+          // 解析期已按白名单净化过（sanitizeHtmlBlock），此处直接输出
+          return block.html
         default:
           return ''
       }

@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { blocksToHtml, markdownToBlocks, parseFrontmatter, renderInline } from '../scripts/lib/markdown.mjs'
+import {
+  blocksToHtml,
+  HTML_ATTR_ALLOWLIST,
+  HTML_TAG_ALLOWLIST,
+  markdownToBlocks,
+  parseFrontmatter,
+  renderInline,
+  sanitizeHtmlBlock,
+} from '../scripts/lib/markdown.mjs'
 
 describe('parseFrontmatter', () => {
   it('解析标量与数组简写', () => {
@@ -206,6 +214,104 @@ describe('renderInline', () => {
     expect(renderInline('`**not bold**`')).toBe(
       '<code class="article-body__inlinecode">**not bold**</code>',
     )
+  })
+})
+
+describe('块级 HTML 片段', () => {
+  it('行首白名单标签开启 html block，跨行捕获到标签配平', () => {
+    const blocks = markdownToBlocks('<div class="card">\n  <p>内容</p>\n</div>\n\n后续段落')
+    expect(blocks).toEqual([
+      { type: 'html', html: '<div class="card">\n<p>内容</p>\n</div>' },
+      { type: 'paragraph', text: '后续段落' },
+    ])
+  })
+
+  it('单行自闭合与行内嵌套正常产出', () => {
+    expect(markdownToBlocks('<hr />')).toEqual([{ type: 'html', html: '<hr />' }])
+    const one = markdownToBlocks('<p>第 <b>一</b> 段</p>')
+    expect(one[0]).toEqual({ type: 'html', html: '<p>第 <b>一</b> 段</p>' })
+  })
+
+  it('未闭合标签捕获到空行为止，unclosed 不会吞掉后续内容', () => {
+    const blocks = markdownToBlocks('<div class="a">\n第一行\n第二行\n\n普通段落')
+    expect(blocks[0]?.type).toBe('html')
+    expect(blocks[1]).toEqual({ type: 'paragraph', text: '普通段落' })
+  })
+
+  it('非白名单标签的行不开 html block，按普通段落转义', () => {
+    const blocks = markdownToBlocks('<custom-el>文本</custom-el>')
+    expect(blocks).toEqual([{ type: 'paragraph', text: '<custom-el>文本</custom-el>' }])
+  })
+
+  it('script / style 连同内容整体丢弃，未知标签只丢标签保文字', () => {
+    const clean = sanitizeHtmlBlock('<div>x</div><script>alert(1)</script><foo>bar</foo>')
+    expect(clean).not.toContain('script')
+    expect(clean).not.toContain('alert(1)')
+    expect(clean).toContain('bar')
+    expect(clean).toContain('x')
+  })
+
+  it('事件属性与保留 id 被剥除', () => {
+    const clean = sanitizeHtmlBlock('<div onclick="x()" id="app" data-x="1">t</div>')
+    expect(clean).not.toContain('onclick')
+    expect(clean).not.toContain('id=')
+    expect(clean).not.toContain('data-x')
+  })
+
+  it('h1 归一为 h2（页面级 h1 属于标题）', () => {
+    expect(sanitizeHtmlBlock('<h1>标题</h1>')).toBe('<h2>标题</h2>')
+  })
+
+  it('白名单属性保留且值重新转义', () => {
+    const clean = sanitizeHtmlBlock('<div class="a" title="A&B">t</div>')
+    expect(clean).toContain('class="a"')
+    expect(clean).toContain('title="A&amp;B"')
+  })
+
+  it('target=_blank 的 a 自动补 noopener', () => {
+    const clean = sanitizeHtmlBlock('<a href="https://example.com" target="_blank">x</a>')
+    expect(clean).toContain('rel="noopener noreferrer"')
+  })
+
+  it('style 放行常规值，危险值整条丢弃', () => {
+    expect(sanitizeHtmlBlock('<div style="color:red;padding:4px">t</div>')).toContain(
+      'style="color:red;padding:4px"',
+    )
+    // url() 只放行 https / 站内相对路径
+    expect(sanitizeHtmlBlock('<div style="background:url(javascript:alert(1))">t</div>')).not.toContain('style=')
+    expect(sanitizeHtmlBlock('<div style="background:url(https://a.com/x.png)">t</div>')).toContain(
+      'url(https://a.com/x.png)',
+    )
+    // 表达式与脚本协议
+    expect(sanitizeHtmlBlock('<div style="width:expression(x)">t</div>')).not.toContain('style=')
+  })
+
+  it('href / src 危险协议被剥除', () => {
+    const clean = sanitizeHtmlBlock('<a href="javascript:alert(1)">x</a><img src="data:image/png;base64,AA" alt="y" />')
+    expect(clean).not.toContain('href=')
+    expect(clean).not.toContain('src=')
+    expect(clean).toContain('x')
+    expect(clean).toContain('alt="y"')
+  })
+
+  it('文本节点转义尖括号、不重复转义已写好的实体', () => {
+    const clean = sanitizeHtmlBlock('<div>A &amp; B &lt; C</div>')
+    expect(clean).toBe('<div>A &amp; B &lt; C</div>')
+    // 引号内含 > 不算标签结束（按引号配对扫描）
+    const quoted = sanitizeHtmlBlock('<div title="a>b">t</div>')
+    expect(quoted).toContain('title="a&gt;b"')
+  })
+
+  it('白名单是双端唯一来源：sanitize.ts 复用同一份数组', () => {
+    expect(HTML_TAG_ALLOWLIST).toContain('div')
+    expect(HTML_TAG_ALLOWLIST).not.toContain('script')
+    expect(HTML_ATTR_ALLOWLIST).toContain('style')
+    expect(HTML_ATTR_ALLOWLIST).not.toContain('onclick')
+  })
+
+  it('blocksToHtml 的 html 分支直接输出净化产物', () => {
+    const html = blocksToHtml([{ type: 'html', html: '<div class="card"><p>x</p></div>' }])
+    expect(html).toBe('<div class="card"><p>x</p></div>')
   })
 })
 

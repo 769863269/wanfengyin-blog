@@ -2,9 +2,10 @@
 /**
  * 文章正文渲染
  *
- * 结构化 block 渲染，受控 HTML 仅两类例外（均为构建期受控产物）：
+ * 结构化 block 渲染，受控 HTML 仅三类例外：
  *   - heading 的 id（构建期生成的 sec-N 锚点）；
  *   - code 的 codeHtml（构建期 Shiki 高亮产物，token span 已转义）；
+ *   - html 块（构建期经 sanitizeHtmlBlock 白名单净化 + 运行时 DOMPurify 双重防线）；
  *   - 行内格式经 renderInline（先整体转义、再挂白名单标签）安全输出。
  * 其余一律文本插值，杜绝 XSS。
  */
@@ -130,6 +131,10 @@ async function copyCode(block: Extract<ArticleBlock, { type: 'code' }>): Promise
           {{ copiedSlug === block.text ? '已复制' : '复制' }}
         </button>
       </div>
+
+      <!-- 块级 HTML 片段：解析期已按白名单净化，这里再过一道 DOMPurify -->
+      <!-- eslint-disable-next-line vue/no-v-html -->
+      <div v-else-if="block.type === 'html'" class="article-body__html" v-html="sanitizeHtml(block.html)" />
     </template>
   </div>
 </template>
@@ -278,6 +283,24 @@ async function copyCode(block: Extract<ArticleBlock, { type: 'code' }>): Promise
 }
 
 .article-body :deep(img) {
+  max-width: 100%;
+  border-radius: var(--radius-md);
+}
+
+/* 块级 HTML 片段：内容经 v-html 注入，拿不到 scoped 属性，样式须 :deep 穿透。
+   这里只补最基础的版式兜底（段落间距 / 列表缩进 / 图片不溢出），
+   具体外观交给作者写的内联 style。 */
+.article-body__html :deep(p) {
+  margin-bottom: 18px;
+}
+
+.article-body__html :deep(ul),
+.article-body__html :deep(ol) {
+  margin: 0 0 18px;
+  padding-left: 26px;
+}
+
+.article-body__html :deep(img) {
   max-width: 100%;
   border-radius: var(--radius-md);
 }
