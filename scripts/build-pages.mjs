@@ -75,12 +75,26 @@ for (const file of files) {
   }
   if (!directAccess) viaMenu++
   seen.add(slug)
-  pages.push({
-    slug,
-    title: String(data.title),
-    description: String(data.description ?? ''),
-    body: markdownToBlocks(body || ''),
-  })
+  const fullHtml = isTrue(data.fullHtml)
+  if (fullHtml) {
+    // 完整 HTML 独立页：整篇正文原样存为 rawHtml，交给 PageView 的 iframe 隔离渲染。
+    // 不做 markdown 块解析——用户写的是含 script/style 的完整文档，解析只会破坏它。
+    pages.push({
+      slug,
+      title: String(data.title),
+      description: String(data.description ?? ''),
+      fullHtml: true,
+      rawHtml: body || '',
+      body: [],
+    })
+  } else {
+    pages.push({
+      slug,
+      title: String(data.title),
+      description: String(data.description ?? ''),
+      body: markdownToBlocks(body || ''),
+    })
+  }
 }
 
 // 构建期 Shiki 高亮（与文章同一套：失败自动降级纯文本）

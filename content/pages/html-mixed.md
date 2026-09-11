@@ -1,6 +1,7 @@
 ---
 title: HTML 片段 · Markdown 混排
 description: 测试 HTML 块与 Markdown 段落、列表、引用、代码块交错渲染
+status: published
 directAccess: true
 ---
 
@@ -42,6 +43,12 @@ const html = '<div style="color:red">代码块里的 HTML 是字符串，不是�
 **行首**白名单标签才开启 HTML 块。段落**中间**嵌的 HTML 标签不开启，看下面这行——它会整体转义成字面文本显示（安全兜底：看到源码而不是样式）：
 
 这是一段普通 Markdown，中间嵌 <span style="background:#fff3cd;">段中的行内 span</span> 应显示为字面文本。
+
+## 测试 SPAN 标签
+普通文本中间嵌 <span style="background:#fff3cd;">测试标签显示的应该是源码</span> 应显示为普通文本。
+
+以下应该是正常 HTML 标签：
+<span style="background:#fff3cd;">我是正常显示的代码标签</span>
 
 ## 结尾
 

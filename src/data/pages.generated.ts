@@ -19,6 +19,14 @@ export const generatedPages: CustomPage[] = [
     ]
   },
   {
+    "slug": "html-all-page",
+    "title": "HTML 完整版 - 测试",
+    "description": "点击彩色方块，每次点击会随机生成不同颜色，带发光阴影和缩放动效",
+    "fullHtml": true,
+    "rawHtml": "<!DOCTYPE html>\n<html lang=\"zh-CN\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>点击变色方块</title>\n    <style>\n        * {margin:0;padding:0;box-sizing:border-box;}\n        body {\n            background: #111;\n            min-height: 100vh;\n            display:flex;\n            flex-direction:column;\n            align-items:center;\n            justify-content:center;\n            font-family:system-ui;\n            color:#fff;\n        }\n        #box {\n            width:180px;\n            height:180px;\n            background:#4285f4;\n            border-radius:12px;\n            cursor:pointer;\n            transition: all 0.3s ease;\n            box-shadow: 0 0 20px #4285f477;\n        }\n        #box:active{\n            transform:scale(0.92);\n        }\n        p{\n            margin-top:24px;\n            font-size:16px;\n        }\n    </style>\n</head>\n<body>\n    <div id=\"box\"></div>\n    <p>点一下方块，随机换颜色！</p>\n\n    <script>\n        const box = document.getElementById('box');\n        function randomColor(){\n            const r = Math.floor(Math.random()*256);\n            const g = Math.floor(Math.random()*256);\n            const b = Math.floor(Math.random()*256);\n            return `rgb(${r},${g},${b})`;\n        }\n        box.onclick = ()=>{\n            const color = randomColor();\n            box.style.background = color;\n            box.style.boxShadow = `0 0 20px ${color}77`;\n        }\n    </script>\n</body>\n</html>",
+    "body": []
+  },
+  {
     "slug": "html-mixed",
     "title": "HTML 片段 · Markdown 混排",
     "description": "测试 HTML 块与 Markdown 段落、列表、引用、代码块交错渲染",
@@ -100,6 +108,23 @@ export const generatedPages: CustomPage[] = [
       {
         "type": "heading",
         "id": "sec-5",
+        "text": "测试 SPAN 标签"
+      },
+      {
+        "type": "paragraph",
+        "text": "普通文本中间嵌 <span style=\"background:#fff3cd;\">测试标签显示的应该是源码</span> 应显示为普通文本。"
+      },
+      {
+        "type": "paragraph",
+        "text": "以下应该是正常 HTML 标签："
+      },
+      {
+        "type": "html",
+        "html": "<span style=\"background:#fff3cd;\">我是正常显示的代码标签</span>"
+      },
+      {
+        "type": "heading",
+        "id": "sec-6",
         "text": "结尾"
       },
       {

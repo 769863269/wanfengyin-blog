@@ -20,6 +20,26 @@ const route = useRoute()
 
 const page = computed(() => generatedPages.find((p) => p.slug === route.meta.slug))
 
+/**
+ * 完整 HTML 独立页：用 iframe 隔离渲染用户写的整份 HTML 文档（含 script / style）。
+ *
+ * 安全取舍（关键）：
+ *  - srcdoc 把内容关进独立文档环境，脚本只在沙箱内执行，碰不到主站 DOM / 同源 cookie；
+ *  - sandbox 只给 allow-scripts（不给 allow-same-origin）→ 脚本跑在 opaque origin，
+ *    拿不到父页面任何凭据，爆炸半径锁死在沙箱内；
+ *  - csp 属性给子文档一条宽松策略（放行内联脚本/样式与图片），覆盖父站继承来的
+ *    `script-src 'self'`（否则内联 <script> 会被拦，交互出不来）。
+ */
+const iframeAttrs = computed<Record<string, string> | null>(() =>
+  page.value?.fullHtml && page.value.rawHtml != null
+    ? {
+        srcdoc: page.value.rawHtml,
+        sandbox: 'allow-scripts',
+        csp: "default-src 'self' 'unsafe-inline' https: data:; script-src 'unsafe-inline' 'self' https:; style-src 'unsafe-inline' 'self' https:; img-src 'self' data: https:; frame-src 'self' data: blob:",
+      }
+    : null,
+)
+
 useSeoMeta({
   title: page.value ? `${page.value.title} · ${siteConfig.name}` : `页面不存在 · ${siteConfig.name}`,
   description: page.value?.description || `「${page.value?.title ?? ''}」页面`,
@@ -31,7 +51,8 @@ useSeoMeta({
     <div class="layout__content">
       <div v-if="page" class="card">
         <h1 class="custom-page__title">{{ page.title }}</h1>
-        <ArticleBody :blocks="page.body" />
+        <iframe v-if="iframeAttrs" v-bind="iframeAttrs" class="full-html-frame" title="自定义 HTML 页面"></iframe>
+        <ArticleBody v-else :blocks="page.body" />
       </div>
       <div v-else class="card custom-page__missing">
         <h1 class="custom-page__title">页面不存在或未上线</h1>
@@ -64,5 +85,15 @@ useSeoMeta({
 
 .custom-page__hint a {
   color: #0071e3;
+}
+
+/* 完整 HTML 独立页：iframe 占满卡片宽度，固定最小高度，自身内部滚动 */
+.full-html-frame {
+  width: 100%;
+  min-height: 60vh;
+  border: 0;
+  border-radius: 16px;
+  background: #fff;
+  display: block;
 }
 </style>

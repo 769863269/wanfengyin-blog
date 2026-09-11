@@ -72,6 +72,12 @@
           "icon": "",
           "kind": "route",
           "target": "html-security"
+        },
+        {
+          "label": "完整代码测试",
+          "icon": "",
+          "kind": "route",
+          "target": "html-all-page"
         }
       ]
     },
