@@ -1511,57 +1511,103 @@ onRoute('site', function () {
       return '<label class="mt-3 block text-[12.5px] text-[#6e6e73]">' + label +
         '<input id="' + id + '" type="text" value="' + esc(String(val ?? '')) + '" class="mt-1 w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + ' /></label>'
     }
+    // 标签页分区：站点设置字段太多，一屏铺开分不清哪个参数属于哪一块，
+    // 按用途切成 4 个标签页。注意四个面板共用同一份 PUT（全量提交），
+    // 所以无论点哪个标签页里的保存按钮，落盘的都是全部字段 —— 切页不丢数据。
+    var TAB_DEFS = [
+      ['basic', '基本信息'],
+      ['copy', '文案与友链'],
+      ['about', '关于页'],
+      ['nav', '导航菜单'],
+    ]
+    // 保存按钮放进每个标签页的卡片内部（不再用页面底部悬浮条）
+    var saveRow = readOnly ? '' : '<div class="mt-5 flex justify-end border-t border-[#f0f0f2] pt-4">' +
+      '<button type="button" class="site-save rounded-full bg-[#1d1d1f] px-6 py-2.5 text-[13.5px] font-semibold text-white hover:opacity-85">保存站点设置</button>' +
+    '</div>'
     view.innerHTML = '<h2 class="mb-1 text-[22px] font-semibold tracking-tight">站点设置</h2>' +
-      '<p class="mb-5 text-[13px] text-[#86868b]">博客主页的站点文案与友情链接，保存后本地博客即时生效（dev HMR），线上随下次发布上线</p>' +
+      '<p class="mb-4 text-[13px] text-[#86868b]">按标签页分区，改完点该标签页里的「保存站点设置」。四个标签页是同一份配置，一次保存全部字段，切页不会丢改动。本地博客即时生效（dev HMR），线上随下次发布上线</p>' +
       (readOnly ? '<p class="mb-4 rounded-lg bg-[#fdf6ec] px-4 py-2.5 text-[13px] text-[#8a6d1a]">当前身份只读，站点设置仅管理员/编辑可修改</p>' : '') +
-      '<div class="grid gap-5 lg:grid-cols-2">' +
+      '<div class="mb-4 flex flex-wrap items-center gap-2">' +
+        TAB_DEFS.map(function (t) {
+          return '<button type="button" class="site-tab shrink-0 rounded-full border bg-white px-4 py-1.5 text-[13px] transition-colors" data-tab="' + t[0] + '">' + t[1] + '</button>'
+        }).join('') +
+        '<span id="sMsg" class="ml-auto text-[13px] text-[#1d7a35]"></span>' +
+      '</div>' +
+      '<div class="site-panel" data-panel="basic">' +
         '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
           '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">站点信息</p>' +
-          field('站名（侧栏/页脚品牌）', 'sName', s.name) +
-          field('完整站名（SEO）', 'sFullName', s.fullName) +
-          field('副标题', 'sTagline', s.tagline) +
-          field('SEO 描述', 'sDesc', s.description) +
-          field('站长署名', 'sAuthor', s.author) +
-          field('邮箱', 'sEmail', s.email) +
-          field('备案号', 'sIcp', s.icp) +
-        '</div>' +
-        '<div>' +
-          '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
-            '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">展示文案</p>' +
-            '<label class="mt-3 block text-[12.5px] text-[#6e6e73]">侧栏「关于本站」文案' +
-              '<textarea id="sAbout" rows="2" class="mt-1 w-full resize-y rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' + esc(s.about) + '</textarea></label>' +
-            '<label class="mt-3 block text-[12.5px] text-[#6e6e73]">页脚描述（副标题下一行）' +
-              '<textarea id="sFooterDesc" rows="2" class="mt-1 w-full resize-y rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' + esc(s.footerDesc) + '</textarea></label>' +
+          '<p class="mb-1 text-[11.5px] leading-relaxed text-[#a1a1a6]">站名出现在侧栏与页脚品牌位；完整站名与 SEO 描述用于搜索结果与分享卡片；署名、邮箱、备案号显示在页脚</p>' +
+          '<div class="grid gap-x-4 lg:grid-cols-2">' +
+            field('站名（侧栏/页脚品牌）', 'sName', s.name) +
+            field('完整站名（SEO）', 'sFullName', s.fullName) +
+            field('副标题', 'sTagline', s.tagline) +
+            field('SEO 描述', 'sDesc', s.description) +
+            field('站长署名', 'sAuthor', s.author) +
+            field('邮箱', 'sEmail', s.email) +
+            field('备案号', 'sIcp', s.icp) +
           '</div>' +
-          '<div class="mt-5 rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
-            '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">友情链接（页脚）</p>' +
-            '<div id="flRows"></div>' +
-            (readOnly ? '' : '<button id="flAdd" type="button" class="mt-2 rounded-full border border-[#d2d2d7] px-4 py-1.5 text-[12.5px] hover:border-[#0071e3] hover:text-[#0071e3]">＋ 添加友链</button>') +
+          saveRow +
+        '</div>' +
+      '</div>' +
+      '<div class="site-panel" data-panel="copy" style="display:none">' +
+        '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+          '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">展示文案</p>' +
+          '<label class="mt-3 block text-[12.5px] text-[#6e6e73]">侧栏「关于本站」文案' +
+            '<textarea id="sAbout" rows="2" class="mt-1 w-full resize-y rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' + esc(s.about) + '</textarea></label>' +
+          '<label class="mt-3 block text-[12.5px] text-[#6e6e73]">页脚描述（副标题下一行）' +
+            '<textarea id="sFooterDesc" rows="2" class="mt-1 w-full resize-y rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' + esc(s.footerDesc) + '</textarea></label>' +
+          '<p class="mt-5 border-t border-[#f0f0f2] pt-4 text-[13px] font-semibold text-[#6e6e73]">友情链接（页脚）</p>' +
+          '<div id="flRows"></div>' +
+          (readOnly ? '' : '<button id="flAdd" type="button" class="mt-2 rounded-full border border-[#d2d2d7] px-4 py-1.5 text-[12.5px] hover:border-[#0071e3] hover:text-[#0071e3]">＋ 添加友链</button>') +
+          saveRow +
+        '</div>' +
+      '</div>' +
+      '<div class="site-panel" data-panel="about" style="display:none">' +
+        '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+          '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">关于页内容（前台「关于博客」页）</p>' +
+          '<p class="mb-3 text-[11.5px] leading-relaxed text-[#a1a1a6]">介绍支持占位符：{{fullName}} 完整站名、{{tagline}} 副标题、{{count}} 文章数。技术栈/大事记每行一条，用竖线 | 分隔两列</p>' +
+          '<label class="block text-[12.5px] text-[#6e6e73]">介绍段落' +
+            '<textarea id="sAbIntro" rows="3" class="mt-1 w-full resize-y rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' + esc(abPage.intro) + '</textarea></label>' +
+          '<div class="mt-3 grid gap-3 lg:grid-cols-2">' +
+            '<label class="block text-[12.5px] text-[#6e6e73]">技术栈（每行：名称 | 作用）' +
+              '<textarea id="sAbStack" rows="7" class="mt-1 w-full resize-y rounded-lg border border-[#d2d2d7] px-2.5 py-2 font-mono text-[12.5px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' + esc(abPage.techStack.map(function (t) { return t.name + ' | ' + t.role }).join(NL)) + '</textarea></label>' +
+            '<label class="block text-[12.5px] text-[#6e6e73]">大事记（每行：日期 | 事件）' +
+              '<textarea id="sAbMiles" rows="7" class="mt-1 w-full resize-y rounded-lg border border-[#d2d2d7] px-2.5 py-2 font-mono text-[12.5px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' + esc(abPage.milestones.map(function (m) { return m.date + ' | ' + m.text }).join(NL)) + '</textarea></label>' +
           '</div>' +
+          saveRow +
         '</div>' +
       '</div>' +
-      '<div class="mt-5 rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
-        '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">关于页内容（前台「关于博客」页）</p>' +
-        '<p class="mb-3 text-[11.5px] leading-relaxed text-[#a1a1a6]">介绍支持占位符：{{fullName}} 完整站名、{{tagline}} 副标题、{{count}} 文章数。技术栈/大事记每行一条，用竖线 | 分隔两列</p>' +
-        '<label class="block text-[12.5px] text-[#6e6e73]">介绍段落' +
-          '<textarea id="sAbIntro" rows="3" class="mt-1 w-full resize-y rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' + esc(abPage.intro) + '</textarea></label>' +
-        '<div class="mt-3 grid gap-3 lg:grid-cols-2">' +
-          '<label class="block text-[12.5px] text-[#6e6e73]">技术栈（每行：名称 | 作用）' +
-            '<textarea id="sAbStack" rows="7" class="mt-1 w-full resize-y rounded-lg border border-[#d2d2d7] px-2.5 py-2 font-mono text-[12.5px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' + esc(abPage.techStack.map(function (t) { return t.name + ' | ' + t.role }).join(NL)) + '</textarea></label>' +
-          '<label class="block text-[12.5px] text-[#6e6e73]">大事记（每行：日期 | 事件）' +
-            '<textarea id="sAbMiles" rows="7" class="mt-1 w-full resize-y rounded-lg border border-[#d2d2d7] px-2.5 py-2 font-mono text-[12.5px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' + esc(abPage.milestones.map(function (m) { return m.date + ' | ' + m.text }).join(NL)) + '</textarea></label>' +
+      '<div class="site-panel" data-panel="nav" style="display:none">' +
+        '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+          '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">导航菜单（web + H5 全通用）</p>' +
+          '<p class="mb-2 text-[11.5px] leading-relaxed text-[#a1a1a6]">同一份列表同时作用于电脑端顶栏与手机端抽屉，改一次两端都变。「页面」=站内页（内置 5 页 + 已发布的自定义页面）；「外链」=http(s):// 或 / 开头；「占位」=未上线不可点；「隐藏」=两端都不出现（配置保留不删）。按住每行左侧的 ⠿ 拖到目标位置即可调整顺序，松手后点下方「保存站点设置」生效</p>' +
+          '<div id="navRows"></div>' +
+          (readOnly ? '' : '<button id="navAdd" type="button" class="mt-2 rounded-full border border-[#d2d2d7] px-4 py-1.5 text-[12.5px] hover:border-[#0071e3] hover:text-[#0071e3]">＋ 添加菜单项</button>') +
+          saveRow +
         '</div>' +
-      '</div>' +
-      '<div class="mt-5 rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
-        '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">导航菜单（web + H5 全通用）</p>' +
-        '<p class="mb-2 text-[11.5px] leading-relaxed text-[#a1a1a6]">同一份列表同时作用于电脑端顶栏与手机端抽屉，改一次两端都变。「页面」=站内页（内置 5 页 + 已发布的自定义页面）；「外链」=http(s):// 或 / 开头；「占位」=未上线不可点；「隐藏」=两端都不出现（配置保留不删）。按住每行左侧的 ⠿ 拖到目标位置即可调整顺序，松手后点「保存站点设置」生效</p>' +
-        '<div id="navRows"></div>' +
-        (readOnly ? '' : '<button id="navAdd" type="button" class="mt-2 rounded-full border border-[#d2d2d7] px-4 py-1.5 text-[12.5px] hover:border-[#0071e3] hover:text-[#0071e3]">＋ 添加菜单项</button>') +
-      '</div>' +
-      (readOnly ? '' : '<div class="sticky bottom-4 z-10 mt-5 flex items-center gap-3 rounded-2xl border border-black/5 bg-white/95 px-5 py-3.5 shadow-[0_4px_24px_rgba(0,0,0,0.1)] backdrop-blur">' +
-        '<span id="sMsg" class="text-[13px] text-[#1d7a35]"></span>' +
-        '<button id="sSave" class="ml-auto rounded-full bg-[#1d1d1f] px-6 py-2.5 text-[13.5px] font-semibold text-white hover:opacity-85">保存站点设置</button>' +
-      '</div>')
+      '</div>'
+
+    // 标签页切换：只切显示，DOM 全部保留 —— 隐藏面板里的输入值照样参与保存
+    var tabsWrap = view.querySelectorAll('.site-tab')
+    var panels = view.querySelectorAll('.site-panel')
+    function showTab(id) {
+      for (var i = 0; i < tabsWrap.length; i++) {
+        var on = tabsWrap[i].getAttribute('data-tab') === id
+        tabsWrap[i].style.background = on ? '#1d1d1f' : '#ffffff'
+        tabsWrap[i].style.color = on ? '#ffffff' : '#1d1d1f'
+        tabsWrap[i].style.borderColor = on ? '#1d1d1f' : '#d2d2d7'
+      }
+      for (var j = 0; j < panels.length; j++) {
+        panels[j].style.display = panels[j].getAttribute('data-panel') === id ? '' : 'none'
+      }
+    }
+    for (var ti = 0; ti < tabsWrap.length; ti++) {
+      tabsWrap[ti].addEventListener('click', function () {
+        showTab(this.getAttribute('data-tab'))
+        if (window.scrollTo) window.scrollTo(0, 0)
+      })
+    }
+    showTab('basic')
 
     // 友链动态行（增删改查）
     var flRows = $('flRows')
@@ -1706,7 +1752,9 @@ onRoute('site', function () {
     }
 
     if (!readOnly) {
-      $('sSave').addEventListener('click', function () {
+      // 四个标签页各有一个保存按钮，共用同一份提交逻辑（全量 PUT）
+      var saveBtns = view.querySelectorAll('.site-save')
+      function saveSite() {
         var links = [].slice.call(flRows.querySelectorAll('.fl-label')).map(function (inp, i) {
           var hrefInp = flRows.querySelectorAll('.fl-href')[i]
           return { label: inp.value.trim(), href: hrefInp.value.trim() }
@@ -1734,7 +1782,8 @@ onRoute('site', function () {
           $('sMsg').textContent = ''
           toast(e.message, true)
         })
-      })
+      }
+      for (var bi = 0; bi < saveBtns.length; bi++) saveBtns[bi].addEventListener('click', saveSite)
     }
   }).catch(function (e) {
     view.innerHTML = '<p class="text-sm text-[#c0392b]">' + esc(e.message) + '</p>'
