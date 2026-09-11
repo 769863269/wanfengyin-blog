@@ -234,6 +234,20 @@ async function main() {
     check('侧栏标签链接存在（回归前提）', false, '未找到 ?tag= 链接')
   }
 
+  console.log('\n[5.6] 标签页布局：返回按钮在卡片内')
+  // 回归：标签页的「返回上一页」曾落在卡片外（悬在页面灰底上），
+  // 与归档页/文章详情页不一致。此处锁定它必须在 .card 内。
+  window.history.pushState({}, '', '/tags')
+  window.dispatchEvent(new window.PopStateEvent('popstate'))
+  await waitFor(() => $('.tags-page__back'))
+  const tagsBack = $('.tags-page__back')
+  check('标签页返回按钮渲染', !!tagsBack)
+  check(
+    '返回按钮位于卡片内（与归档页/文章页一致）',
+    !!tagsBack && tagsBack.closest('.card') !== null,
+  )
+  check('标签云渲染', $$('.tag-chip').length > 0, `共 ${$$('.tag-chip').length} 个标签`)
+
   console.log('\n[6] 页面 JS 报错')
   check('无未捕获报错', pageErrors.length === 0, pageErrors.slice(0, 3).join(' | '))
 

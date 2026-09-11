@@ -48,12 +48,12 @@ function sizeClass(count: number): string {
 <template>
   <div class="layout__main">
     <div class="layout__content tags-page">
-      <button class="tags-page__back" type="button" @click="goBack">
-        <span aria-hidden="true">←</span>
-        返回上一页
-      </button>
-
       <div class="card">
+        <button class="tags-page__back" type="button" @click="goBack">
+          <span aria-hidden="true">←</span>
+          返回上一页
+        </button>
+
         <header class="tags-page__header">
           <h1 class="tags-page__title">🏷 全部标签</h1>
           <p class="tags-page__desc">共 {{ tagCounts.length }} 个标签，点击查看同类文章</p>
