@@ -53,7 +53,27 @@
       "label": "测试",
       "icon": "✨",
       "kind": "route",
-      "target": "dome"
+      "target": "dome",
+      "children": [
+        {
+          "label": "混合布局",
+          "icon": "",
+          "kind": "route",
+          "target": "html-mixed"
+        },
+        {
+          "label": "单一布局",
+          "icon": "",
+          "kind": "route",
+          "target": "html-showcase"
+        },
+        {
+          "label": "净化演示",
+          "icon": "",
+          "kind": "route",
+          "target": "html-security"
+        }
+      ]
     },
     {
       "label": "标签",

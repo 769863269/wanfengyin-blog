@@ -35,9 +35,13 @@ const html = '<div style="color:red">代码块里的 HTML 是字符串，不是�
 
 代码块里的 `<div>` 应原样高亮显示，**不会**被当成 HTML 块解析。
 
-## span 行内混排
+## span 的两种表现
 
-这是一段 Markdown，中间嵌 <span style="background:#fff3cd; padding:2px 8px; border-radius:6px;">行首白名单标签开启的行内 span</span>——注意它独立成块了（span 也算块入口），样式应生效。
+<span style="background:#fff3cd; padding:2px 8px; border-radius:6px;">行首的 span 直接开启 HTML 块，样式应生效</span>
+
+**行首**白名单标签才开启 HTML 块。段落**中间**嵌的 HTML 标签不开启，看下面这行——它会整体转义成字面文本显示（安全兜底：看到源码而不是样式）：
+
+这是一段普通 Markdown，中间嵌 <span style="background:#fff3cd;">段中的行内 span</span> 应显示为字面文本。
 
 ## 结尾
 
