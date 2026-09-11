@@ -6,16 +6,38 @@
  * 避免首屏闪烁。两套各有一个搜索按钮和主题按钮，
  * 状态均来自单例 composable，天然同步。
  */
-import { RouterLink } from 'vue-router'
+import { onBeforeUnmount, onMounted, watch } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
+import NavDropdown from '@/components/common/NavDropdown.vue'
 import NavLink from '@/components/common/NavLink.vue'
 import SiteLogo from '@/components/common/SiteLogo.vue'
 import ThemeToggle from '@/components/common/ThemeToggle.vue'
 import { mainNav, siteConfig } from '@/config/site'
 import { useDrawer } from '@/composables/useDrawer'
+import { useNavMenu } from '@/composables/useNavMenu'
 import { useSearch } from '@/composables/useSearch'
 
 const { open: openSearch } = useSearch()
 const { isOpen: isDrawerOpen, open: openDrawer } = useDrawer()
+const { close: closeNavMenu } = useNavMenu()
+const route = useRoute()
+
+/* 下拉的统一收起：点了面板外 / 按 Esc / 路由跳转后 */
+function onDocClick() {
+  closeNavMenu()
+}
+function onKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') closeNavMenu()
+}
+onMounted(() => {
+  document.addEventListener('click', onDocClick)
+  document.addEventListener('keydown', onKeydown)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onDocClick)
+  document.removeEventListener('keydown', onKeydown)
+})
+watch(() => route.fullPath, closeNavMenu)
 </script>
 
 <template>
@@ -29,7 +51,8 @@ const { isOpen: isDrawerOpen, open: openDrawer } = useDrawer()
 
         <ul class="nav-menu">
           <li v-for="item in mainNav" :key="item.id">
-            <NavLink :item="item" />
+            <NavDropdown v-if="item.children?.length" :item="item" />
+            <NavLink v-else :item="item" />
           </li>
         </ul>
 
@@ -103,6 +126,10 @@ const { isOpen: isDrawerOpen, open: openDrawer } = useDrawer()
 .nav-menu {
   display: flex;
   gap: 6px;
+}
+
+.nav-menu > li {
+  position: relative; /* 一级下拉面板的定位锚点 */
 }
 
 .nav-menu :deep(.nav-link) {

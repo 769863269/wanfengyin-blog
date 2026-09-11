@@ -183,6 +183,42 @@ try {
   try { saveSiteConfig({ mainNav: [{ label: '坏链', kind: 'external', target: 'ftp://x' }] }) } catch { navBad2 = true }
   assert('非 http(s) 外链被拦截', navBad2)
 
+  // 多级子菜单：children 递归归一化 —— 保留、空数组洗掉、深层 target 同样校验
+  saveSiteConfig({
+    mainNav: [
+      {
+        label: '内容', icon: '📚', kind: 'route', target: 'archive',
+        children: [
+          { label: '标签', icon: '', kind: 'route', target: 'tags', children: [] },
+          { label: '测试页', icon: '', kind: 'route', target: 'dome' },
+        ],
+      },
+      { label: '关于', icon: '', kind: 'route', target: 'about' },
+    ],
+  })
+  const navTree = readSiteConfig().mainNav
+  assert('子菜单 children 保留且归一化', Array.isArray(navTree[0].children) && navTree[0].children.length === 2,
+    JSON.stringify(navTree[0]))
+  assert('空 children 数组洗掉（配置不拖死键）', !('children' in navTree[0].children[0]))
+  assert('子树顺序保真且平级不受影响',
+    navTree[0].children.map((n) => n.target).join('>') === 'tags>dome' && navTree[1].target === 'about')
+  let navBadChild = false
+  try {
+    saveSiteConfig({
+      mainNav: [{ label: '内容', kind: 'route', target: 'home', children: [{ label: '坏子页', kind: 'route', target: 'no-such-page' }] }],
+    })
+  } catch { navBadChild = true }
+  assert('子菜单里的无效页面同样被拦截', navBadChild)
+  const deep = { label: 'L1', kind: 'route', target: 'home' }
+  let cur = deep
+  for (let i = 2; i <= 6; i++) {
+    cur.children = [{ label: 'L' + i, kind: 'route', target: 'home' }]
+    cur = cur.children[0]
+  }
+  let navTooDeep = false
+  try { saveSiteConfig({ mainNav: [deep] }) } catch { navTooDeep = true }
+  assert('超过 5 级的子菜单被拦截', navTooDeep)
+
   // 顺序保真：后台拖拽排序只改 DOM 顺序，保存时 collectNav 按 DOM 顺序读出来，
   // 所以 store 必须原样按数组顺序落盘、绝不重排 —— 否则"拖动排序"拖了也白拖。
   saveSiteConfig({

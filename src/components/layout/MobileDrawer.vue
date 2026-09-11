@@ -6,12 +6,16 @@
  * 相比原版补充：打开时把焦点移入抽屉、关闭后归还给触发按钮，
  * 键盘用户不会「掉焦」到页面顶部。
  */
-import { nextTick, ref, watch } from 'vue'
+import { nextTick, provide, ref, watch } from 'vue'
+import DrawerGroup from '@/components/common/DrawerGroup.vue'
 import NavLink from '@/components/common/NavLink.vue'
 import { mainNav, siteConfig } from '@/config/site'
 import { useDrawer } from '@/composables/useDrawer'
 
 const { isOpen, close } = useDrawer()
+
+/* 折叠组内的叶子链接点击后要关抽屉：provide 给递归的 DrawerGroup */
+provide('drawer:close', close)
 
 const closeButtonRef = ref<HTMLButtonElement | null>(null)
 /** 打开抽屉前的焦点元素，关闭后归还焦点 */
@@ -58,7 +62,8 @@ watch(isOpen, async (open) => {
 
     <ul class="drawer__list">
       <li v-for="item in mainNav" :key="item.id">
-        <NavLink :item="item" @click="close" />
+        <DrawerGroup v-if="item.children?.length" :item="item" />
+        <NavLink v-else :item="item" @click="close" />
       </li>
     </ul>
 

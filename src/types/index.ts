@@ -115,6 +115,8 @@ export interface NavItem {
   /** route: 路由 name；external: 完整 URL；disabled: 为空 */
   to?: string
   href?: string
+  /** 子菜单（递归）。有子项时父项渲染为「点击展开」的分支节点，本身不再跳转 */
+  children?: NavItem[]
 }
 
 /* ===================== 站点配置 ===================== */

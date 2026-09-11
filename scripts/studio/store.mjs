@@ -176,27 +176,43 @@ export function publishedPageSlugs() {
 
 function normalizeNavList(list, name) {
   if (!Array.isArray(list)) throw new Error(name + '格式错误：应为数组')
-  if (list.length > 20) throw new Error(name + '最多 20 项')
   const pageSlugs = publishedPageSlugs()
-  return list.map((item, i) => {
-    const label = String(item.label ?? '').trim()
-    const kind = String(item.kind ?? 'disabled')
-    const target = String(item.target ?? '').trim()
-    if (!label) throw new Error(`${name}第 ${i + 1} 项名称不能为空`)
-    if (!NAV_KINDS.includes(kind)) throw new Error(`${name}「${label}」类型非法`)
-    if (kind === 'route' && !NAV_ROUTES.includes(target) && !pageSlugs.includes(target)) {
-      throw new Error(`${name}「${label}」的页面无效：内置页面为 ${NAV_ROUTES.join(' / ')}，自定义页面需先在「自定义页面」发布`)
+  const MAX_TOTAL = 20 // 全树总项数上限（含子项），防止无限层级被刷爆
+  const MAX_DEPTH = 5 // 层级上限：顶栏下拉/抽屉折叠在 5 层内交互仍然可用
+  let total = 0
+  function walk(list, depth, path) {
+    const out = []
+    for (let i = 0; i < list.length; i++) {
+      const item = list[i] ?? {}
+      const label = String(item.label ?? '').trim()
+      const kind = String(item.kind ?? 'disabled')
+      const target = String(item.target ?? '').trim()
+      if (!label) throw new Error(`${name}第 ${path}${i + 1} 项名称不能为空`)
+      if (!NAV_KINDS.includes(kind)) throw new Error(`${name}「${label}」类型非法`)
+      if (kind === 'route' && !NAV_ROUTES.includes(target) && !pageSlugs.includes(target)) {
+        throw new Error(`${name}「${label}」的页面无效：内置页面为 ${NAV_ROUTES.join(' / ')}，自定义页面需先在「自定义页面」发布`)
+      }
+      if (kind === 'external' && !/^(https?:\/\/|\/)/.test(target)) {
+        throw new Error(`${name}「${label}」的链接必须以 http(s):// 或 / 开头`)
+      }
+      total++
+      if (total > MAX_TOTAL) throw new Error(name + '最多 ' + MAX_TOTAL + ' 项（含各级子菜单）')
+      if (depth >= MAX_DEPTH) throw new Error(`${name}「${label}」层级过深：最多支持 ${MAX_DEPTH} 级`)
+      const next = {
+        label,
+        icon: String(item.icon ?? '').trim(),
+        kind,
+        target: kind === 'disabled' || kind === 'hidden' ? '' : target,
+      }
+      // children：有且非空才保留（空数组一律洗掉，配置不拖死键）
+      if (Array.isArray(item.children) && item.children.length) {
+        next.children = walk(item.children, depth + 1, path + (i + 1) + '.')
+      }
+      out.push(next)
     }
-    if (kind === 'external' && !/^(https?:\/\/|\/)/.test(target)) {
-      throw new Error(`${name}「${label}」的链接必须以 http(s):// 或 / 开头`)
-    }
-    return {
-      label,
-      icon: String(item.icon ?? '').trim(),
-      kind,
-      target: kind === 'disabled' || kind === 'hidden' ? '' : target,
-    }
-  })
+    return out
+  }
+  return walk(list, 0, '')
 }
 
 export function readSiteConfig() {

@@ -20,15 +20,23 @@ export function isTrue(value) {
   return value === true || value === 'true'
 }
 
-/** 从 site.json 里取出所有被导航菜单引用的 slug（mainNav 为全通用列表，mobileExtraNav 为旧配置兼容） */
+/** 从 site.json 里取出所有被导航菜单引用的 slug（mainNav 为全通用列表，mobileExtraNav 为旧配置兼容）
+ *  支持递归 children：子菜单里的 route 引用同样算数；hidden 项整枝（含子级）不算 —— 分支都不渲染，引用自然失效 */
 export function navReferencedSlugs(site) {
   const slugs = new Set()
   for (const list of [site?.mainNav, site?.mobileExtraNav]) {
     if (!Array.isArray(list)) continue
+    walk(list)
+  }
+  function walk(list) {
     for (const item of list) {
-      if (!item || item.kind !== 'route') continue
-      const target = String(item.target ?? '').trim()
-      if (target) slugs.add(target)
+      if (!item) continue
+      if (item.kind === 'hidden') continue // 整枝跳过：父项隐藏则子级也不渲染
+      if (item.kind === 'route') {
+        const target = String(item.target ?? '').trim()
+        if (target) slugs.add(target)
+      }
+      if (Array.isArray(item.children)) walk(item.children)
     }
   }
   return slugs

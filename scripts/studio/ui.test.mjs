@@ -72,7 +72,10 @@ const jSite = {
       author: '作者', email: 'a@b.c', icp: 'ICP', about: '关于文案', footerDesc: '页脚文案',
     },
     friendLinks: [{ label: '友链A', href: 'https://a.example' }],
-    mainNav: [{ label: '首页', icon: '🏠', kind: 'route', target: 'home' }],
+    mainNav: [
+      { label: '首页', icon: '🏠', kind: 'route', target: 'home', children: [{ label: '测试页', icon: '', kind: 'route', target: 'dome' }] },
+      { label: '归档', icon: '', kind: 'route', target: 'archive' },
+    ],
     pagination: { sizes: [5, 10], defaultSize: 5 },
     aboutPage: {
       intro: '介绍',
@@ -182,7 +185,36 @@ function clickTab(id) {
 }
 clickTab('nav')
 check('切「导航菜单」只显示 nav', visiblePanels() === 'nav', visiblePanels())
-check('导航行与拖拽手柄仍在', $$('#navRows .nav-row').length === 1 && $$('#navRows .nv-drag').length === 1)
+check('导航行与拖拽手柄仍在（父 + 子 + 平级 = 3 行）',
+  $$('#navRows .nav-row').length === 3 && $$('#navRows .nv-drag').length === 3,
+  $$('#navRows .nav-row').length + ' 行')
+console.log('\n[3.5] 导航层级：缩进渲染与升降级')
+const navRowsAll = $$('#navRows .nav-row')
+const childRow = navRowsAll[1]
+const flatRow = navRowsAll[2]
+check('子项渲染缩进（data-depth=1，margin-left=26px，级别标记）',
+  childRow.dataset.depth === '1' && childRow.style.marginLeft === '26px' &&
+    childRow.querySelector('.nv-depth-tag').textContent.indexOf('2级') >= 0,
+  'depth=' + childRow.dataset.depth + ' ml=' + childRow.style.marginLeft)
+function clickNavBtn(row, cls) {
+  row.querySelector(cls).dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
+}
+// 首行不能降级
+clickNavBtn(navRowsAll[0], '.nv-indent')
+check('第一项不能降级', navRowsAll[0].dataset.depth === '0', navRowsAll[0].dataset.depth)
+// 上一行深度不够（0 < 1）时子项不能再降
+clickNavBtn(childRow, '.nv-indent')
+check('上一项层级不够时 ⇥ 被拦', childRow.dataset.depth === '1', childRow.dataset.depth)
+// 平级行（归档）可降为首页的第二个子菜单，再升回顶级
+clickNavBtn(flatRow, '.nv-indent')
+check('⇥ 降为上一项的子菜单（2 级缩进）',
+  flatRow.dataset.depth === '1' && flatRow.style.marginLeft === '26px',
+  'depth=' + flatRow.dataset.depth)
+clickNavBtn(flatRow, '.nv-outdent')
+check('⇤ 升回顶级', flatRow.dataset.depth === '0' && flatRow.style.marginLeft === '0px',
+  'depth=' + flatRow.dataset.depth)
+clickNavBtn(flatRow, '.nv-outdent')
+check('顶级再升被拦（提示不越界）', flatRow.dataset.depth === '0', flatRow.dataset.depth)
 clickTab('copy')
 check('切「文案与友链」只显示 copy', visiblePanels() === 'copy', visiblePanels())
 clickTab('about')

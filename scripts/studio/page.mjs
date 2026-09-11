@@ -1715,7 +1715,7 @@ onRoute('site', function () {
       '<div class="site-panel" data-panel="nav" style="display:none">' +
         '<div class="rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
           '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">导航菜单（web + H5 全通用）</p>' +
-          '<p class="mb-2 text-[11.5px] leading-relaxed text-[#a1a1a6]">同一份列表同时作用于电脑端顶栏与手机端抽屉，改一次两端都变。「页面」=站内页（内置 5 页 + 已发布的自定义页面）；「外链」=http(s):// 或 / 开头；「占位」=未上线不可点；「隐藏」=两端都不出现（配置保留不删）。按住每行左侧的 ⠿ 拖到目标位置即可调整顺序，松手后点下方「保存站点设置」生效</p>' +
+          '<p class="mb-2 text-[11.5px] leading-relaxed text-[#a1a1a6]">同一份列表同时作用于电脑端顶栏与手机端抽屉，改一次两端都变。「页面」=站内页（内置 5 页 + 已发布的自定义页面）；「外链」=http(s):// 或 / 开头；「占位」=未上线不可点；「隐藏」=整枝都不出现（配置保留不删）。支持多级子菜单（最多 5 级）：选中的一行点 ⇥ 降为上一项的子菜单、⇤ 升回一级，子项跟着父项整体缩进；按住 ⠿ 拖动时整块子树一起搬。保存后顶栏是点击展开的下拉、手机抽屉是折叠组。松手后点下方「保存站点设置」生效</p>' +
           '<div id="navRows"></div>' +
           (readOnly ? '' : '<button id="navAdd" type="button" class="mt-2 rounded-full border border-[#d2d2d7] px-4 py-1.5 text-[12.5px] hover:border-[#0071e3] hover:text-[#0071e3]">＋ 添加菜单项</button>') +
           saveRow +
@@ -1770,14 +1770,17 @@ onRoute('site', function () {
       var msgEl = $('sMsg')
       if (msgEl) msgEl.textContent = '菜单顺序已调整 —— 点下方「保存站点设置」生效'
     }
-    function navRow(box, it) {
+    function navRow(box, it, depth) {
       it = it || {}
+      depth = depth || 0
       var row = document.createElement('div')
       // 行容器：浅灰圆角卡片，字段与按钮都在卡内，归属清晰
       row.className = 'nav-row mt-2 flex flex-wrap items-center gap-2 rounded-xl bg-[#f5f5f7] px-3 py-2.5'
+      row.dataset.depth = String(depth)
       var routeOptions = '<option value="home">home · 首页</option><option value="archive">archive · 归档</option><option value="tags">tags · 标签</option><option value="about">about · 关于</option><option value="random">random · 随便看看</option>' +
         publishedPages.map(function (p) { return '<option value="' + esc(p.slug) + '">' + esc(p.slug) + ' · ' + esc(p.title) + '</option>' }).join('')
-      row.innerHTML = '<input class="nv-icon w-12 shrink-0 rounded-lg border border-[#d2d2d7] bg-white px-2 py-1.5 text-center text-[14px] outline-none focus:border-[#0071e3]" placeholder="图标" value="' + esc(it.icon || '') + '"' + (readOnly ? ' disabled' : '') + ' />' +
+      row.innerHTML = '<span class="nv-depth-tag shrink-0 text-[11px] leading-none text-[#a1a1a6]" style="width:34px"></span>' +
+        '<input class="nv-icon w-12 shrink-0 rounded-lg border border-[#d2d2d7] bg-white px-2 py-1.5 text-center text-[14px] outline-none focus:border-[#0071e3]" placeholder="图标" value="' + esc(it.icon || '') + '"' + (readOnly ? ' disabled' : '') + ' />' +
         '<input class="nv-label w-28 shrink-0 rounded-lg border border-[#d2d2d7] bg-white px-2.5 py-1.5 text-[13px] outline-none focus:border-[#0071e3]" placeholder="名称" value="' + esc(it.label || '') + '"' + (readOnly ? ' disabled' : '') + ' />' +
         '<select class="nv-kind shrink-0 rounded-lg border border-[#d2d2d7] bg-white px-2 py-1.5 text-[13px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' +
           '<option value="route">页面</option><option value="external">外链</option><option value="disabled">占位</option><option value="hidden">隐藏</option>' +
@@ -1785,6 +1788,9 @@ onRoute('site', function () {
         '<select class="nv-route min-w-[10rem] shrink-0 rounded-lg border border-[#d2d2d7] bg-white px-2 py-1.5 text-[13px] outline-none focus:border-[#0071e3]"' + (readOnly ? ' disabled' : '') + '>' + routeOptions + '</select>' +
         '<input class="nv-target min-w-[200px] flex-1 rounded-lg border border-[#d2d2d7] bg-white px-2.5 py-1.5 text-[13px] outline-none focus:border-[#0071e3]" value="' + esc(it.target || '') + '"' + (readOnly ? ' disabled' : '') + ' />' +
         '<span class="nv-hint flex-1 text-[12.5px] text-[#a1a1a6]"></span>' +
+        (readOnly ? '' :
+          '<button type="button" class="nv-outdent shrink-0 rounded-full bg-white px-2 py-1 text-[13px] text-[#6e6e73] border border-[#d2d2d7] hover:border-[#0071e3] hover:text-[#0071e3]" title="提升一级（更靠左）">⇤</button>' +
+          '<button type="button" class="nv-indent shrink-0 rounded-full bg-white px-2 py-1 text-[13px] text-[#6e6e73] border border-[#d2d2d7] hover:border-[#0071e3] hover:text-[#0071e3]" title="降为上一项的子菜单（更靠右）">⇥</button>') +
         '<button type="button" class="nv-del ml-auto shrink-0 rounded-full bg-white px-2.5 py-1 text-[12px] text-[#c0392b] border border-[#f0d0d0] hover:bg-[#fdecec]">删除</button>'
       // 拖拽排序手柄：只有按住这个把手才能拖动整行。
       // 不把 draggable 挂到整行上 —— 行内含输入框，draggable 容器会吃掉浏览器
@@ -1829,6 +1835,13 @@ onRoute('site', function () {
       syncTarget()
       kindSel.addEventListener('change', syncTarget)
       delBtn.addEventListener('click', function () { row.remove() })
+      var outBtn = row.querySelector('.nv-outdent')
+      var inBtn = row.querySelector('.nv-indent')
+      if (!readOnly) {
+        outBtn.addEventListener('click', function () { changeDepth(row, -1) })
+        inBtn.addEventListener('click', function () { changeDepth(row, 1) })
+      }
+      applyIndent(row)
       if (!readOnly) {
         // 拖动开始：记住这一行，整行降透明度表示"正在搬运"
         handle.addEventListener('dragstart', function (e) {
@@ -1848,39 +1861,111 @@ onRoute('site', function () {
       }
       box.appendChild(row)
     }
+    /* ---------------- 层级（多级子菜单） ----------------
+     * 行按 DOM 顺序展平渲染，深度存每行 data-depth；保存时按深度栈重建树。
+     * 缩进用内联 margin-left，不依赖 Tailwind 快照；⇥/⇤ 改深度时整块子树一起动。 */
+    var NAV_INDENT = 26 // 每级缩进像素
+    var NAV_MAX_DEPTH = 4 // 深度上限（0..4，共 5 级）
+    function rowsInOrder() {
+      return [].slice.call(navRows.querySelectorAll('.nav-row'))
+    }
+    function applyIndent(row) {
+      var d = Number(row.dataset.depth || 0)
+      row.style.marginLeft = (d * NAV_INDENT) + 'px'
+      row.style.borderLeft = d > 0 ? '2px solid #d2d2d7' : ''
+      var tag = row.querySelector('.nv-depth-tag')
+      if (tag) tag.textContent = d > 0 ? '└' + (d + 1) + '级' : ''
+    }
+    function subtreeOf(row) {
+      // 子树 = 这一行 + 其后所有深度更大的连续行
+      var all = rowsInOrder()
+      var i = all.indexOf(row)
+      var block = [row]
+      for (var k = i + 1; k < all.length; k++) {
+        if (Number(all[k].dataset.depth) > Number(row.dataset.depth)) block.push(all[k])
+        else break
+      }
+      return block
+    }
+    function changeDepth(row, delta) {
+      var d = Number(row.dataset.depth || 0)
+      var nd = d + delta
+      if (nd < 0) { toast('已经是最上级了', true); return }
+      if (nd > NAV_MAX_DEPTH) { toast('最多 ' + (NAV_MAX_DEPTH + 1) + ' 级菜单', true); return }
+      if (delta > 0) {
+        var all = rowsInOrder()
+        var i = all.indexOf(row)
+        if (i === 0) { toast('第一项不能降级', true); return }
+        // 降为上一项的子菜单：新深度最多比上一行深一级
+        if (Number(all[i - 1].dataset.depth) < d) { toast('上一项层级不够 —— 子菜单要挂在上一项名下', true); return }
+      }
+      subtreeOf(row).forEach(function (r) {
+        r.dataset.depth = String(Number(r.dataset.depth) + delta)
+        applyIndent(r)
+      })
+      noteNavReordered()
+    }
+    function flattenNav(list, depth) {
+      var out = []
+      ;(list || []).forEach(function (n) {
+        out.push({ item: n, depth: depth })
+        if (Array.isArray(n.children)) out = out.concat(flattenNav(n.children, depth + 1))
+      })
+      return out
+    }
     var mainNavList = Array.isArray(d.site.mainNav) ? d.site.mainNav : []
     // 兼容旧配置：曾把「仅手机抽屉」的项单独存在 mobileExtraNav，这里合并进同一列表
     var legacyExtraList = Array.isArray(d.site.mobileExtraNav) ? d.site.mobileExtraNav : []
-    mainNavList.concat(legacyExtraList).forEach(function (n) { navRow(navRows, n) })
+    flattenNav(mainNavList.concat(legacyExtraList), 0).forEach(function (e) { navRow(navRows, e.item, e.depth) })
 
     // 拖拽排序：手柄 dragstart 记下当前行 → dragover 按鼠标 Y 与各行中线比较，
     // 实时 insertBefore 到目标位置（所见即所得，松手即定）。
-    // 保存时 collectNav 本身就是按 DOM 顺序读的，所以顺序不需要额外存储。
+    // 拖的是整块子树：块内各行按原顺序一起插到目标位置，深度不变（升降级用 ⇥/⇤）。
+    // 保存时 collectNav 按 DOM 顺序 + data-depth 重建树，顺序不需要额外存储。
     navRows.addEventListener('dragover', function (e) {
       if (!dragRow) return
       e.preventDefault()
       if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
-      var others = [].slice.call(navRows.querySelectorAll('.nav-row')).filter(function (r) { return r !== dragRow })
+      var block = subtreeOf(dragRow)
+      var others = rowsInOrder().filter(function (r) { return block.indexOf(r) < 0 })
       var next = null
       for (var i = 0; i < others.length; i++) {
         var rect = others[i].getBoundingClientRect()
         if (e.clientY < rect.top + rect.height / 2) { next = others[i]; break }
       }
-      if (next) navRows.insertBefore(dragRow, next)
-      else navRows.appendChild(dragRow)
+      for (var j = 0; j < block.length; j++) navRows.insertBefore(block[j], next) // next 为 null 时等价 appendChild
     })
     navRows.addEventListener('drop', function (e) { e.preventDefault() })
     function collectNav(box) {
-      return [].slice.call(box.querySelectorAll('.nav-row')).map(function (row) {
+      // 按 DOM 顺序 + 每行深度重建树：slots[d] 是最近一个深度为 d 的节点的 children
+      var rows = [].slice.call(box.querySelectorAll('.nav-row'))
+      var roots = []
+      var slots = []
+      var prevD = -1
+      var first = true
+      rows.forEach(function (row) {
+        var d = Number(row.dataset.depth || 0)
+        var label = row.querySelector('.nv-label').value.trim()
+        if (!label) return // 空名称行照旧丢弃
+        if (first) {
+          if (d !== 0) throw new Error('第一项菜单不能是子菜单 —— 先点 ⇤ 升回一级')
+          first = false
+        }
+        if (d > prevD + 1) throw new Error('「' + label + '」跳级了 —— 子菜单要一级一级往下挂')
         var tSel = row.querySelector('.nv-route')
         var tInp = row.querySelector('.nv-target')
-        return {
+        var node = {
           icon: row.querySelector('.nv-icon').value.trim(),
-          label: row.querySelector('.nv-label').value.trim(),
+          label: label,
           kind: row.querySelector('.nv-kind').value,
           target: tSel.style.display !== 'none' ? tSel.value : tInp.value.trim(),
         }
-      }).filter(function (n) { return n.label })
+        if (d === 0) roots.push(node)
+        else slots[d - 1].push(node)
+        slots[d] = node.children = []
+        prevD = d
+      })
+      return roots
     }
     if (!readOnly) {
       $('navAdd').addEventListener('click', function () { navRow(navRows, { kind: 'route' }) })
@@ -1898,6 +1983,13 @@ onRoute('site', function () {
         if (!abStack) return
         var abMiles = parseRows($('sAbMiles').value, '大事记', 'date', 'text')
         if (!abMiles) return
+        var navTree
+        try {
+          navTree = collectNav(navRows)
+        } catch (navErr) {
+          toast(navErr.message, true)
+          return
+        }
         api('/api/site', {
           method: 'PUT',
           body: {
@@ -1906,7 +1998,7 @@ onRoute('site', function () {
             author: $('sAuthor').value.trim(), email: $('sEmail').value.trim(),
             icp: $('sIcp').value.trim(), about: $('sAbout').value.trim(),
             footerDesc: $('sFooterDesc').value.trim(), friendLinks: links,
-            mainNav: collectNav(navRows),
+            mainNav: navTree,
             aboutPage: { intro: $('sAbIntro').value.trim(), techStack: abStack, milestones: abMiles },
           },
         }).then(function () {

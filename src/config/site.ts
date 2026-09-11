@@ -43,17 +43,29 @@ type SiteNavItem = {
   icon?: string
   kind: 'route' | 'external' | 'disabled' | 'hidden'
   target: string
+  children?: SiteNavItem[]
 }
 
+/**
+ * 平铺配置 → 递归 NavItem。
+ * hidden 项整枝丢弃（父项隐藏则子级一并不出现在任何菜单）；
+ * id 用路径编号（nav-0-1），兄弟同名也不冲突，且增删兄弟不影响语义。 */
 function toNavItems(list: readonly SiteNavItem[], prefix: string): NavItem[] {
-  return list.map((item, i) => ({
-    id: `${prefix}-${i}`,
-    label: item.label,
-    icon: item.icon ?? '',
-    kind: item.kind,
-    ...(item.kind === 'route' ? { to: item.target } : {}),
-    ...(item.kind === 'external' ? { href: item.target } : {}),
-  }))
+  const out: NavItem[] = []
+  list.forEach((item, i) => {
+    if (item.kind === 'hidden') return
+    const children = item.children ? toNavItems(item.children, `${prefix}-${i}`) : []
+    out.push({
+      id: `${prefix}-${i}`,
+      label: item.label,
+      icon: item.icon ?? '',
+      kind: item.kind,
+      ...(item.kind === 'route' ? { to: item.target } : {}),
+      ...(item.kind === 'external' ? { href: item.target } : {}),
+      ...(children.length ? { children } : {}),
+    })
+  })
+  return out
 }
 
 /**
