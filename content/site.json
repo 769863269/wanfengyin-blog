@@ -50,22 +50,22 @@
       "target": "archive"
     },
     {
-      "label": "Rss订阅",
-      "icon": "📡",
-      "kind": "hidden",
-      "target": ""
+      "label": "测试",
+      "icon": "✨",
+      "kind": "route",
+      "target": "dome"
+    },
+    {
+      "label": "标签",
+      "icon": "#️⃣",
+      "kind": "route",
+      "target": "tags"
     },
     {
       "label": "关于博客",
-      "icon": "ℹ️",
+      "icon": "✳",
       "kind": "route",
       "target": "about"
-    },
-    {
-      "label": "测试",
-      "icon": "",
-      "kind": "route",
-      "target": "dome"
     }
   ],
   "pagination": {
