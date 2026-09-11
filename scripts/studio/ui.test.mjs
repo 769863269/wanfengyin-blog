@@ -82,6 +82,14 @@ const jSite = {
   },
 }
 const jPages = { ok: true, pages: [{ slug: 'dome', title: '测试页', status: 'published', reachable: true }] }
+const jArticle = {
+  ok: true,
+  article: {
+    file: 'probe.md', title: '探针文章', slug: 'probe', excerpt: '', status: 'draft', body: '# 探针',
+    publishedAt: '2026-09-01', publishedTime: '', tags: [], keywords: [], category: '', author: '周周',
+    pinned: false, featured: false, publishAt: '', offlineAt: '', seoDescription: '', cover: '',
+  },
+}
 const jMeta = {
   ok: true,
   me: { name: '周周', role: 'admin' },
@@ -112,13 +120,17 @@ const dom = new JSDOM(html, {
       return { matches: false, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} }
     }
     window.scrollTo = function () {}
+    window.__fetchLog = []
     window.fetch = function (path) {
       const p = String(path)
+      window.__fetchLog.push(p)
       let body = { ok: true, articles: [], trash: [], logs: [] }
       if (p.indexOf('/api/meta') === 0) body = jMeta
+      else if (p.indexOf('/api/article/') === 0) body = jArticle
       else if (p.indexOf('/api/articles') === 0) body = { ok: true, articles: [], total: 0, totalPages: 1, page: 1 }
       else if (p.indexOf('/api/site') === 0) body = jSite
       else if (p.indexOf('/api/pages') === 0) body = jPages
+      else if (p.indexOf('/api/authors') === 0) body = { ok: true, me: { role: 'admin' }, authors: jMeta.authors }
       return Promise.resolve({ json: () => Promise.resolve(body) })
     }
   },
@@ -130,8 +142,15 @@ const doc = window.document
 const $ = (sel) => doc.querySelector(sel)
 const $$ = (sel) => Array.from(doc.querySelectorAll(sel))
 
-console.log('\n[2] 首页挂载')
-check('侧栏导航渲染', $$('.nav-item').length > 0, $$('.nav-item').length + ' 项')
+console.log('\n[2] 侧栏信息架构')
+const navItems = $$('.nav-item')
+check('侧栏 8 项（5 个状态筛选已收进页面内的标签页）', navItems.length === 8, '实际 ' + navItems.length)
+check('分组标题：内容 / 站点 / 系统',
+  $$('.nav-group').map((g) => g.textContent).join('/') === '内容/站点/系统',
+  $$('.nav-group').map((g) => g.textContent).join('/'))
+check('顺序：文章/自定义页面/分类与标签/回收站/站点设置/系统设置/作者与权限/操作日志',
+  navItems.map((a) => a.getAttribute('data-nav')).join(',') === 'list,pages,taxonomy,trash,site,settings,authors,logs',
+  navItems.map((a) => a.getAttribute('data-nav')).join(','))
 check('身份选择器渲染', !!$('#meSelect'))
 
 console.log('\n[3] 站点设置：标签页分区')
@@ -171,7 +190,52 @@ check('隐藏面板字段仍在 DOM（切页不丢数据）', !!hiddenName && hi
   hiddenName ? hiddenName.value : 'missing')
 check('友链行不受切换影响', $$('#flRows .fl-label').length === 1)
 
-console.log('\n[5] 页面运行时报错')
+console.log('\n[5] 文章列表：页头 + 状态标签页')
+window.location.hash = '#/list/all'
+await sleep(400)
+const stabs = $$('.status-tab')
+check('状态标签页 5 个', stabs.length === 5, '实际 ' + stabs.length)
+check('默认「全部」为激活态',
+  !!stabs[0] && stabs[0].classList.contains('active') && stabs[0].textContent.indexOf('全部') === 0,
+  stabs[0] ? stabs[0].textContent : 'missing')
+check('状态标签页挂在文章路由下',
+  stabs[0] && stabs[0].getAttribute('href') === '#/list/all',
+  stabs[0] ? String(stabs[0].getAttribute('href')) : 'missing')
+check('统一页头渲染出标题', (($('h2') || {}).textContent || '') === '文章', ($('h2') || {}).textContent || '')
+check('文章菜单项处于高亮态',
+  $$('.nav-item').filter((a) => a.getAttribute('data-nav') === 'list')[0].classList.contains('active'))
+
+console.log('\n[6] 编辑器：进出与离场清理')
+window.location.hash = '#/editor/new'
+await sleep(450)
+check('编辑器渲染（标题输入框在）', !!$('#eTitle'))
+// 只匹配 class 属性里的真实用法（页面上可能有提到该词的说明文字，不算）
+check('后台已无毛玻璃背景（滚动时每帧重绘的热点）', !/class="[^"]*backdrop-blur/.test(html))
+window.location.hash = '#/trash'
+await sleep(350)
+check('离开后编辑区 DOM 已卸载', !$('#eTitle'))
+window.location.hash = '#/editor/new'
+await sleep(450)
+check('二次进入编辑器正常渲染（无残留实例干扰）', !!$('#eTitle'))
+window.location.hash = '#/list/all'
+await sleep(250)
+
+console.log('\n[7] 性能回归：meta 缓存与视图清理契约')
+window.__fetchLog.length = 0
+for (const h of ['#/trash', '#/taxonomy', '#/authors', '#/logs', '#/list/all']) {
+  window.location.hash = h
+  await sleep(160)
+}
+const metaHits = window.__fetchLog.filter((u) => u.indexOf('/api/meta') === 0).length
+// 改版前每切一次视图就打一次 /api/meta；现在有 5 秒 TTL 缓存，连切 5 个视图最多补 1 次
+check('连切 5 个视图不重复请求 /api/meta', metaHits <= 1, 'meta 请求 ' + metaHits + ' 次')
+check('存在视图离场清理钩子 onLeave', html.indexOf('function onLeave(') >= 0)
+check('存在统一页头组件 pageHead', html.indexOf('function pageHead(') >= 0)
+check('存在状态标签页组件 statusTabs', html.indexOf('function statusTabs(') >= 0)
+const pasteBinds = html.split("document.addEventListener('paste'").length - 1
+check('document 上只绑一次 paste 监听（防每次进编辑器叠加）', pasteBinds === 1, '实际 ' + pasteBinds + ' 处')
+
+console.log('\n[8] 页面运行时报错')
 check('无未捕获报错', errors.length === 0, errors.slice(0, 3).join(' | '))
 
 console.log('\n结果：' + pass + ' 通过，' + fail + ' 失败')

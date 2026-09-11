@@ -37,7 +37,25 @@ export function page(nonce) {
   input[type=file]::file-selector-button { border:0; border-radius:980px; padding:6px 16px; margin-right:12px; background:#e8e8ed; color:#1d1d1f; font-size:13px; cursor:pointer; }
   .spin { animation: spin .9s linear infinite; } @keyframes spin { to { transform: rotate(360deg); } }
   .fade-in { animation: fadein .2s ease-out; } @keyframes fadein { from { opacity:0; transform:translateY(4px);} to { opacity:1; transform:none; } }
+  /* 侧栏导航：样式集中在这里，HTML 只留语义（便于统一改版） */
+  .nav-item { display:flex; align-items:center; gap:8px; border-radius:8px; padding:7px 12px; font-size:13.5px; color:#1d1d1f; text-decoration:none; transition: background-color .15s ease, color .15s ease; }
+  .nav-item:hover { background:#f5f5f7; }
   .nav-item.active { background:#e8f1fd; color:#0071e3; font-weight:600; }
+  .nav-item .nav-count { margin-left:auto; font-size:11.5px; color:#86868b; }
+  .nav-item.active .nav-count { color:#0071e3; }
+  .nav-group { padding:14px 12px 5px; font-size:11px; font-weight:600; color:#a1a1a6; letter-spacing:.03em; }
+  .nav-group:first-child { padding-top:4px; }
+
+  /* 内容区：页头 / 面包屑 / 状态标签页 统一规格 */
+  .crumb { font-size:12.5px; color:#86868b; text-decoration:none; }
+  .crumb:hover { color:#0071e3; }
+  .crumb-sep { margin:0 6px; color:#c7c7cc; }
+  .crumb-now { font-size:12.5px; color:#6e6e73; }
+  .status-tab { border:0; background:transparent; border-radius:980px; padding:6px 14px; font-size:13px; color:#6e6e73; cursor:pointer; text-decoration:none; transition: background-color .15s ease, color .15s ease; }
+  .status-tab:hover { background:#f0f0f2; color:#1d1d1f; }
+  .status-tab.active { background:#1d1d1f; color:#fff; font-weight:600; }
+  .status-tab .st-n { margin-left:5px; font-size:11.5px; opacity:.7; }
+  .status-tab .st-n:empty { display:none; }
   ::-webkit-scrollbar { width:8px; height:8px; } ::-webkit-scrollbar-thumb { background:#d2d2d7; border-radius:4px; }
   /* Vditor 固定尺寸护栏：高度由 JS 配置锁定，宽度永不超容器，内容超长在编辑器内部滚动 */
   #vditorHost .vditor { width:100% !important; max-width:100% !important; }
@@ -60,20 +78,17 @@ export function page(nonce) {
     </div>
 
     <nav id="nav" class="flex-1 space-y-0.5 overflow-y-auto">
-      <p class="px-3 pb-1 pt-2 text-[11px] font-semibold text-[#a1a1a6]">内容管理</p>
-      <a href="#/list/all"      data-nav="list/all"      class="nav-item flex items-center justify-between rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]"><span>📋 全部文章</span><span data-count="all"      class="text-xs text-[#86868b]"></span></a>
-      <a href="#/list/published" data-nav="list/published" class="nav-item flex items-center justify-between rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]"><span>✅ 已发布</span><span data-count="published" class="text-xs text-[#86868b]"></span></a>
-      <a href="#/list/draft"    data-nav="list/draft"    class="nav-item flex items-center justify-between rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]"><span>📝 草稿</span><span data-count="draft"    class="text-xs text-[#86868b]"></span></a>
-      <a href="#/list/review"   data-nav="list/review"   class="nav-item flex items-center justify-between rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]"><span>👁 审核中</span><span data-count="review"   class="text-xs text-[#86868b]"></span></a>
-      <a href="#/list/offline"  data-nav="list/offline"  class="nav-item flex items-center justify-between rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]"><span>⏸ 已下线</span><span data-count="offline"  class="text-xs text-[#86868b]"></span></a>
-      <p class="px-3 pb-1 pt-3 text-[11px] font-semibold text-[#a1a1a6]">系统</p>
-      <a href="#/trash"    data-nav="trash"    class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">🗑 回收站</a>
-      <a href="#/pages"    data-nav="pages"    class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">📄 自定义页面</a>
-      <a href="#/taxonomy" data-nav="taxonomy" class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">🏷 分类与标签</a>
-      <a href="#/authors"  data-nav="authors"  class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">👥 作者与权限</a>
-      <a href="#/logs"     data-nav="logs"     class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">📜 操作日志</a>
-      <a href="#/site"     data-nav="site"     class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">⚙️ 站点设置</a>
-      <a href="#/settings" data-nav="settings" class="nav-item flex items-center rounded-lg px-3 py-2 text-[13.5px] text-[#1d1d1f] hover:bg-[#f5f5f7]">🧩 系统设置</a>
+      <p class="nav-group">内容</p>
+      <a href="#/list/all"  data-nav="list"     class="nav-item"><span>📋</span><span>文章</span><span class="nav-count" data-count="all"></span></a>
+      <a href="#/pages"     data-nav="pages"    class="nav-item"><span>📄</span><span>自定义页面</span><span class="nav-count" data-count-pages=""></span></a>
+      <a href="#/taxonomy"  data-nav="taxonomy" class="nav-item"><span>🏷</span><span>分类与标签</span></a>
+      <a href="#/trash"     data-nav="trash"    class="nav-item"><span>🗑</span><span>回收站</span><span class="nav-count" data-count-trash=""></span></a>
+      <p class="nav-group">站点</p>
+      <a href="#/site"      data-nav="site"     class="nav-item"><span>⚙️</span><span>站点设置</span></a>
+      <p class="nav-group">系统</p>
+      <a href="#/settings"  data-nav="settings" class="nav-item"><span>🧩</span><span>系统设置</span></a>
+      <a href="#/authors"   data-nav="authors"  class="nav-item"><span>👥</span><span>作者与权限</span></a>
+      <a href="#/logs"      data-nav="logs"     class="nav-item"><span>📜</span><span>操作日志</span></a>
     </nav>
 
     <div class="space-y-2 border-t border-[#f0f0f2] pt-3">
@@ -134,6 +149,7 @@ function esc(s) {
 
 function api(path, opts) {
   opts = opts || {}
+  var method = String(opts.method || 'GET').toUpperCase()
   opts.headers = Object.assign({ 'x-studio-actor': encodeURIComponent(me) }, opts.headers || {})
   if (opts.body && typeof opts.body !== 'string') {
     opts.headers['Content-Type'] = 'application/json'
@@ -142,6 +158,9 @@ function api(path, opts) {
   return fetch(path, opts).then(function (r) { return r.json() })
     .then(function (d) {
       if (!d.ok) throw new Error(d.output || '操作失败')
+      // 任何写操作都让 meta 缓存失效：免去在每个调用点手工记得刷新，
+      // 漏一处就会出现「删了文章但侧栏计数不变」这类缓存不一致
+      if (method !== 'GET') invalidateMeta()
       return d
     })
 }
@@ -182,44 +201,108 @@ var ROLE_LABEL = { admin: '管理员', editor: '编辑', author: '作者', guest
 var myRole = 'guest'
 var BLOG_URL = 'http://' + location.hostname + ':5173'
 
-/* ================= 元信息 ================= */
-function loadMeta() {
-  return api('/api/meta').then(function (d) {
-    myRole = d.me.role
-    $('meRole').textContent = '角色：' + (ROLE_LABEL[myRole] || myRole) + (myRole === 'guest' ? '（切换为名单内身份才能操作）' : '')
-    var sel = $('meSelect')
-    if (sel.options.length === 0) {
-      d.authors.forEach(function (a) {
-        var o = document.createElement('option')
-        o.value = a.name; o.textContent = a.name + ' · ' + ROLE_LABEL[a.role]
-        sel.appendChild(o)
-      })
-      sel.value = d.authors.some(function (a) { return a.name === me }) ? me : (d.authors[0] ? d.authors[0].name : '')
-      me = sel.value
-      localStorage.setItem('wf-actor', me)
-    }
-    Object.keys(d.counts).forEach(function (k) {
-      var el = document.querySelector('[data-count="' + k + '"]')
-      if (el) el.textContent = d.counts[k] || ''
-    })
-    var badge = $('pendingBadge')
-    if (d.pending > 0) { badge.textContent = d.pending; badge.classList.remove('hidden') }
-    else badge.classList.add('hidden')
-    var bs = $('blogSync')
-    if (bs && d.blog) {
-      if (d.blog.building) {
-        bs.innerHTML = '<span class="text-[#b25e02]">● 博客同步中…</span>'
-      } else if (d.blog.lastError) {
-        bs.innerHTML = '<span class="text-[#c0392b]" title="' + esc(d.blog.lastError) + '">● 博客同步失败</span>'
-      } else if (d.blog.builtAt) {
-        bs.textContent = '● 博客已同步 ' + d.blog.builtAt.slice(11, 16)
-      } else {
-        bs.textContent = '● 博客待同步'
-      }
-    }
-    return d
-  })
+/* ---- 内容区通用件：各视图共用一套页头与状态标签页，避免每处手写导致样式漂移 ---- */
+
+/** 统一页头：面包屑 + 标题 + 说明 + 右侧主操作。
+ *  o = { title, desc, actions, crumbs: [{ label, href }] }；crumbs 最后一项为当前页（无链接）。 */
+function pageHead(o) {
+  o = o || {}
+  var crumbs = ''
+  var list = o.crumbs || []
+  if (list.length) {
+    crumbs = '<nav class="mb-2 flex flex-wrap items-center">' + list.map(function (c, i) {
+      if (i === list.length - 1 || !c.href) return '<span class="crumb-now">' + esc(c.label) + '</span>'
+      return '<a class="crumb" href="' + esc(c.href) + '">' + esc(c.label) + '</a><span class="crumb-sep">/</span>'
+    }).join('') + '</nav>'
+  }
+  return '<div class="mb-5">' + crumbs +
+    '<div class="flex flex-wrap items-center justify-between gap-3">' +
+      '<div class="min-w-0">' +
+        '<h2 class="text-[22px] font-semibold tracking-tight">' + esc(o.title || '') + '</h2>' +
+        (o.desc ? '<p class="mt-0.5 max-w-4xl text-[13px] leading-relaxed text-[#86868b]">' + esc(o.desc) + '</p>' : '') +
+      '</div>' +
+      (o.actions ? '<div class="flex shrink-0 flex-wrap items-center gap-2">' + o.actions + '</div>' : '') +
+    '</div>' +
+  '</div>'
 }
+
+/** 统一主操作按钮（写新文章 / 新建页面等） */
+function primaryBtn(href, label) {
+  return '<a href="' + href + '" class="rounded-full bg-[#0071e3] px-5 py-2 text-[13.5px] font-semibold text-white shadow-[0_2px_10px_rgba(0,113,227,0.3)] hover:bg-[#0077ed]">' + label + '</a>'
+}
+
+/** 统一空状态行（表格 tbody 内） */
+function emptyRow(colspan, text) {
+  return '<tr><td colspan="' + colspan + '" class="px-5 py-14 text-center text-sm text-[#a1a1a6]">' + text + '</td></tr>'
+}
+
+/* 文章状态标签页：侧栏不再为 5 个状态各占一行，改为列表页内切换。
+ * 计数用 data-count 让 applyMeta 一起填，数字为空时由 CSS 隐藏。 */
+var LIST_STATUSES = [['all', '全部'], ['published', '已发布'], ['draft', '草稿'], ['review', '审核中'], ['offline', '已下线']]
+function statusTabs(active) {
+  return '<div class="mb-4 flex flex-wrap items-center gap-1 rounded-2xl border border-black/5 bg-white p-1.5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
+    LIST_STATUSES.map(function (s) {
+      return '<a class="status-tab' + (s[0] === active ? ' active' : '') + '" href="#/list/' + s[0] + '">' + s[1] +
+        '<span class="st-n" data-count="' + s[0] + '"></span></a>'
+    }).join('') + '</div>'
+}
+
+/* ================= 元信息 ================= */
+/* meta 是侧栏计数、列表筛选、作者名单的共同来源，几乎每个视图都要用。
+ * 加 5 秒 TTL 缓存：连续切菜单不再重复打接口（原先每切一次视图就请求一次，
+ * 是切换时"顿一下"的一环）；同时 TTL 又不至于让「博客同步中」这类状态卡在旧值上。
+ * 数据被写操作改变时，调用方用 loadMeta(true) 强制刷新。 */
+var metaCache = null, metaCacheAt = 0
+var META_TTL = 5000
+
+function applyMeta(d) {
+  myRole = d.me.role
+  $('meRole').textContent = '角色：' + (ROLE_LABEL[myRole] || myRole) + (myRole === 'guest' ? '（切换为名单内身份才能操作）' : '')
+  var sel = $('meSelect')
+  if (sel.options.length === 0) {
+    d.authors.forEach(function (a) {
+      var o = document.createElement('option')
+      o.value = a.name; o.textContent = a.name + ' · ' + ROLE_LABEL[a.role]
+      sel.appendChild(o)
+    })
+    sel.value = d.authors.some(function (a) { return a.name === me }) ? me : (d.authors[0] ? d.authors[0].name : '')
+    me = sel.value
+    localStorage.setItem('wf-actor', me)
+  }
+  Object.keys(d.counts).forEach(function (k) {
+    // 侧栏徽标与列表内的状态标签页共用同一批计数，这里必须填全部匹配项
+    document.querySelectorAll('[data-count="' + k + '"]').forEach(function (el) {
+      el.textContent = d.counts[k] || ''
+    })
+  })
+  var badge = $('pendingBadge')
+  if (d.pending > 0) { badge.textContent = d.pending; badge.classList.remove('hidden') }
+  else badge.classList.add('hidden')
+  var bs = $('blogSync')
+  if (bs && d.blog) {
+    if (d.blog.building) {
+      bs.innerHTML = '<span class="text-[#b25e02]">● 博客同步中…</span>'
+    } else if (d.blog.lastError) {
+      bs.innerHTML = '<span class="text-[#c0392b]" title="' + esc(d.blog.lastError) + '">● 博客同步失败</span>'
+    } else if (d.blog.builtAt) {
+      bs.textContent = '● 博客已同步 ' + d.blog.builtAt.slice(11, 16)
+    } else {
+      bs.textContent = '● 博客待同步'
+    }
+  }
+  return d
+}
+
+function loadMeta(force) {
+  var now = Date.now()
+  if (!metaCache || force || now - metaCacheAt > META_TTL) {
+    metaCacheAt = now
+    metaCache = api('/api/meta').catch(function (e) { metaCache = null; metaCacheAt = 0; throw e })
+  }
+  return metaCache.then(applyMeta)
+}
+
+function invalidateMeta() { metaCache = null; metaCacheAt = 0 }
 
 $('meSelect').addEventListener('change', function () {
   me = $('meSelect').value
@@ -284,13 +367,28 @@ function syncFail(msg) {
 /* ================= 路由 ================= */
 var routes = {}
 var viewSeq = 0 // 视图代数：路由切换 +1，异步回调凭票操作 DOM，防止旧视图回填新视图
+var viewCleanup = null // 视图离场清理钩子（销毁编辑器实例 / 清定时器 / 摘全局监听）
 
 function onRoute(pattern, fn) { routes[pattern] = fn }
+function onLeave(fn) { viewCleanup = fn }
+
+// 视图级粘贴钩子（编辑器封面用）：document 上只保留这一个监听，
+// 由当前视图决定要不要接管，避免每次进编辑器都往 document 叠一层。
+var viewPasteHook = null
+document.addEventListener('paste', function (e) { if (viewPasteHook) viewPasteHook(e) })
+
+// 侧栏高亮归属：list/* 与 editor/* 都算「文章」，pages/edit/x 算「自定义页面」
+function navKeyOf(hash) {
+  if (hash.indexOf('list/') === 0 || hash.indexOf('editor/') === 0) return 'list'
+  if (hash.indexOf('pages') === 0) return 'pages'
+  return hash
+}
 
 function navigate() {
   var hash = location.hash.replace(/^#\\//, '') || 'list/all'
+  var navKey = navKeyOf(hash)
   document.querySelectorAll('.nav-item').forEach(function (el) {
-    el.classList.toggle('active', el.dataset.nav === hash || (hash.indexOf('editor') === 0 && el.dataset.nav === 'list/all'))
+    el.classList.toggle('active', el.dataset.nav === navKey)
   })
   var matched = null, arg = ''
   for (var key in routes) {
@@ -298,6 +396,12 @@ function navigate() {
     if (key.endsWith('/*') && hash.indexOf(key.slice(0, -2)) === 0) {
       matched = routes[key]; arg = hash.slice(key.length - 1); break
     }
+  }
+  // 先清理上一视图再挂新视图：编辑器不销毁 Vditor 的话，进出几次就累积
+  // 出一堆实例与全局监听（切换时的卡顿主要来自这里）
+  if (viewCleanup) {
+    try { viewCleanup() } catch (e) { /* 清理失败不能挡住导航 */ }
+    viewCleanup = null
   }
   viewSeq++
   view.className = 'w-full' // 全视图统一：内容区占满主区，不留空白
@@ -308,18 +412,19 @@ $('syncPanelClose').addEventListener('click', function () { $('syncPanel').class
 window.addEventListener('hashchange', navigate)
 
 /* ================= 视图：文章列表 ================= */
-var listState = { q: '', category: '', tag: '', sort: '', selected: new Set(), page: 1, pageSize: 0 }
+var listState = { q: '', category: '', tag: '', sort: '', selected: new Set(), page: 1, pageSize: 0, rows: [] }
 var pageSizes = [5, 10, 20, 50] // 档位以后台「系统设置」为准，meta 加载后覆盖
 
 onRoute('list/*', function (status) {
   status = status || 'all'
   var seq = viewSeq
   view.innerHTML =
-    '<div class="mb-5 flex flex-wrap items-center justify-between gap-3">' +
-      '<div><h2 class="text-[22px] font-semibold tracking-tight">文章管理</h2>' +
-      '<p class="mt-0.5 text-[13px] text-[#86868b]">状态、置顶、推荐、分类、SEO、定时上下线，全在这里</p></div>' +
-      '<a href="#/editor/new" class="rounded-full bg-[#0071e3] px-5 py-2 text-[13.5px] font-semibold text-white shadow-[0_2px_10px_rgba(0,113,227,0.3)] hover:bg-[#0077ed]">＋ 写新文章</a>' +
-    '</div>' +
+    pageHead({
+      title: '文章',
+      desc: '状态、置顶、推荐、分类、SEO、定时上下线，全在这里',
+      actions: primaryBtn('#/editor/new', '＋ 写新文章'),
+    }) +
+    statusTabs(status) +
     '<div class="mb-4 flex flex-wrap items-center gap-2.5 rounded-2xl border border-black/5 bg-white p-3.5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
       '<input id="fq" placeholder="搜索标题 / 摘要 / 标签 / 关键词…" class="min-w-[220px] flex-1 rounded-lg border border-[#d2d2d7] px-3 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" value="' + esc(listState.q) + '" />' +
       '<select id="fcat" class="rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13px] outline-none focus:border-[#0071e3]"><option value="">全部分类</option></select>' +
@@ -404,7 +509,8 @@ function renderRows(status) {
       '<th class="px-4 py-2.5 text-right">操作</th></tr>'
 
     if (!arts.length) {
-      $('tbody').innerHTML = '<tr><td colspan="7" class="px-4 py-14 text-center text-sm text-[#a1a1a6]">这里空空如也</td></tr>'
+      listState.rows = []
+      $('tbody').innerHTML = emptyRow(7, '这里空空如也')
       updateBatchBar()
       return
     }
@@ -443,31 +549,47 @@ function renderRows(status) {
         '<td class="px-4 py-3">' + ops + '</td></tr>'
     }).join('')
 
-    $('checkAll').addEventListener('change', function () {
-      var on = $('checkAll').checked
-      arts.forEach(function (a) { if (on) listState.selected.add(a.file); else listState.selected.delete(a.file) })
-      document.querySelectorAll('.row-check').forEach(function (c) { c.checked = on })
-      updateBatchBar()
-    })
-    document.querySelectorAll('.row-check').forEach(function (c) {
-      c.addEventListener('change', function () {
+    listState.rows = arts
+    // 表格事件委托：整表只绑一次（dataset 打标记防重复）。
+    // 原先每行 2~5 个按钮各自 addEventListener，而且 renderRows 每次重跑（筛选/翻页）
+    // 都会再绑一轮，监听器只增不减 —— 这也是切换时顿一下的来源之一。
+    var tb = $('tbody')
+    if (!tb.dataset.wired) {
+      tb.dataset.wired = '1'
+      tb.addEventListener('click', function (e) {
+        var flagBtn = e.target.closest('[data-flag]')
+        if (flagBtn) {
+          var f = flagBtn.dataset.flag
+          var patch = {}; patch[f] = flagBtn.dataset.on !== 'true'
+          api('/api/article/' + encodeURIComponent(flagBtn.dataset.file) + '/flags', { method: 'POST', body: patch })
+            .then(function () { toast(f === 'pinned' ? '置顶已更新' : '推荐已更新'); loadMeta(true); renderRows(status) })
+            .catch(function (e2) { toast(e2.message, true) })
+          return
+        }
+        var actBtn = e.target.closest('[data-act]')
+        if (actBtn) rowAction(actBtn.dataset.act, actBtn.dataset.file)
+      })
+      tb.addEventListener('change', function (e) {
+        var c = e.target.closest('.row-check')
+        if (!c) return
         if (c.checked) listState.selected.add(c.dataset.check)
         else listState.selected.delete(c.dataset.check)
         updateBatchBar()
       })
-    })
-    document.querySelectorAll('[data-act]').forEach(function (btn) {
-      btn.addEventListener('click', function () { rowAction(btn.dataset.act, btn.dataset.file) })
-    })
-    document.querySelectorAll('[data-flag]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var f = btn.dataset.flag
-        var patch = {}; patch[f] = btn.dataset.on !== 'true'
-        api('/api/article/' + encodeURIComponent(btn.dataset.file) + '/flags', { method: 'POST', body: patch })
-          .then(function () { toast(f === 'pinned' ? '置顶已更新' : '推荐已更新'); loadMeta(); renderRows(status) })
-          .catch(function (e) { toast(e.message, true) })
+    }
+    var thead = $('thead')
+    if (!thead.dataset.wired) {
+      thead.dataset.wired = '1'
+      thead.addEventListener('change', function (e) {
+        if (!e.target.closest('#checkAll')) return
+        var on = e.target.checked
+        ;(listState.rows || []).forEach(function (a) {
+          if (on) listState.selected.add(a.file); else listState.selected.delete(a.file)
+        })
+        document.querySelectorAll('.row-check').forEach(function (c) { c.checked = on })
+        updateBatchBar()
       })
-    })
+    }
     updateBatchBar()
   })
 }
@@ -611,12 +733,12 @@ onRoute('editor/*', function (file) {
           '<button id="eDraftDrop" class="rounded-full border border-[#d2d2d7] px-3.5 py-1 text-[12px] hover:bg-white">丢弃</button>' +
         '</div>' +
       '</div>' +
-      '<div class="mb-5 flex flex-wrap items-center justify-between gap-3">' +
-        '<div class="flex items-center gap-3"><a href="#/list/all" class="rounded-full border border-[#d2d2d7] bg-white px-3.5 py-1.5 text-[12.5px] hover:bg-[#f5f5f7]">← 返回</a>' +
-        '<h2 class="text-[20px] font-semibold tracking-tight">' + (isNew ? '写新文章' : '编辑文章') + '</h2>' +
-        (isNew ? '' : '<span class="rounded-full px-2.5 py-1 text-[11.5px] font-medium ' + STATUS_STYLE[a.status] + '">' + STATUS_LABEL[a.status] + '</span>') +
-        (a.status === 'published' ? '<a id="eViewBlog" href="' + BLOG_URL + '/post/' + encodeURIComponent(a.slug) + '" target="_blank" class="text-[12.5px] text-[#0071e3] hover:underline">在博客预览 ↗</a>' : '') + '</div>' +
-      '</div>' +
+      pageHead({
+        crumbs: [{ label: '文章', href: '#/list/all' }, { label: isNew ? '写新文章' : esc(a.title || '无标题') }],
+        title: isNew ? '写新文章' : '编辑文章',
+        actions: (isNew ? '' : '<span class="rounded-full px-2.5 py-1 text-[11.5px] font-medium ' + STATUS_STYLE[a.status] + '">' + STATUS_LABEL[a.status] + '</span>') +
+          (a.status === 'published' ? '<a id="eViewBlog" href="' + BLOG_URL + '/post/' + encodeURIComponent(a.slug) + '" target="_blank" class="text-[12.5px] text-[#0071e3] hover:underline">在博客预览 ↗</a>' : ''),
+      }) +
 
       '<div class="space-y-5">' +
         '<div class="space-y-5">' +
@@ -630,10 +752,10 @@ onRoute('editor/*', function (file) {
                 '<p class="text-[13px] font-medium text-[#1d1d1f]">点击选择图片，或拖拽 / Ctrl+V 粘贴到这里</p>' +
                 '<p class="text-[11.5px] text-[#86868b]">支持 JPG / PNG / WebP / GIF / AVIF · 不超过 10MB</p>' +
               '</div>' +
-              '<span id="eCoverBadge" class="absolute left-3 top-3 hidden rounded-full bg-black/50 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-sm"></span>' +
+              '<span id="eCoverBadge" class="absolute left-3 top-3 hidden rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white"></span>' +
               '<div id="eCoverActions" class="absolute bottom-3 right-3 hidden gap-2">' +
-                '<button id="eCoverSwap" class="rounded-full bg-white/95 px-3.5 py-1.5 text-[12px] font-medium text-[#1d1d1f] shadow-sm backdrop-blur transition-colors hover:bg-white">更换</button>' +
-                '<button id="eCoverDel" class="rounded-full bg-white/95 px-3.5 py-1.5 text-[12px] font-medium text-[#c0392b] shadow-sm backdrop-blur transition-colors hover:bg-[#fff5f4]">移除</button>' +
+                '<button id="eCoverSwap" class="rounded-full bg-white px-3.5 py-1.5 text-[12px] font-medium text-[#1d1d1f] shadow-sm transition-colors hover:bg-[#f5f5f7]">更换</button>' +
+                '<button id="eCoverDel" class="rounded-full bg-white px-3.5 py-1.5 text-[12px] font-medium text-[#c0392b] shadow-sm transition-colors hover:bg-[#fff5f4]">移除</button>' +
               '</div>' +
             '</div>' +
             '<p id="eCoverMeta" class="mt-2.5 truncate text-[11.5px] text-[#a1a1a6]">未设置</p>' +
@@ -698,7 +820,8 @@ onRoute('editor/*', function (file) {
         '</div>' +
       '</div>' +
 
-      '<div class="sticky bottom-4 z-10 mt-5 flex flex-wrap items-center gap-3 rounded-2xl border border-black/5 bg-white/95 px-5 py-3.5 shadow-[0_4px_24px_rgba(0,0,0,0.1)] backdrop-blur">' +
+      // 底栏不再用 backdrop-blur：半透明毛玻璃在滚动时每帧重算背景，是编辑器里最明显的一处掉帧
+      '<div class="sticky bottom-4 z-10 mt-5 flex flex-wrap items-center gap-3 rounded-2xl border border-black/5 bg-white px-5 py-3.5 shadow-[0_4px_24px_rgba(0,0,0,0.1)]">' +
         '<span id="eMsg" class="text-[13px] text-[#1d7a35]"></span>' +
         '<div class="ml-auto flex flex-wrap gap-2.5">' +
           '<button id="eSave" class="rounded-full bg-[#1d1d1f] px-6 py-2.5 text-[13.5px] font-semibold text-white hover:opacity-85 disabled:opacity-50">保存</button>' +
@@ -812,8 +935,9 @@ onRoute('editor/*', function (file) {
       })
     })()
     // Ctrl+V 粘贴截图：只在非输入焦点时接管（不干扰 Vditor 正文粘贴）
-    document.addEventListener('paste', function (e) {
-      if (seq !== viewSeq) return // 旧视图的监听直接作废
+    // 注意这里是「登记视图钩子」而不是直接绑 document —— 原先每进一次编辑器就往
+    // document 上叠一个 paste 监听且永不摘除，进出几次后一次粘贴会触发一串回调
+    viewPasteHook = function (e) {
       var t = e.target
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
       var items = e.clipboardData && e.clipboardData.items
@@ -831,7 +955,7 @@ onRoute('editor/*', function (file) {
           return
         }
       }
-    })
+    }
     renderCover()
 
     /* ---- 写作助手：Vditor 富文本编辑 / 统计 / 发布检查 / 本地草稿 ---- */
@@ -956,6 +1080,18 @@ onRoute('editor/*', function (file) {
         fallbackToTextarea('（编辑器初始化异常，已降级为纯文本输入）')
       }
     }
+
+    // 离开编辑器时收拾干净 —— 这是切换卡顿的主因：Vditor 实例不 destroy，
+    // 它的全局监听与内部 DOM 就一直挂着，每进出一次多留一份，切几轮后明显发顿。
+    onLeave(function () {
+      if (vd && typeof vd.destroy === 'function') {
+        try { vd.destroy() } catch (e) { /* 实例状态异常也要放行导航 */ }
+      }
+      vd = null
+      clearTimeout(draftTimer)
+      viewPasteHook = null
+      editDirty = false
+    })
 
     function onContentChange(v) {
       markDirty()
@@ -1159,8 +1295,7 @@ function field(label, control, extra) {
 /* ================= 视图：回收站 ================= */
 onRoute('trash', function () {
   api('/api/trash').then(function (d) {
-    view.innerHTML = '<h2 class="mb-1 text-[22px] font-semibold tracking-tight">回收站</h2>' +
-      '<p class="mb-5 text-[13px] text-[#86868b]">删除的文章在这里，可恢复；彻底删除不可恢复（仅管理员）</p>' +
+    view.innerHTML = pageHead({ title: '回收站', desc: '删除的文章在这里，可恢复；彻底删除不可恢复（仅管理员）' }) +
       '<div class="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]"><div class="overflow-x-auto"><table class="w-full text-left text-[13.5px]"><tbody>' +
       (d.trash.length ? d.trash.map(function (t) {
         return '<tr class="border-b border-[#f0f0f2] last:border-0">' +
@@ -1170,7 +1305,7 @@ onRoute('trash', function () {
           '<button data-restore="' + esc(t.trashName) + '" class="rounded-full border border-[#0071e3] px-3.5 py-1 text-[12px] text-[#0071e3] hover:bg-[#e8f1fd]">恢复</button>' +
           (myRole === 'admin' ? '<button data-purge="' + esc(t.trashName) + '" class="rounded-full border border-[#f0d0d0] px-3.5 py-1 text-[12px] text-[#c0392b] hover:bg-[#fdecec]">彻底删除</button>' : '') +
           '</div></td></tr>'
-      }).join('') : '<tr><td class="px-5 py-14 text-center text-sm text-[#a1a1a6]">回收站是空的</td></tr>') +
+      }).join('') : emptyRow(2, '回收站是空的')) +
       '</tbody></table></div></div>'
 
     d.trash.forEach(function (t) {
@@ -1226,16 +1361,16 @@ onRoute('pages', function () {
         '</div></td></tr>'
     })
     view.innerHTML =
-      '<div class="mb-5 flex flex-wrap items-center justify-between gap-3">' +
-        '<div><h2 class="text-[22px] font-semibold tracking-tight">自定义页面</h2>' +
-        '<p class="mt-0.5 text-[13px] text-[#86868b]">独立于文章的静态页。前台可访问 = 已发布 且（已加入导航菜单 或 开启「允许直接访问」），两者都没有则 /page/slug 返回 404</p></div>' +
-        (canEdit ? '<a href="#/pages/new" class="rounded-full bg-[#0071e3] px-5 py-2 text-[13.5px] font-semibold text-white shadow-[0_2px_10px_rgba(0,113,227,0.3)] hover:bg-[#0077ed]">＋ 新建页面</a>' : '') +
-      '</div>' +
+      pageHead({
+        title: '自定义页面',
+        desc: '独立于文章的静态页。前台可访问 = 已发布 且（已加入导航菜单 或 开启「允许直接访问」），两者都没有则 /page/slug 返回 404',
+        actions: canEdit ? primaryBtn('#/pages/new', '＋ 新建页面') : '',
+      }) +
       '<div class="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]"><div class="overflow-x-auto"><table class="w-full text-left text-[13.5px]">' +
         '<thead class="bg-[#fafafa] text-[12px] text-[#86868b]"><tr>' +
           '<th class="px-5 py-3 font-medium">页面</th><th class="px-5 py-3 font-medium">状态</th><th class="px-5 py-3 font-medium">更新时间</th><th class="px-5 py-3 text-right font-medium">操作</th>' +
         '</tr></thead><tbody>' +
-        (rows.length ? rows.join('') : '<tr><td colspan="4" class="px-5 py-14 text-center text-sm text-[#a1a1a6]">还没有自定义页面' + (canEdit ? '，点右上角「新建页面」创建' : '') + '</td></tr>') +
+        (rows.length ? rows.join('') : emptyRow(4, '还没有自定义页面' + (canEdit ? '，点右上角「新建页面」创建' : ''))) +
       '</tbody></table></div></div>'
 
     d.pages.forEach(function (p) {
@@ -1265,10 +1400,10 @@ onRoute('pages/*', function (arg) {
   var load = isNew ? Promise.resolve({ page: null }) : api('/api/pages/' + encodeURIComponent(slug))
 
   view.innerHTML =
-    '<div class="mb-5 flex flex-wrap items-center justify-between gap-3">' +
-      '<div><a href="#/pages" class="text-[13px] text-[#0071e3] hover:underline">← 返回列表</a>' +
-      '<h2 class="mt-1 text-[22px] font-semibold tracking-tight">' + (isNew ? '新建页面' : '编辑页面') + '</h2></div>' +
-    '</div>' +
+    pageHead({
+      crumbs: [{ label: '自定义页面', href: '#/pages' }, { label: isNew ? '新建页面' : (slug || '编辑页面') }],
+      title: isNew ? '新建页面' : '编辑页面',
+    }) +
     '<div class="w-full rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
       '<div class="grid gap-4 md:grid-cols-3">' +
         '<label class="block text-[12.5px] text-[#6e6e73] md:col-span-2">页面标题' +
@@ -1403,8 +1538,7 @@ onRoute('taxonomy', function () {
         }).join('') : '<p class="py-4 text-center text-[13px] text-[#a1a1a6]">暂无</p>') +
         '</div></div>'
     }
-    view.innerHTML = '<h2 class="mb-1 text-[22px] font-semibold tracking-tight">分类与标签</h2>' +
-      '<p class="mb-5 text-[13px] text-[#86868b]">重命名会全站同步更新所有文章</p>' +
+    view.innerHTML = pageHead({ title: '分类与标签', desc: '重命名会全站同步更新所有文章' }) +
       '<div class="grid grid-cols-1 gap-5 md:grid-cols-2">' +
       block('分类（单分类体系）', 'category', meta.taxonomy.categories) +
       block('标签（多标签体系）', 'tag', meta.taxonomy.tags) + '</div>'
@@ -1425,8 +1559,7 @@ onRoute('taxonomy', function () {
 onRoute('authors', function () {
   api('/api/authors').then(function (d) {
     var isAdmin = d.me.role === 'admin'
-    view.innerHTML = '<h2 class="mb-1 text-[22px] font-semibold tracking-tight">作者与权限</h2>' +
-      '<p class="mb-5 text-[13px] text-[#86868b]">本地工具无登录体系，身份用于操作授权与日志追溯（管理员 / 编辑 / 作者）</p>' +
+    view.innerHTML = pageHead({ title: '作者与权限', desc: '本地工具无登录体系，身份用于操作授权与日志追溯（管理员 / 编辑 / 作者）' }) +
       '<div class="rounded-2xl border border-black/5 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]"><div class="overflow-x-auto"><table class="w-full text-left text-[13.5px]"><thead class="bg-[#fafafa] text-[12px] text-[#86868b]"><tr>' +
       '<th class="px-5 py-2.5">作者</th><th class="px-3 py-2.5">角色</th><th class="px-3 py-2.5">权限说明</th><th class="px-5 py-2.5 text-right">操作</th></tr></thead><tbody>' +
       d.authors.map(function (a) {
@@ -1464,8 +1597,7 @@ onRoute('authors', function () {
 /* ================= 视图：操作日志 ================= */
 onRoute('logs', function () {
   api('/api/logs?limit=300').then(function (d) {
-    view.innerHTML = '<h2 class="mb-1 text-[22px] font-semibold tracking-tight">操作日志</h2>' +
-      '<p class="mb-5 text-[13px] text-[#86868b]">最近 ' + d.logs.length + ' 条，新到旧；jsonl 追加存储于 .studio/logs.jsonl</p>' +
+    view.innerHTML = pageHead({ title: '操作日志', desc: '最近 ' + d.logs.length + ' 条，新到旧；jsonl 追加存储于 .studio/logs.jsonl' }) +
       '<div class="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]"><div class="overflow-x-auto"><table class="w-full text-left text-[12.5px]"><thead class="bg-[#fafafa] text-[11.5px] text-[#86868b]"><tr>' +
       '<th class="px-5 py-2.5">时间</th><th class="px-3 py-2.5">身份</th><th class="px-3 py-2.5">动作</th><th class="px-3 py-2.5">对象</th><th class="px-5 py-2.5">详情</th></tr></thead><tbody>' +
       (d.logs.length ? d.logs.map(function (l) {
@@ -1475,7 +1607,7 @@ onRoute('logs', function () {
           '<td class="px-3 py-2.5"><span class="rounded-full bg-[#f0f0f2] px-2 py-0.5 font-mono text-[11px]">' + esc(l.action) + '</span></td>' +
           '<td class="max-w-[220px] truncate px-3 py-2.5 font-mono text-[11.5px] xl:max-w-[420px]">' + esc(l.target) + '</td>' +
           '<td class="px-5 py-2.5 text-[#6e6e73]">' + esc(l.detail) + '</td></tr>'
-      }).join('') : '<tr><td colspan="5" class="px-5 py-14 text-center text-sm text-[#a1a1a6]">还没有操作记录</td></tr>') +
+      }).join('') : emptyRow(5, '还没有操作记录')) +
       '</tbody></table></div></div>'
   }).catch(function (e) {
     view.innerHTML = '<p class="text-sm text-[#c0392b]">' + esc(e.message) + '</p>'
@@ -1524,8 +1656,10 @@ onRoute('site', function () {
     var saveRow = readOnly ? '' : '<div class="mt-5 flex justify-end border-t border-[#f0f0f2] pt-4">' +
       '<button type="button" class="site-save rounded-full bg-[#1d1d1f] px-6 py-2.5 text-[13.5px] font-semibold text-white hover:opacity-85">保存站点设置</button>' +
     '</div>'
-    view.innerHTML = '<h2 class="mb-1 text-[22px] font-semibold tracking-tight">站点设置</h2>' +
-      '<p class="mb-4 text-[13px] text-[#86868b]">按标签页分区，改完点该标签页里的「保存站点设置」。四个标签页是同一份配置，一次保存全部字段，切页不会丢改动。本地博客即时生效（dev HMR），线上随下次发布上线</p>' +
+    view.innerHTML = pageHead({
+      title: '站点设置',
+      desc: '按标签页分区，改完点该标签页里的「保存站点设置」。四个标签页是同一份配置，一次保存全部字段，切页不会丢改动。本地博客即时生效（dev HMR），线上随下次发布上线',
+    }) +
       (readOnly ? '<p class="mb-4 rounded-lg bg-[#fdf6ec] px-4 py-2.5 text-[13px] text-[#8a6d1a]">当前身份只读，站点设置仅管理员/编辑可修改</p>' : '') +
       '<div class="mb-4 flex flex-wrap items-center gap-2">' +
         TAB_DEFS.map(function (t) {
@@ -1801,8 +1935,7 @@ onRoute('settings', function () {
     var cfgSizes = Array.isArray(pg.sizes) && pg.sizes.length ? pg.sizes : [5, 10, 20, 50]
     var cfgDefault = pg.defaultSize || 10
     var CANDIDATES = [5, 10, 20, 50, 100] // 可勾选的档位候选
-    view.innerHTML = '<h2 class="mb-1 text-[22px] font-semibold tracking-tight">系统设置</h2>' +
-      '<p class="mb-5 text-[13px] text-[#86868b]">后台界面的行为配置，保存后所有电脑打开后台都生效（不再依赖浏览器本地记忆）</p>' +
+    view.innerHTML = pageHead({ title: '系统设置', desc: '后台界面的行为配置，保存后所有电脑打开后台都生效（不再依赖浏览器本地记忆）' }) +
       (readOnly ? '<p class="mb-4 rounded-lg bg-[#fdf6ec] px-4 py-2.5 text-[13px] text-[#8a6d1a]">当前身份只读，系统设置仅管理员/编辑可修改</p>' : '') +
       '<div class="w-full rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
         '<p class="mb-1 text-[13px] font-semibold text-[#6e6e73]">文章列表翻页</p>' +
