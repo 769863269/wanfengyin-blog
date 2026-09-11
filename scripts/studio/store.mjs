@@ -12,6 +12,7 @@ import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseFrontmatter } from '../lib/markdown.mjs'
 import { stringifyFrontmatter } from '../lib/frontmatter.mjs'
+import { navReferencedSlugs, isPageReachable, isTrue } from '../lib/nav.mjs'
 
 const root = dirname(dirname(dirname(fileURLToPath(import.meta.url))))
 const articlesDir = join(root, 'articles')
@@ -818,9 +819,35 @@ function pagePath(slug) {
   return join(pagesDir, slug + '.md')
 }
 
+/** 当前被导航菜单引用的 slug 集合（可达性判定用；site.json 损坏时视为空集） */
+export function navRefSlugs() {
+  try {
+    return navReferencedSlugs(readSiteConfig())
+  } catch {
+    return new Set()
+  }
+}
+
+/**
+ * 页面可达性 + 上线方式（后台列表与编辑器共用）。
+ * reachable 为假时不注册前台路由 → /page/<slug> 返回 404。
+ */
+function pageAccess(slug, status, directAccess, navSlugs) {
+  const reachable = isPageReachable({ slug, status, directAccess }, navSlugs)
+  return {
+    directAccess,
+    referenced: navSlugs.has(slug),
+    reachable,
+    // 上线方式：menu（靠菜单） / direct（靠直链） / ''（未上线）
+    access: reachable ? (directAccess ? 'direct' : 'menu') : '',
+    url: `/page/${slug}`,
+  }
+}
+
 /** 列出全部自定义页面（含草稿），按 slug 排序 */
 export function listPages() {
   if (!existsSync(pagesDir)) return []
+  const navSlugs = navRefSlugs()
   return readdirSync(pagesDir)
     .filter((n) => n.endsWith('.md') && !n.startsWith('_'))
     .sort()
@@ -828,13 +855,15 @@ export function listPages() {
       const slug = n.replace(/\.md$/, '')
       try {
         const { data, body } = parseFrontmatter(readFileSync(pagePath(slug), 'utf8'))
+        const status = data.status ?? 'published'
         return {
           slug,
           title: String(data.title ?? ''),
           description: String(data.description ?? ''),
-          status: data.status ?? 'published',
+          status,
           bodyLength: (body || '').length,
           updatedAt: statSync(pagePath(slug)).mtime.toISOString(),
+          ...pageAccess(slug, status, isTrue(data.directAccess), navSlugs),
         }
       } catch {
         return { slug, title: '', description: '', status: 'published', bodyLength: 0, updatedAt: '', error: '解析失败' }
@@ -848,17 +877,19 @@ export function readPage(slug) {
   const file = pagePath(slug)
   if (!existsSync(file)) return null
   const { data, body } = parseFrontmatter(readFileSync(file, 'utf8'))
+  const status = data.status ?? 'published'
   return {
     slug,
     title: String(data.title ?? ''),
     description: String(data.description ?? ''),
-    status: data.status ?? 'published',
+    status,
     body: body || '',
     updatedAt: statSync(file).mtime.toISOString(),
+    ...pageAccess(slug, status, isTrue(data.directAccess), navRefSlugs()),
   }
 }
 
-/** 保存页面（新建 / 更新一体）：校验后落盘，返回 { slug, created } */
+/** 保存页面（新建 / 更新一体）：校验后落盘，返回 { slug, created, ...可达性 } */
 export function savePage(input) {
   const slug = String(input.slug ?? '').trim()
   assertSlug(slug)
@@ -869,13 +900,17 @@ export function savePage(input) {
   if (description.length > 160) throw new Error('SEO 描述最长 160 字')
   const status = input.status ?? 'published'
   if (!['draft', 'published'].includes(status)) throw new Error('状态只能是 draft 或 published')
+  const directAccess = isTrue(input.directAccess)
   const body = String(input.body ?? '')
   if (body.length > 100_000) throw new Error('正文过长（上限 10 万字符）')
 
   const file = pagePath(slug)
   const created = !existsSync(file)
-  writeFileSync(file, stringifyFrontmatter({ title, description, status }, body), 'utf8')
-  return { slug, created }
+  // 只有开启直链才写该字段：关闭 = 文件里没有这行，保持 frontmatter 干净
+  const front = { title, description, status }
+  if (directAccess) front.directAccess = 'true'
+  writeFileSync(file, stringifyFrontmatter(front, body), 'utf8')
+  return { slug, created, status, ...pageAccess(slug, status, directAccess, navRefSlugs()) }
 }
 
 /** 删除页面文件（物理删除；自定义页面无需回收站） */

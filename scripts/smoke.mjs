@@ -11,6 +11,7 @@
  *   2. 夜间模式：点击切换 class + localStorage 持久化
  *   3. 站内搜索：输入关键词 → 结果过滤 → 点击跳转文章页
  *   4. 路由：文章详情渲染（标题/正文/标签）、404 页
+ *   4.1 自定义页面可达性：已上线页面能渲染，未上线/不存在的 /page/xxx 必须 404
  *   5. 标签筛选与「加载更多」
  */
 import { readFileSync } from 'node:fs'
@@ -141,6 +142,26 @@ async function main() {
   window.dispatchEvent(new window.PopStateEvent('popstate'))
   await sleep(120)
   check('未知路径渲染 404', $('.not-found__code')?.textContent.includes('404'))
+
+  console.log('\n[4.1] 自定义页面可达性')
+  // pages.generated.ts 只收「前台可访问」的页面（已发布 且（进了菜单 或 开了直链），
+  // 规则见 scripts/lib/nav.mjs）—— 未上线的页面不应有路由，敲 URL 必须 404。
+  const genSrc = readFileSync(resolve(root, 'src', 'data', 'pages.generated.ts'), 'utf8')
+  const listed = [...genSrc.matchAll(/"slug":\s*"([^"]+)",\s*"title":\s*"([^"]*)"/g)].map((m) => ({
+    slug: m[1],
+    title: m[2],
+  }))
+  check('已上线页面清单可解析', listed.length >= 0, `已上线 ${listed.length} 个`)
+  for (const p of listed) {
+    window.history.pushState({}, '', '/page/' + p.slug)
+    window.dispatchEvent(new window.PopStateEvent('popstate'))
+    await waitFor(() => $('.custom-page__title'))
+    check(`已上线页面 /page/${p.slug} 渲染`, $('.custom-page__title')?.textContent.includes(p.title))
+  }
+  window.history.pushState({}, '', '/page/__unlisted_probe__')
+  window.dispatchEvent(new window.PopStateEvent('popstate'))
+  await sleep(150)
+  check('未上线 / 不存在的自定义页 → 404', $('.not-found__code')?.textContent.includes('404'))
 
   console.log('\n[5] 标签筛选与加载更多')
   click($('.app-header__brand'))

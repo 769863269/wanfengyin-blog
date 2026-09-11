@@ -1135,7 +1135,13 @@ onRoute('trash', function () {
 })
 
 /* ================= 视图：自定义页面 ================= */
-var PAGE_STATUS_LABEL = { draft: '草稿', published: '已发布' }
+
+// 页面状态徽标：草稿 / 未上线（已发布但没进菜单也没开直链）/ 已发布
+function pageBadge(p) {
+  if (p.status !== 'published') return { text: '草稿', cls: 'bg-[#f0f0f2] text-[#6e6e73]' }
+  if (!p.reachable) return { text: '未上线', cls: 'bg-[#fdf3e6] text-[#9a6400]' }
+  return { text: p.directAccess ? '已发布 · 直链' : '已发布', cls: 'bg-[#e8f3ec] text-[#1d7a35]' }
+}
 
 onRoute('pages', function () {
   var seq = viewSeq
@@ -1143,21 +1149,25 @@ onRoute('pages', function () {
   api('/api/pages').then(function (d) {
     if (seq !== viewSeq) return
     var rows = d.pages.map(function (p) {
+      var badge = pageBadge(p)
+      var sub = '/page/' + esc(p.slug)
+      if (p.error) sub += ' · ⚠ ' + esc(p.error)
+      else if (p.status === 'published' && !p.reachable) sub += ' · 未上线：没进菜单也没开直链 → 前台 404'
       return '<tr class="border-b border-[#f0f0f2] last:border-0">' +
         '<td class="px-5 py-3.5"><div class="font-medium">' + esc(p.title || '(无标题)') + '</div>' +
-        '<div class="text-[11.5px] text-[#a1a1a6]">/page/' + esc(p.slug) + (p.error ? ' · ⚠ ' + esc(p.error) : '') + '</div></td>' +
-        '<td class="px-5 py-3.5"><span class="rounded-full px-2.5 py-1 text-[11.5px] font-medium ' + (p.status === 'published' ? 'bg-[#e8f3ec] text-[#1d7a35]' : 'bg-[#f0f0f2] text-[#6e6e73]') + '">' + (PAGE_STATUS_LABEL[p.status] || p.status) + '</span></td>' +
+        '<div class="text-[11.5px] text-[#a1a1a6]">' + sub + '</div></td>' +
+        '<td class="px-5 py-3.5"><span class="rounded-full px-2.5 py-1 text-[11.5px] font-medium ' + badge.cls + '">' + badge.text + '</span></td>' +
         '<td class="px-5 py-3.5 text-[12px] text-[#86868b]">' + (p.updatedAt ? esc(p.updatedAt.slice(0, 16).replace('T', ' ')) : '-') + '</td>' +
         '<td class="px-5 py-3.5 text-right"><div class="flex justify-end gap-2">' +
         (canEdit ? '<button data-edit="' + esc(p.slug) + '" class="rounded-full border border-[#0071e3] px-3.5 py-1 text-[12px] text-[#0071e3] hover:bg-[#e8f1fd]">编辑</button>' : '') +
-        (p.status === 'published' ? '<button data-view="' + esc(p.slug) + '" class="rounded-full border border-[#d2d2d7] px-3.5 py-1 text-[12px] text-[#6e6e73] hover:border-[#0071e3] hover:text-[#0071e3]">前台查看</button>' : '') +
+        (p.reachable ? '<button data-view="' + esc(p.slug) + '" class="rounded-full border border-[#d2d2d7] px-3.5 py-1 text-[12px] text-[#6e6e73] hover:border-[#0071e3] hover:text-[#0071e3]">前台查看</button>' : '') +
         (canEdit ? '<button data-del="' + esc(p.slug) + '" data-title="' + esc(p.title) + '" class="rounded-full border border-[#f0d0d0] px-3.5 py-1 text-[12px] text-[#c0392b] hover:bg-[#fdecec]">删除</button>' : '') +
         '</div></td></tr>'
     })
     view.innerHTML =
       '<div class="mb-5 flex flex-wrap items-center justify-between gap-3">' +
         '<div><h2 class="text-[22px] font-semibold tracking-tight">自定义页面</h2>' +
-        '<p class="mt-0.5 text-[13px] text-[#86868b]">独立于文章的静态页（关于页之外的补充页）。发布后前台 /page/slug 可访问，导航菜单「页面」下拉自动可选</p></div>' +
+        '<p class="mt-0.5 text-[13px] text-[#86868b]">独立于文章的静态页。前台可访问 = 已发布 且（已加入导航菜单 或 开启「允许直接访问」），两者都没有则 /page/slug 返回 404</p></div>' +
         (canEdit ? '<a href="#/pages/new" class="rounded-full bg-[#0071e3] px-5 py-2 text-[13.5px] font-semibold text-white shadow-[0_2px_10px_rgba(0,113,227,0.3)] hover:bg-[#0077ed]">＋ 新建页面</a>' : '') +
       '</div>' +
       '<div class="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)]"><div class="overflow-x-auto"><table class="w-full text-left text-[13.5px]">' +
@@ -1171,7 +1181,7 @@ onRoute('pages', function () {
       var e = document.querySelector('[data-edit="' + p.slug + '"]')
       if (e) e.onclick = function () { location.hash = '#/pages/edit/' + encodeURIComponent(p.slug) }
       var v = document.querySelector('[data-view="' + p.slug + '"]')
-      if (v) v.onclick = function () { window.open('http://127.0.0.1:5173/page/' + encodeURIComponent(p.slug), '_blank') }
+      if (v) v.onclick = function () { window.open(BLOG_URL + '/page/' + encodeURIComponent(p.slug), '_blank') }
       var del = document.querySelector('[data-del="' + p.slug + '"]')
       if (del) del.onclick = function () {
         confirmBox('删除页面「' + (p.title || p.slug) + '」？', '文件物理删除不可恢复；引用它的导航菜单项保存站点设置时会提示失效', function () {
@@ -1190,6 +1200,7 @@ onRoute('pages/*', function (arg) {
   if (!canEdit) { view.innerHTML = '<p class="text-sm text-[#86868b]">自定义页面仅管理员/编辑可操作</p>'; return }
   var isNew = arg === 'new'
   var slug = isNew ? '' : decodeURIComponent(String(arg).replace('edit/', ''))
+  var referenced = false // 当前是否已被导航菜单引用（load 后回填）
   var load = isNew ? Promise.resolve({ page: null }) : api('/api/pages/' + encodeURIComponent(slug))
 
   view.innerHTML =
@@ -1206,7 +1217,13 @@ onRoute('pages/*', function (arg) {
         '<label class="block text-[12.5px] text-[#6e6e73] md:col-span-2">SEO 描述（选填，最长 160 字）' +
           '<input id="pgDesc" type="text" class="mt-1 w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" /></label>' +
         '<label class="block text-[12.5px] text-[#6e6e73]">状态' +
-          '<select id="pgStatus" class="mt-1 w-40 rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"><option value="published">已发布（前台可见，菜单可选）</option><option value="draft">草稿（仅后台可见）</option></select></label>' +
+          '<select id="pgStatus" class="mt-1 w-40 rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"><option value="published">已发布</option><option value="draft">草稿（仅后台可见）</option></select></label>' +
+        '<div class="rounded-xl bg-[#f5f5f7] px-4 py-3 md:col-span-3">' +
+          '<label class="flex items-center gap-2.5 text-[13px] font-medium text-[#1d1d1f]"><input id="pgDirect" type="checkbox" class="h-4 w-4 shrink-0" />允许直接访问（分享 /page/slug 链接即可打开）</label>' +
+          '<p class="mt-1.5 text-[11.5px] leading-relaxed text-[#86868b]">关闭时：只有出现在导航菜单（桌面顶栏或 H5 抽屉）里的页面，前台才能访问；两者都没有 → 前台 404，无法用 URL 强行打开</p>' +
+          '<p class="mt-2.5 flex flex-wrap items-center gap-2"><span id="pgAccess" class="text-[12px] font-medium"></span>' +
+            '<button id="pgCopy" class="rounded-full border border-[#d2d2d7] bg-white px-2.5 py-0.5 text-[11.5px] text-[#6e6e73] hover:border-[#0071e3] hover:text-[#0071e3]">复制地址</button></p>' +
+        '</div>' +
       '</div>' +
       '<label class="mt-4 block text-[12.5px] text-[#6e6e73]">正文（Markdown）' +
         '<textarea id="pgBody" rows="18" class="mt-1 w-full resize-y rounded-lg border border-[#d2d2d7] px-3 py-2.5 font-mono text-[13px] leading-relaxed outline-none focus:border-[#0071e3]" placeholder="支持与文章相同的 Markdown 语法"></textarea></label>' +
@@ -1224,12 +1241,60 @@ onRoute('pages/*', function (arg) {
     $('pgSlug').value = p ? p.slug : ''
     $('pgDesc').value = p ? p.description : ''
     $('pgStatus').value = p ? p.status : 'published'
+    $('pgDirect').checked = p ? !!p.directAccess : false
     $('pgBody').value = p ? p.body : ''
+    referenced = p ? !!p.referenced : false
+    syncAccess()
   }).catch(function (e) {
     if (seq !== viewSeq) return
     toast(e.message, true)
     location.hash = '#/pages'
   })
+
+  /* 可达性实时提示：状态 / 直链开关 / slug 任一变化都重算，避免「以为上线了其实 404」 */
+  function realSlug() { return isNew ? $('pgSlug').value.trim() : slug }
+  function syncAccess() {
+    var st = $('pgStatus').value
+    var direct = $('pgDirect').checked
+    var path = '/page/' + (realSlug() || 'slug')
+    var el = $('pgAccess')
+    var copyBtn = $('pgCopy')
+    var passCls = 'text-[12px] font-medium text-[#1d7a35]'
+    var warnCls = 'text-[12px] font-medium text-[#9a6400]'
+    var muteCls = 'text-[12px] font-medium text-[#6e6e73]'
+    var canOpen
+    if (st !== 'published') {
+      el.className = muteCls
+      el.textContent = '草稿：前台不可访问，' + path + ' 返回 404'
+      canOpen = false
+    } else if (direct) {
+      el.className = passCls
+      el.textContent = '可访问（直链）：任何人可通过 ' + path + ' 打开'
+      canOpen = true
+    } else if (referenced) {
+      el.className = passCls
+      el.textContent = '可访问（菜单）：从前台导航菜单进入 ' + path
+      canOpen = true
+    } else {
+      el.className = warnCls
+      el.textContent = '未上线：没进导航菜单也没开直链，' + path + ' 返回 404 —— 去「站点设置 → 导航菜单」加入本页，或勾选上面的直链开关'
+      canOpen = false
+    }
+    copyBtn.style.display = canOpen ? '' : 'none'
+  }
+  $('pgStatus').addEventListener('change', syncAccess)
+  $('pgDirect').addEventListener('change', syncAccess)
+  $('pgSlug').addEventListener('input', syncAccess)
+  $('pgCopy').onclick = function () {
+    var s = realSlug()
+    if (!s) { toast('先填 slug', true); return }
+    var link = BLOG_URL + '/page/' + s
+    navigator.clipboard.writeText(link).then(function () {
+      toast('已复制：' + link)
+    }).catch(function () {
+      toast('复制失败，请手动复制：' + link, true)
+    })
+  }
 
   $('pgSave').onclick = function () {
     var title = $('pgTitle').value.trim()
@@ -1237,10 +1302,16 @@ onRoute('pages/*', function (arg) {
     var body = $('pgBody').value
     if (!title) { toast('页面标题不能为空', true); return }
     if (!s) { toast('slug 不能为空', true); return }
-    api('/api/pages', { method: 'PUT', body: { slug: s, title: title, description: $('pgDesc').value.trim(), status: $('pgStatus').value, body: body } })
-      .then(function () {
-        $('pgMsg').textContent = '已保存 ✓ 前台即时生效'
+    api('/api/pages', { method: 'PUT', body: { slug: s, title: title, description: $('pgDesc').value.trim(), status: $('pgStatus').value, directAccess: $('pgDirect').checked, body: body } })
+      .then(function (r) {
+        referenced = !!r.referenced
+        $('pgMsg').textContent = r.status !== 'published'
+          ? '已保存 ✓ 草稿：前台不可访问'
+          : r.reachable
+            ? '已保存 ✓ 前台可访问：' + r.url
+            : '已保存 ✓ 未上线：' + r.url + ' 会 404'
         toast(isNew ? '页面已创建' : '页面已保存')
+        syncAccess()
         if (isNew) location.hash = '#/pages/edit/' + encodeURIComponent(s)
       })
       .catch(function (e) { toast(e.message, true) })

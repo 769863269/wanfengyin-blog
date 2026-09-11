@@ -185,6 +185,12 @@ function startBlogWatcher() {
       console.warn(`[studio] 监听目录失败（跳过）：${dir} → ${err.message}`)
     }
   }
+  // 站点配置也要监听：导航菜单里的自定义页面增删 = 页面上线/下线，必须重编页面路由
+  try {
+    watch(join(ROOT, 'content', 'site.json'), scheduleBlogBuild)
+  } catch (err) {
+    console.warn(`[studio] 监听 site.json 失败（跳过）→ ${err.message}`)
+  }
   runBlogBuild() // 启动即补编译，追上停机期间的改动
 }
 
@@ -565,7 +571,12 @@ export function startStudio(port = 5199) {
         const body = JSON.parse(await readBody(req).catch(() => ({})))
         try {
           const result = savePage(body)
-          log(actor, result.created ? 'page:create' : 'page:update', `content/pages/${result.slug}.md`, `「${body.title || result.slug}」${result.created ? '新建' : '更新'}（${body.status === 'draft' ? '草稿' : '已发布'}）`)
+          const state = result.status === 'draft'
+            ? '草稿'
+            : result.reachable
+              ? (result.directAccess ? '已发布 · 直链可访问' : '已发布 · 菜单可访问')
+              : '已发布 · 未上线'
+          log(actor, result.created ? 'page:create' : 'page:update', `content/pages/${result.slug}.md`, `「${body.title || result.slug}」${result.created ? '新建' : '更新'}（${state}）`)
           return ok(res, { ...result, pages: listPages() })
         } catch (e) {
           return sendJson(res, 400, { ok: false, output: e.message })
@@ -601,6 +612,8 @@ export function startStudio(port = 5199) {
         try {
           const saved = saveSiteConfig(body)
           log(actor, 'site:update', 'content/site.json', '更新站点设置/友链')
+          // 导航菜单决定自定义页面的可达性（进菜单 = 上线），改完必须重编页面路由
+          scheduleBlogBuild()
           return ok(res, { site: saved })
         } catch (e) {
           return sendJson(res, 400, { ok: false, output: e.message })

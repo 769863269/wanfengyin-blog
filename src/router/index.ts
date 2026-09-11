@@ -51,6 +51,9 @@ const routes: RouteRecordRaw[] = [
     },
   },
   // 自定义页面（后台「自定义页面」发布后自动出现在这里）：
+  // generatedPages 只包含「前台可访问」的页面 —— 已发布 且（已加入导航菜单 或
+  // 开启了直接访问），规则见 scripts/lib/nav.mjs。所以未上线的页面连路由都不存在，
+  // 敲 URL 只会落到下面的 catch-all 404（这是「未上线页面无法用 URL 强行打开」的保证）。
   // 路由 name 直接用 slug，导航菜单 route 类型的 target（=slug）经 NavLink 的
   // { name: target } 即可命中，无需任何映射层。slug 与内置路由名冲突在
   // store 层用保留字校验拦截，不会走到这里。
