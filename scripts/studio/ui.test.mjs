@@ -84,7 +84,23 @@ const jSite = {
     },
   },
 }
-const jPages = { ok: true, pages: [{ slug: 'dome', title: '测试页', status: 'published', reachable: true }] }
+const jPages = {
+  ok: true,
+  pages: [
+    { slug: 'html-dzj', title: '打字机HTML', status: 'published', reachable: true, fullHtml: true },
+    { slug: 'dome', title: '测试页', status: 'published', reachable: true },
+  ],
+}
+// 单页读取（编辑器用）：整页 HTML 页面 —— 用来回归「勾选框回填丢失」这个 bug
+const jPageFull = {
+  ok: true,
+  page: {
+    slug: 'html-dzj', title: '打字机HTML', description: '打字机效果', status: 'published',
+    body: '<!DOCTYPE html>\n<html><body>hi</body></html>',
+    fullHtml: true, directAccess: false, referenced: true, reachable: true, url: '/page/html-dzj',
+    updatedAt: '2026-09-14T02:00:00.000Z',
+  },
+}
 const jGit = {
   ok: true,
   file: {
@@ -141,6 +157,7 @@ const dom = new JSDOM(html, {
       else if (p.indexOf('/api/article/') === 0) body = jArticle
       else if (p.indexOf('/api/articles') === 0) body = { ok: true, articles: [], total: 0, totalPages: 1, page: 1 }
       else if (p.indexOf('/api/site') === 0) body = jSite
+      else if (p.indexOf('/api/pages/') === 0) body = jPageFull // 单页读取：必须在列表之前判断
       else if (p.indexOf('/api/pages') === 0) body = jPages
       else if (p.indexOf('/api/git-config/verify') === 0) body = { ok: true, message: '凭证可用' }
       else if (p.indexOf('/api/git-config') === 0) body = jGit
@@ -299,7 +316,57 @@ check('存在状态标签页组件 statusTabs', html.indexOf('function statusTab
 const pasteBinds = html.split("document.addEventListener('paste'").length - 1
 check('document 上只绑一次 paste 监听（防每次进编辑器叠加）', pasteBinds === 1, '实际 ' + pasteBinds + ' 处')
 
-console.log('\n[9] 页面运行时报错')
+console.log('\n[9] 自定义页面编辑器：勾选框回填与模式提示')
+// 回归背景：load 回填曾漏掉 pgFullHtml —— 打开整页 HTML 页面时勾选框显示未选中，
+// 直接点保存会把 fullHtml 静默关掉（该页退回 Markdown 解析，前台变形）。
+window.location.hash = '#/pages/edit/html-dzj'
+await sleep(450)
+check('页面编辑器渲染', !!$('#pgTitle') && !!$('#pgBody') && !!$('#pgFullHtml'))
+check('标题已回填', ($('#pgTitle') || {}).value === '打字机HTML', ($('#pgTitle') || {}).value)
+check('正文已回填（整份 HTML 原文）',
+  (($('#pgBody') || {}).value || '').indexOf('<!DOCTYPE html>') === 0,
+  (($('#pgBody') || {}).value || '').slice(0, 20))
+check('「完整 HTML 独立页」勾选框回填为选中（核心回归）', ($('#pgFullHtml') || {}).checked === true)
+check('「允许直接访问」按实际值回填（false）', ($('#pgDirect') || {}).checked === false)
+check('「状态」按实际值回填（published）', ($('#pgStatus') || {}).value === 'published', ($('#pgStatus') || {}).value)
+check('正文标题显示整页 HTML 模式',
+  (($('#pgBodyLabel') || {}).textContent || '').indexOf('完整 HTML') >= 0,
+  ($('#pgBodyLabel') || {}).textContent)
+check('模式说明给出真实落盘路径',
+  (($('#pgModeHint') || {}).textContent || '').indexOf('public/page-html/html-dzj.html') >= 0,
+  (($('#pgModeHint') || {}).textContent || '').slice(0, 40))
+
+const fh = $('#pgFullHtml')
+fh.checked = false
+fh.dispatchEvent(new window.Event('change', { bubbles: true }))
+check('取消勾选后标题切回 Markdown 片段',
+  (($('#pgBodyLabel') || {}).textContent || '').indexOf('Markdown') >= 0,
+  ($('#pgBodyLabel') || {}).textContent)
+check('取消后说明回到片段规则',
+  (($('#pgModeHint') || {}).textContent || '').indexOf('HTML 片段规则') >= 0)
+
+// 关闭整页 HTML 属不可逆降级：保存必须弹二次确认，不能一点就存
+$('#pgSave').dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
+check('关闭整页 HTML 后保存弹出二次确认', !$('#modal').classList.contains('hidden'))
+const modalText = ($('#modalText') || {}).textContent || ''
+check('确认框说明降级后果', modalText.indexOf('完整 HTML 独立页') >= 0, modalText)
+$('#modalCancel').dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
+check('取消后弹窗关闭', $('#modal').classList.contains('hidden'))
+
+fh.checked = true
+fh.dispatchEvent(new window.Event('change', { bubbles: true }))
+check('重新勾选恢复整页 HTML 提示',
+  (($('#pgBodyLabel') || {}).textContent || '').indexOf('完整 HTML') >= 0)
+
+console.log('\n[9.5] 自定义页面列表：整页 HTML 标识')
+window.location.hash = '#/pages'
+await sleep(400)
+check('列表标注「整页 HTML」', (doc.body.textContent || '').indexOf('整页 HTML') >= 0)
+check('列表数据带 fullHtml 字段（服务端 payload 契约）', !!jPages.pages[0].fullHtml)
+window.location.hash = '#/list/all'
+await sleep(250)
+
+console.log('\n[10] 页面运行时报错')
 check('无未捕获报错', errors.length === 0, errors.slice(0, 3).join(' | '))
 
 console.log('\n结果：' + pass + ' 通过，' + fail + ' 失败')

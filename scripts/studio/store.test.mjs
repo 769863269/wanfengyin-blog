@@ -3,13 +3,14 @@
  * 用独立测试 slug，结束前全部进回收站并彻底清除。
  * 站点配置段落会临时改 content/site.json，已在 finally 里整文件还原。
  */
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   createArticle, getArticle, updateArticle, changeStatus, setFlags,
   trashArticle, restoreFromTrash, purgeTrash, listTrash,
   renameTaxonomy, queryArticles, statusCounts, runSchedule, roleOf,
   MAX_FEATURED, featuredCount, saveSiteConfig, getPagination, readSiteConfig, ROOT,
+  savePage, readPage, listPages, deletePage,
 } from './store.mjs'
 
 // 随机后缀：避免与本机正在运行的 studio 调度器或上次崩溃残留抢 slug
@@ -245,6 +246,50 @@ try {
   writeFileSync(siteFile, siteBackup, 'utf8')
 }
 assert('站点配置还原到运行前', readFileSync(siteFile, 'utf8') === siteBackup)
+
+/* 11. 自定义页面数据层
+ * 背景：编辑器回填漏了 fullHtml，点一次保存就把整页 HTML 页面静默降级成 Markdown 解析。
+ * 前端回填已由 ui.test.mjs 锁住；这里锁住数据层那一半 —— 字段必须能完整 round-trip。 */
+const PS = 'cms-page-test-' + String(Date.now() % 1000000)
+// 保留字用例：'about' 是内置路由名，必须被拦。readPage/deletePage 自身也会走 assertSlug
+// 而抛错，所以这里用文件系统直接判存在性；万一实现回归导致它真落盘，finally 负责清掉 ——
+// 测试绝不能把文件留在 content/pages/ 里。
+const RESERVED = 'about'
+const reservedFile = join(ROOT, 'content', 'pages', RESERVED + '.md')
+const reservedExisted = existsSync(reservedFile)
+try {
+  savePage({
+    slug: PS, title: '整页 HTML 测试', description: '', status: 'published',
+    directAccess: false, fullHtml: true, body: '<!DOCTYPE html><html><body>hi</body></html>',
+  })
+  let rp = readPage(PS)
+  assert('页面 round-trip：fullHtml 落盘并能读回', rp.fullHtml === true, String(rp.fullHtml))
+  assert('页面 round-trip：整份 HTML 原文保留', rp.body.indexOf('<!DOCTYPE html>') === 0, rp.body.slice(0, 16))
+  const inList = listPages().find((x) => x.slug === PS)
+  assert('列表接口带 fullHtml 字段（列表页标识依赖它）', !!inList && inList.fullHtml === true)
+
+  // 显式关闭：字段应从 frontmatter 移除（保持文件干净），读回为 false
+  savePage({
+    slug: PS, title: '整页 HTML 测试', description: '', status: 'published',
+    directAccess: false, fullHtml: false, body: '普通正文',
+  })
+  rp = readPage(PS)
+  assert('关闭 fullHtml 后读回 false', rp.fullHtml === false)
+  assert('关闭后正文改为普通内容', rp.body === '普通正文', rp.body)
+  assert('关闭后列表同样为 false', listPages().find((x) => x.slug === PS).fullHtml === false)
+
+  // slug 规则与 build-pages 共用同一份实现：保留字必须被拦
+  // （注意保留字表是 home/archive/tags/about/random/post/page/admin/api/assets/feed，
+  //   'blog' 之类的普通词并不在内 —— 别想当然）
+  let reservedBlocked = false
+  try { savePage({ slug: RESERVED, title: 'x', status: 'published', body: '' }) } catch { reservedBlocked = true }
+  assert(`保留字 slug 被拦截（${RESERVED}）`, reservedBlocked)
+} finally {
+  try { deletePage(PS) } catch { /* 可能已不存在 */ }
+  if (!reservedExisted) { try { unlinkSync(reservedFile) } catch { /* 正常情况：被拦，没落盘 */ } }
+}
+assert('测试页面已清理干净', readPage(PS) === null)
+assert('保留字用例未留残留文件', !existsSync(reservedFile))
 
 console.log(failed ? `\n${failed} FAILED` : '\nALL PASS')
 process.exit(failed ? 1 : 0)

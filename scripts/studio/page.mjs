@@ -1346,6 +1346,7 @@ onRoute('pages', function () {
     var rows = d.pages.map(function (p) {
       var badge = pageBadge(p)
       var sub = '/page/' + esc(p.slug)
+      if (p.fullHtml) sub += ' · 整页 HTML'
       if (p.error) sub += ' · ⚠ ' + esc(p.error)
       else if (p.status === 'published' && !p.reachable) sub += ' · 未上线：没进菜单也没开直链 → 前台 404'
       return '<tr class="border-b border-[#f0f0f2] last:border-0">' +
@@ -1396,6 +1397,7 @@ onRoute('pages/*', function (arg) {
   var isNew = arg === 'new'
   var slug = isNew ? '' : decodeURIComponent(String(arg).replace('edit/', ''))
   var referenced = false // 当前是否已被导航菜单引用（load 后回填）
+  var wasFullHtml = false // 打开编辑器时该页是否为整页 HTML（关闭前要二次确认）
   var load = isNew ? Promise.resolve({ page: null }) : api('/api/pages/' + encodeURIComponent(slug))
 
   view.innerHTML =
@@ -1420,9 +1422,9 @@ onRoute('pages/*', function (arg) {
             '<button id="pgCopy" class="rounded-full border border-[#d2d2d7] bg-white px-2.5 py-0.5 text-[11.5px] text-[#6e6e73] hover:border-[#0071e3] hover:text-[#0071e3]">复制地址</button></p>' +
         '</div>' +
       '</div>' +
-      '<label class="mt-4 block text-[12.5px] text-[#6e6e73]">正文（Markdown + HTML 片段；勾选上方「完整 HTML 独立页」时改填完整 HTML 文档）' +
+      '<label class="mt-4 block text-[12.5px] text-[#6e6e73]"><span id="pgBodyLabel">正文（Markdown + HTML 片段）</span>' +
         '<textarea id="pgBody" rows="18" class="mt-1 w-full resize-y rounded-lg border border-[#d2d2d7] px-3 py-2.5 font-mono text-[13px] leading-relaxed outline-none focus:border-[#0071e3]" placeholder="Markdown 模式：支持与文章相同的语法，行首写块级 HTML 标签（如 &lt;div&gt;）可搭自定义版式；完整 HTML 模式：直接粘贴含 &lt;style&gt;/&lt;script&gt; 的整份 HTML 文档"></textarea></label>' +
-      '<p class="mt-2 text-[11.5px] leading-relaxed text-[#a1a1a6]">HTML 片段规则：行首以白名单标签开头（div / span / p / table / figure 等）即视为 HTML 块；可用 class / id / style 等属性（style 里不能有站外 url() 与表达式）；script / style / iframe / form 等连同内容整体丢弃，未知标签只丢标签保文字；h1 自动归一为 h2。写法示例：&lt;div class="card" style="padding:12px"&gt;…&lt;/div&gt;</p>' +
+      '<p id="pgModeHint" class="mt-2 text-[11.5px] leading-relaxed text-[#a1a1a6]">HTML 片段规则：行首以白名单标签开头（div / span / p / table / figure 等）即视为 HTML 块；可用 class / id / style 等属性（style 里不能有站外 url() 与表达式）；script / style / iframe / form 等连同内容整体丢弃，未知标签只丢标签保文字；h1 自动归一为 h2。写法示例：&lt;div class="card" style="padding:12px"&gt;…&lt;/div&gt;</p>' +
       '<div class="mt-4 flex flex-wrap items-center gap-3 border-t border-[#f0f0f2] pt-4">' +
         '<span id="pgMsg" class="text-[13px] text-[#1d7a35]"></span>' +
         (isNew ? '' : '<button id="pgDel" class="rounded-full border border-[#f0d0d0] px-4 py-2 text-[12.5px] text-[#c0392b] hover:bg-[#fdecec]">删除此页面</button>') +
@@ -1438,9 +1440,14 @@ onRoute('pages/*', function (arg) {
     $('pgDesc').value = p ? p.description : ''
     $('pgStatus').value = p ? p.status : 'published'
     $('pgDirect').checked = p ? !!p.directAccess : false
+    // ⚠️ 勾选框必须逐项回填。曾漏掉 pgFullHtml —— 打开整页 HTML 页面时它显示未选中，
+    //    更糟的是直接点保存会把 fullHtml 静默关掉（该页随即退回 Markdown 解析，前台变形）。
+    $('pgFullHtml').checked = p ? !!p.fullHtml : false
+    wasFullHtml = $('pgFullHtml').checked
     $('pgBody').value = p ? p.body : ''
     referenced = p ? !!p.referenced : false
     syncAccess()
+    syncMode()
   }).catch(function (e) {
     if (seq !== viewSeq) return
     toast(e.message, true)
@@ -1478,9 +1485,20 @@ onRoute('pages/*', function (arg) {
     }
     copyBtn.style.display = canOpen ? '' : 'none'
   }
+  /* 模式提示：勾上「完整 HTML 独立页」会彻底改变正文的解析方式与落盘位置，
+     界面上必须有明确反馈 —— 否则用户不知道自己在编辑哪种模式 */
+  function syncMode() {
+    var on = $('pgFullHtml').checked
+    $('pgBodyLabel').textContent = on ? '正文（完整 HTML 文档，不做 Markdown 解析）' : '正文（Markdown + HTML 片段）'
+    $('pgModeHint').textContent = on
+      ? '整页 HTML 模式：正文原样落成 public/page-html/' + (realSlug() || 'slug') + '.html，前台用 sandbox iframe 隔离加载 —— style / script 会正常生效，但脚本拿不到主站 cookie / localStorage。请保持 HTML 文档结构完整（DOCTYPE、head、body）。'
+      : 'HTML 片段规则：行首以白名单标签开头（div / span / p / table / figure 等）即视为 HTML 块；可用 class / id / style 等属性（style 里不能有站外 url() 与表达式）；script / style / iframe / form 等连同内容整体丢弃，未知标签只丢标签保文字；h1 自动归一为 h2。'
+  }
   $('pgStatus').addEventListener('change', syncAccess)
   $('pgDirect').addEventListener('change', syncAccess)
   $('pgSlug').addEventListener('input', syncAccess)
+  $('pgFullHtml').addEventListener('change', syncMode)
+  $('pgSlug').addEventListener('input', syncMode)
   $('pgCopy').onclick = function () {
     var s = realSlug()
     if (!s) { toast('先填 slug', true); return }
@@ -1492,15 +1510,12 @@ onRoute('pages/*', function (arg) {
     })
   }
 
-  $('pgSave').onclick = function () {
-    var title = $('pgTitle').value.trim()
-    var s = (isNew ? $('pgSlug').value.trim() : slug)
+  function doSave(s, title) {
     var body = $('pgBody').value
-    if (!title) { toast('页面标题不能为空', true); return }
-    if (!s) { toast('slug 不能为空', true); return }
     api('/api/pages', { method: 'PUT', body: { slug: s, title: title, description: $('pgDesc').value.trim(), status: $('pgStatus').value, directAccess: $('pgDirect').checked, fullHtml: $('pgFullHtml').checked, body: body } })
       .then(function (r) {
         referenced = !!r.referenced
+        wasFullHtml = $('pgFullHtml').checked // 存盘后再关就不必二次确认了
         $('pgMsg').textContent = r.status !== 'published'
           ? '已保存 ✓ 草稿：前台不可访问'
           : r.reachable
@@ -1511,6 +1526,24 @@ onRoute('pages/*', function (arg) {
         if (isNew) location.hash = '#/pages/edit/' + encodeURIComponent(s)
       })
       .catch(function (e) { toast(e.message, true) })
+  }
+
+  $('pgSave').onclick = function () {
+    var title = $('pgTitle').value.trim()
+    var s = (isNew ? $('pgSlug').value.trim() : slug)
+    if (!title) { toast('页面标题不能为空', true); return }
+    if (!s) { toast('slug 不能为空', true); return }
+    // 关闭「完整 HTML 独立页」是不可逆降级：该页退回 Markdown 解析，构建期还会清掉
+    // public/page-html/<slug>.html → 前台内容变形。必须二次确认，避免误点。
+    if (wasFullHtml && !$('pgFullHtml').checked) {
+      confirmBox(
+        '关闭「完整 HTML 独立页」？',
+        '保存后该页改为 Markdown 解析，public/page-html/' + slug + '.html 会被构建清理，前台内容会变形',
+        function () { doSave(s, title) },
+      )
+      return
+    }
+    doSave(s, title)
   }
   var delBtn = $('pgDel')
   if (delBtn) delBtn.onclick = function () {
@@ -2228,10 +2261,11 @@ window.addEventListener('beforeunload', function (e) {
 })
 document.addEventListener('keydown', function (e) {
   if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
-    var s = document.getElementById('eSave')
+    // 文章编辑器 #eSave / 自定义页面编辑器 #pgSave；两者只会存在一个
+    var s = document.getElementById('eSave') || document.getElementById('pgSave')
     if (s) {
       e.preventDefault()
-      if (!s.disabled) s.click() // eSave 只在编辑器视图存在，其他视图按 Ctrl+S 无副作用
+      if (!s.disabled) s.click() // 非编辑器视图两者都不存在，按 Ctrl+S 无副作用
     }
   }
 })

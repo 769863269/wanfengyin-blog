@@ -1,7 +1,9 @@
 node_modules
 dist
 dist-ssr
-dist-smoke
+# 通配：clean-smoke.mjs 在删除被 safe-delete 拦截时会把目录改名为
+# dist-smoke.old-<ts>，只写 dist-smoke 会漏掉它们（曾被 git add -A 误提交）
+dist-smoke*
 coverage
 .DS_Store
 *.local

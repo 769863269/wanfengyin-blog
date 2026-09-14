@@ -872,6 +872,7 @@ export function listPages() {
           description: String(data.description ?? ''),
           status,
           bodyLength: (body || '').length,
+          fullHtml: isTrue(data.fullHtml),
           updatedAt: statSync(pagePath(slug)).mtime.toISOString(),
           ...pageAccess(slug, status, isTrue(data.directAccess), navSlugs),
         }
