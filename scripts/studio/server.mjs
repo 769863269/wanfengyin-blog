@@ -279,6 +279,19 @@ export function startStudio(port = 5199) {
     res.setHeader('Referrer-Policy', 'no-referrer')
     res.setHeader('X-Frame-Options', 'DENY')
     res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+
+    /* ---------- CSRF 统一闸门（写方法必须来自后台自己的页面） ----------
+     * 单靠「自定义头触发预检」拦不住所有攻击：跨站 simple request（no-cors +
+     * text/plain）不触发预检，照样能把请求发到本机。浏览器在这类请求上仍会带
+     * Origin，所以这里统一判一次来源，比逐个接口补更可靠。
+     * 同源请求 Origin 就是自身地址；curl / 脚本不发 Origin，按「无来源」放行
+     * （能访问 127.0.0.1:5199 的本机进程本来就不在防线内）。 */
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      const origin = req.headers.origin
+      const selfOrigins = [`http://127.0.0.1:${port}`, `http://localhost:${port}`]
+      if (origin && !selfOrigins.includes(origin)) return deny(res, '非法来源，请求已拒绝')
+    }
+
     // 给后端动作一个统一入口：校验 + 日志 + 错误兜底
     const guard = (action) => {
       if (!can(role, action)) {
@@ -683,6 +696,8 @@ export function startStudio(port = 5199) {
         return ok(res, { jobId })
       }
       if (path.startsWith('/api/jobs/') && req.method === 'GET') {
+        // 任务输出含远端 URL 与文件清单，属发布流程内部信息：与「推送上线」同权
+        if (!can(role, 'sync')) return deny(res, '无权查看发布任务')
         const job = jobs.get(path.slice('/api/jobs/'.length))
         if (!job) return sendJson(res, 404, { ok: false, output: '任务不存在' })
         return ok(res, { ...job })
@@ -690,6 +705,10 @@ export function startStudio(port = 5199) {
 
       /* ---------- 封面图上传（沿用） ---------- */
       if (path === '/api/upload' && req.method === 'POST') {
+        // 封面图上传是写盘操作，必须走权限校验（原先全站唯一漏网：只读身份也能刷盘）。
+        // 用 article:create 而非 article:update —— 作者角色只有 article:update:own，
+        // 用 update 会把「作者给自己的文章传封面」一并挡掉。
+        if (!guard('article:create')) return
         const body = JSON.parse(await readBody(req))
         const ext = extname(body.name || '').toLowerCase()
         if (!['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif'].includes(ext)) {

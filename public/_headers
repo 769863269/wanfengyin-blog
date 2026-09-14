@@ -4,13 +4,15 @@
 #   style-src 'unsafe-inline' —— Vue SFC scoped 样式与主题变量以 <style>/style 注入，必须放行
 #   img-src https: —— 文章允许外链图片（如商品图床）。不再放行 http：本站是 https，
 #                    明文图片本来就会被浏览器拦或升级，写了也只是放宽攻击面
-#   frame-src giscus —— 评论 iframe；frame-ancestors 'none' 禁止被任何站嵌入
+#   frame-src 'self' giscus —— 评论 iframe + 自定义「完整 HTML 独立页」的沙箱 iframe
+#                              （'self' 只为 /page-html/*，见文件末尾那条规则）
+#   frame-ancestors 'none' —— 禁止本站被任何站嵌入
 /*
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://giscus.app; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://giscus.app; frame-src https://giscus.app; media-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://giscus.app; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://giscus.app; frame-src 'self' https://giscus.app; media-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
 
 # 构建产物文件名带内容哈希：改内容必改文件名，可以放心长缓存
 /assets/*
@@ -19,3 +21,18 @@
 # public/ 下的图片与脚本文件名无哈希（改动可能同名）：缓存 30 天，短于构建产物
 /images/*
   Cache-Control: public, max-age=2592000
+
+# 自定义「完整 HTML 独立页」（构建期由 content/pages 生成到这里，见 build-pages.mjs）
+# 这些页面需要跑自己的内联 <script>/<style>，所以单独放宽 —— 但用 CSP 的 sandbox
+# 指令把它们强制关进 opaque origin：
+#   · 即使有人直接打开 /page-html/x.html（不经 iframe），脚本也拿不到本站
+#     cookie / localStorage / DOM，等同匿名沙箱，不会变成同源存储里的注入点；
+#   · frame-ancestors 'self' + X-Frame-Options: SAMEORIGIN 覆盖上面的 DENY，
+#     让自己站能嵌入（Vercel 同名单头以后定义的为准）。
+# 注意：opaque origin 下 'self' 不再匹配本站，故图片等资源靠 https:/data: 放行。
+/page-html/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: no-referrer
+  Cache-Control: no-cache
+  Content-Security-Policy: sandbox allow-scripts; default-src 'self' data: blob: https:; script-src 'unsafe-inline' 'self' https:; style-src 'unsafe-inline' 'self' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:; media-src 'self' data: blob: https:; connect-src https:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'

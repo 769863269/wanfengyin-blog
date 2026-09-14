@@ -87,13 +87,12 @@ export interface CustomPage {
   /** 正文内容块（构建期已编译，含 Shiki 高亮） */
   body: ArticleBlock[]
   /**
-   * 完整 HTML 独立页：为 true 时 body 为空数组，改用 rawHtml 由 PageView 的
-   * iframe（srcdoc + sandbox + csp）隔离渲染。用于需要 script / style 交互的整页 HTML——
-   * 普通 HTML 片段模式（ArticleBody）按安全策略禁用了 script 与 on* 事件，承载不了行为。
+   * 完整 HTML 独立页：为 true 时 body 为空数组，正文改由构建期写到
+   * public/page-html/<slug>.html，PageView 用 sandbox iframe（src）隔离渲染。
+   * 用于需要 script / style 交互的整页 HTML —— 普通 HTML 片段模式（ArticleBody）
+   * 按安全策略禁用了 script 与 on* 事件，承载不了行为。
    */
   fullHtml?: boolean
-  /** fullHtml 为真时的原始 HTML 文档字符串（构建期原样保存，不做块解析） */
-  rawHtml?: string
 }
 
 /* ===================== 侧边栏 ===================== */

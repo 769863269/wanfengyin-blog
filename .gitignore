@@ -31,3 +31,22 @@ scripts/.trash-tmp/
 
 # 本地 git 配置（身份/HTTP 版本等，跨机器各填各的，不上传）
 git.config.local
+
+# 密钥 / 本地环境 / 数据库 / 编辑器备份
+# 仓库是 public：这些一旦被 add 进历史就删不干净，必须在源头忽略
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.sqlite
+*.sqlite3
+*.bak
+*.orig
+*.rej
+
+# 构建期产物：「完整 HTML 独立页」静态文件（由 build-pages.mjs 从 content/pages 重建）
+public/page-html/

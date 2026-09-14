@@ -23,20 +23,22 @@ const page = computed(() => generatedPages.find((p) => p.slug === route.meta.slu
 /**
  * 完整 HTML 独立页：用 iframe 隔离渲染用户写的整份 HTML 文档（含 script / style）。
  *
- * 安全取舍（关键）：
- *  - srcdoc 把内容关进独立文档环境，脚本只在沙箱内执行，碰不到主站 DOM / 同源 cookie；
- *  - sandbox 只给 allow-scripts（不给 allow-same-origin）→ 脚本跑在 opaque origin，
- *    拿不到父页面任何凭据，爆炸半径锁死在沙箱内；
- *  - csp 属性给子文档一条宽松策略（放行内联脚本/样式与图片），覆盖父站继承来的
- *    `script-src 'self'`（否则内联 <script> 会被拦，交互出不来）。
+ * 为什么是「独立文件 + src」而不是 srcdoc（踩过的坑，勿回退）：
+ *   srcdoc 子文档会继承父页 CSP，而多条 CSP 只能取交集（更严），iframe 的 `csp`
+ *   属性只能追加限制、不能放宽 —— 父页 `script-src 'self'`（无 unsafe-inline）
+ *   会把内联脚本直接拦掉。表现为「本地 dev（无 CSP 头）点得动、Vercel 上线点不动」。
+ *   改成加载 public/page-html/<slug>.html 后，子文档用的是自己响应头里的 CSP
+ *   （见 public/_headers 的 /page-html/* 规则）。
+ *
+ * 安全取舍：
+ *  - iframe 保留 sandbox="allow-scripts"（不给 allow-same-origin）→ 脚本跑在
+ *    opaque origin，拿不到主站 DOM / cookie / localStorage；
+ *  - 该静态文件的响应头另带 CSP `sandbox allow-scripts` —— 即使有人直接打开
+ *    /page-html/x.html，文档同样被强制进 opaque origin，不会变成同源存储里的注入点。
  */
 const iframeAttrs = computed<Record<string, string> | null>(() =>
-  page.value?.fullHtml && page.value.rawHtml != null
-    ? {
-        srcdoc: page.value.rawHtml,
-        sandbox: 'allow-scripts',
-        csp: "default-src 'self' 'unsafe-inline' https: data:; script-src 'unsafe-inline' 'self' https:; style-src 'unsafe-inline' 'self' https:; img-src 'self' data: https:; frame-src 'self' data: blob:",
-      }
+  page.value?.fullHtml
+    ? { src: `/page-html/${page.value.slug}.html`, sandbox: 'allow-scripts' }
     : null,
 )
 
