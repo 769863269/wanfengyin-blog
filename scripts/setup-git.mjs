@@ -54,7 +54,9 @@ if (!existsSync(file)) {
   if (gName || gEmail) {
     console.log('[setup:git] 已自动生成 git.config.local（身份取自全局 git 配置）')
   } else {
-    console.log('[setup:git] 已自动生成 git.config.local（身份为占位值，请在后台「系统设置 → Git 推送配置」填写）')
+    console.log(
+      '[setup:git] 已自动生成 git.config.local（身份为占位值，请在后台「系统设置 → Git 推送配置」填写）',
+    )
   }
 }
 
@@ -72,7 +74,9 @@ for (const line of lines) {
   if (!key || !value) continue
   if (key.startsWith('github.')) continue // 元数据行（如 github.username），不是 git 配置，跳过
   if (PLACEHOLDERS.has(value)) {
-    console.warn(`[setup:git] ${key} 仍是占位值，未应用——请在后台「系统设置 → Git 推送配置」填写真实身份`)
+    console.warn(
+      `[setup:git] ${key} 仍是占位值，未应用——请在后台「系统设置 → Git 推送配置」填写真实身份`,
+    )
     continue
   }
   try {

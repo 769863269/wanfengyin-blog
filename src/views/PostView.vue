@@ -22,7 +22,11 @@ import NotFoundView from './NotFoundView.vue'
 const props = defineProps<{ slug: string }>()
 
 // 每进入一篇文章记一次真实浏览（同会话刷新去重），驱动热门榜动态排序
-watch(() => props.slug, (slug) => recordView(slug), { immediate: true })
+watch(
+  () => props.slug,
+  (slug) => recordView(slug),
+  { immediate: true },
+)
 
 const router = useRouter()
 
@@ -81,7 +85,9 @@ watch(() => props.slug, syncBody, { immediate: true })
 /** 文章目录：标题块抽取，少于 2 个不渲染目录 */
 const toc = computed(() =>
   (body.value ?? [])
-    .filter((block): block is Extract<ArticleBlock, { type: 'heading' }> => block.type === 'heading')
+    .filter(
+      (block): block is Extract<ArticleBlock, { type: 'heading' }> => block.type === 'heading',
+    )
     .map((block) => ({ id: block.id, text: block.text })),
 )
 
@@ -91,7 +97,9 @@ const neighbors = computed(() => (post.value ? getNeighbors(post.value.slug) : u
 const readingTime = computed(() => post.value?.readingMinutes ?? 0)
 
 /** 展示用阅读数：frontmatter 基数 + 本机真实浏览增量（动态） */
-const displayViews = computed(() => (post.value ? totalViews(post.value.views, post.value.slug) : 0))
+const displayViews = computed(() =>
+  post.value ? totalViews(post.value.views, post.value.slug) : 0,
+)
 
 const canonicalUrl = computed(() => (post.value ? `${domain}/post/${post.value.slug}` : domain))
 
@@ -99,7 +107,9 @@ useSeoMeta({
   title: computed(() =>
     post.value ? `${post.value.title} · ${siteConfig.name}` : siteConfig.name,
   ),
-  description: computed(() => post.value?.seoDescription || post.value?.excerpt || siteConfig.description),
+  description: computed(
+    () => post.value?.seoDescription || post.value?.excerpt || siteConfig.description,
+  ),
   type: 'article',
   url: canonicalUrl,
   // og:image 必须是绝对 URL，本地封面路径拼上域名
@@ -122,7 +132,10 @@ useSeoMeta({
           <h1 class="post-detail__title">{{ post.title }}</h1>
           <div class="post-detail__meta">
             <span v-if="post.category">
-              <RouterLink class="post-detail__cat" :to="{ name: 'home', query: { category: post.category } }">
+              <RouterLink
+                class="post-detail__cat"
+                :to="{ name: 'home', query: { category: post.category } }"
+              >
                 <span aria-hidden="true">📂</span>
                 {{ post.category }}
               </RouterLink>
@@ -133,7 +146,9 @@ useSeoMeta({
             </span>
             <span :title="formatRelativeTime(post.publishedAt)">
               <span aria-hidden="true">🕒</span>
-              <time :datetime="`${post.publishedAt}T${post.publishedTime || '00:00'}`">{{ formatDateTime(post.publishedAt, post.publishedTime) }}</time>
+              <time :datetime="`${post.publishedAt}T${post.publishedTime || '00:00'}`">
+                {{ formatDateTime(post.publishedAt, post.publishedTime) }}
+              </time>
             </span>
             <span>
               <span aria-hidden="true">👁</span>

@@ -74,9 +74,7 @@ for (const post of posts) {
 const shell = readFileSync(shellPath, 'utf8')
 
 function seoTags(title, description, path, image, keywords) {
-  const imageTag = image
-    ? `\n    <meta property="og:image" content="${siteDomain}${image}" />`
-    : ''
+  const imageTag = image ? `\n    <meta property="og:image" content="${siteDomain}${image}" />` : ''
   const keywordsTag = keywords?.length
     ? `\n    <meta name="keywords" content="${escapeHtml(keywords.join(', '))}" />`
     : ''
@@ -98,10 +96,7 @@ function renderArticle(post) {
   const toc =
     headings.length >= 2
       ? `\n        <details class="post-detail__toc"><summary>📑 本文目录（${headings.length} 节）</summary><ol>${headings
-          .map(
-            (h) =>
-              `<li><a href="#${escapeHtml(h.id)}">${escapeHtml(h.text)}</a></li>`,
-          )
+          .map((h) => `<li><a href="#${escapeHtml(h.id)}">${escapeHtml(h.text)}</a></li>`)
           .join('')}</ol></details>`
       : ''
   return `<div class="layout__main"><article class="card post-detail">
@@ -146,7 +141,10 @@ function prerenderPost(post) {
   )
 
   // 2. 注入 canonical / og / keywords 标签
-  html = html.replace('</head>', `${seoTags(post.title, description, path, post.cover, post.keywords)}\n  </head>`)
+  html = html.replace(
+    '</head>',
+    `${seoTags(post.title, description, path, post.cover, post.keywords)}\n  </head>`,
+  )
 
   // 3. 注入静态正文（Vue 挂载后会整体接管 #app，此内容仅供爬虫与首屏）
   html = html.replace('<div id="app"></div>', `<div id="app">${renderArticle(post)}</div>`)

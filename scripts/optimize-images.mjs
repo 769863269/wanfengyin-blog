@@ -84,10 +84,13 @@ let touched = 0
 for (const file of targets) {
   const raw = readFileSync(file, 'utf8')
   // 逐个替换：只改「同名 .webp 已生成」的路径，未转换的图片保持原样
-  const next = raw.replaceAll(/\/images\/covers\/([A-Za-z0-9._-]+)\.(jpe?g|png)/g, (match, stem) => {
-    const candidate = `${stem}.webp`
-    return webpNames.has(candidate) ? `/images/covers/${candidate}` : match
-  })
+  const next = raw.replaceAll(
+    /\/images\/covers\/([A-Za-z0-9._-]+)\.(jpe?g|png)/g,
+    (match, stem) => {
+      const candidate = `${stem}.webp`
+      return webpNames.has(candidate) ? `/images/covers/${candidate}` : match
+    },
+  )
   if (next !== raw) {
     writeFileSync(file, next, 'utf8')
     touched++

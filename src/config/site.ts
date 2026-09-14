@@ -75,9 +75,10 @@ function toNavItems(list: readonly SiteNavItem[], prefix: string): NavItem[] {
  * 全站导航（hidden 项保留在配置里但不渲染）。
  * web 顶栏（AppHeader）与移动端抽屉（MobileDrawer）共用这一份，改一处两端同时生效。
  */
-export const mainNav: readonly NavItem[] = toNavItems(siteData.mainNav as readonly SiteNavItem[], 'nav').filter(
-  (item) => item.kind !== 'hidden',
-)
+export const mainNav: readonly NavItem[] = toNavItems(
+  siteData.mainNav as readonly SiteNavItem[],
+  'nav',
+).filter((item) => item.kind !== 'hidden')
 
 export const footerQuickLinks: readonly NavItem[] = [
   { id: 'f-home', label: '首页', icon: '', kind: 'route', to: 'home' },
@@ -98,7 +99,11 @@ export const footerFriendLinks: readonly NavItem[] = siteData.friendLinks.map((l
 /** 关于页内容：content/site.json 的 aboutPage（Studio 后台「站点设置 → 关于页内容」维护） */
 export type AboutStackItem = { name: string; role: string }
 export type AboutMilestone = { date: string; text: string }
-export type AboutPageContent = { intro: string; techStack: AboutStackItem[]; milestones: AboutMilestone[] }
+export type AboutPageContent = {
+  intro: string
+  techStack: AboutStackItem[]
+  milestones: AboutMilestone[]
+}
 
 export const aboutPage: AboutPageContent = siteData.aboutPage
 

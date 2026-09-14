@@ -65,7 +65,13 @@ function onToggle(event: Event) {
 </script>
 
 <template>
-  <div class="nav-dd" :class="{ 'nav-dd--open': isOpen }" @click.stop @mouseenter="onEnter" @mouseleave="onLeave">
+  <div
+    class="nav-dd"
+    :class="{ 'nav-dd--open': isOpen }"
+    @click.stop
+    @mouseenter="onEnter"
+    @mouseleave="onLeave"
+  >
     <button
       class="nav-dd__toggle"
       :class="{ 'nav-dd__toggle--active': subtreeActive }"

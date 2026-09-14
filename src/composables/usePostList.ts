@@ -1,7 +1,7 @@
 import { computed, ref, toValue, type MaybeRefOrGetter, type Ref } from 'vue'
 
 /**
- * 文章列表分页（「加载更多」）
+ * 文章列表分页（「加载更多」）（@singleton 模块级共享分页进度）
  *
  * 原始模板的做法是给隐藏文章加 .extra 类，点击时用 JS 逐个移除。
  * 问题：DOM 里始终存在全部文章，靠 CSS 隐藏，语义上是「全部渲染再藏起来」。
@@ -21,10 +21,13 @@ import { computed, ref, toValue, type MaybeRefOrGetter, type Ref } from 'vue'
 
 /** 模块级分页进度；首次调用时以调用方的 pageSize 初始化 */
 let sharedCount: Ref<number> | undefined
+function progress(pageSize: number): Ref<number> {
+  sharedCount ??= ref(pageSize)
+  return sharedCount
+}
 
 export function usePostList<T>(source: MaybeRefOrGetter<readonly T[]>, pageSize: number) {
-  sharedCount ??= ref(pageSize)
-  const visibleCount = sharedCount
+  const visibleCount = progress(pageSize)
 
   const all = computed(() => toValue(source))
   const visible = computed(() => all.value.slice(0, visibleCount.value))

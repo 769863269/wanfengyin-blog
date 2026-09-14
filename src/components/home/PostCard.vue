@@ -25,8 +25,16 @@ const viewCount = computed(() => formatCount(totalViews(post.views, post.slug)))
   <article class="post-card">
     <RouterLink class="post-card__link" :to="{ name: 'post', params: { slug: post.slug } }">
       <h2 class="post-card__title">
-        <span v-if="post.pinned" class="post-card__flag post-card__flag--pin" title="站长置顶">置顶</span>
-        <span v-if="post.featured" class="post-card__flag post-card__flag--featured" title="站长推荐">荐</span>
+        <span v-if="post.pinned" class="post-card__flag post-card__flag--pin" title="站长置顶">
+          置顶
+        </span>
+        <span
+          v-if="post.featured"
+          class="post-card__flag post-card__flag--featured"
+          title="站长推荐"
+        >
+          荐
+        </span>
         {{ post.title }}
       </h2>
 
@@ -173,8 +181,7 @@ const viewCount = computed(() => formatCount(totalViews(post.views, post.slug)))
   left: 0;
   width: 100%;
   height: 6px;
-  background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='6' viewBox='0 0 36 6'%3E%3Cpath d='M0 3 Q9 0.4 18 3 T36 3' fill='none' stroke='%23c9b6a4' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E")
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='6' viewBox='0 0 36 6'%3E%3Cpath d='M0 3 Q9 0.4 18 3 T36 3' fill='none' stroke='%23c9b6a4' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E")
     repeat-x left center;
   opacity: 0.75;
   transition: opacity var(--duration-slow) var(--ease-standard);

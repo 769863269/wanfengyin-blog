@@ -26,7 +26,8 @@ if (!title) {
   process.exit(1)
 }
 
-const slug = optionValue('slug') || `post-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}`
+const slug =
+  optionValue('slug') || `post-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}`
 const tags = (optionValue('tags') || '随笔')
   .split(',')
   .map((t) => t.trim())

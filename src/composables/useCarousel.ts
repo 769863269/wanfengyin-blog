@@ -1,20 +1,24 @@
-import { computed, onScopeDispose, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
-import { useMediaQuery } from '@/utils/mediaQuery'
+import { computed, onScopeDispose, readonly, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
+import { safeMediaQuery } from '@/utils/mediaQuery'
 
 /**
- * 轮播控制
+ * 轮播控制（@factory 每次调用独立实例）
  *
  * 相比原始模板的三点增强：
  *   1. 移动端暂停（原版用 CSS 隐藏了轮播，但 setInterval 仍在空转）；
  *   2. 鼠标悬停暂停（用户想看清内容时不该被打断）；
  *   3. 页面切到后台时暂停（visibilitychange），省电省 CPU。
+ *
+ * 状态暴露规则：能被外部改的才裸奔，其余一律 readonly ——
+ *   isHovered 由模板直接赋值（@mouseenter="isHovered = true"），保持可写；
+ *   activeIndex 只允许经 goTo / next / prev / select 变更，故为只读。
  */
 export function useCarousel(count: MaybeRefOrGetter<number>, interval = 4000) {
   const activeIndex = ref(0)
   const isHovered = ref(false)
   const isPageVisible = ref(true)
 
-  const mobile = useMediaQuery('(max-width: 768px)')
+  const mobile = safeMediaQuery('(max-width: 768px)')
   const isMobile = ref(mobile.matches)
   const unsubscribeMedia = mobile.subscribe((matches) => {
     isMobile.value = matches
@@ -92,7 +96,9 @@ export function useCarousel(count: MaybeRefOrGetter<number>, interval = 4000) {
   })
 
   return {
-    activeIndex,
+    /** 当前帧下标（只读：请用 goTo / next / prev / select） */
+    activeIndex: readonly(activeIndex),
+    /** 悬停暂停标志（可写：由触发元素直接双向绑定） */
     isHovered,
     slideCount,
     goTo,

@@ -1,6 +1,7 @@
 import { readonly, ref } from 'vue'
 import type { ThemeMode } from '@/types'
-import { useMediaQuery } from '@/utils/mediaQuery'
+import { safeMediaQuery, type SafeMediaQuery } from '@/utils/mediaQuery'
+import { STORAGE, readStored, removeStored, writeStored } from '@/utils/storage'
 
 /**
  * 夜间模式（全局单例）
@@ -12,9 +13,11 @@ import { useMediaQuery } from '@/utils/mediaQuery'
  *
  * 这里改为模块级单例状态：任意组件调用 useTheme() 拿到的都是同一份状态，
  * 所有按钮自动同步，彻底消除多按钮状态不一致的问题。
+ *
+ * 存储键不在此处定义（曾在useTheme 与 public/theme-init.js 各写一份导致漂移），
+ * 统一走 @/utils/storage 的注册表。
  */
 
-const STORAGE_KEY = 'night'
 const TRANSITION_CLASS = 'theme-transition'
 const TRANSITION_DURATION = 320
 
@@ -23,24 +26,23 @@ const isDark = ref<boolean>(false)
 const isPinned = ref<boolean>(false)
 let initialized = false
 
-function readStored(): boolean | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw === '1') return true
-    if (raw === '0') return false
-    return null
-  } catch {
-    // 隐私模式 / 禁用 localStorage 时静默降级
-    return null
-  }
+/** 系统深色偏好：整模块共用一个实例（同一 query 反复 matchMedia 纯属浪费） */
+let systemDark: SafeMediaQuery | null = null
+function prefersDark(): SafeMediaQuery {
+  systemDark ??= safeMediaQuery('(prefers-color-scheme: dark)')
+  return systemDark
+}
+
+/** 读取持久化的主题：'1' 深色 / '0' 浅色 / null 未设置（跟随系统） */
+function readPersisted(): boolean | null {
+  const raw = readStored(STORAGE.theme)
+  if (raw === '1') return true
+  if (raw === '0') return false
+  return null
 }
 
 function persist(value: boolean): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, value ? '1' : '0')
-  } catch {
-    /* 忽略写入失败 */
-  }
+  writeStored(STORAGE.theme, value ? '1' : '0')
 }
 
 /** 应用主题到 <html>，并在切换期间开启过渡（避免首屏所有元素一起动画） */
@@ -60,17 +62,16 @@ function init(): void {
   if (initialized) return
   initialized = true
 
-  const stored = readStored()
-  const prefersDark = useMediaQuery('(prefers-color-scheme: dark)').matches
+  const stored = readPersisted()
 
   isPinned.value = stored !== null
-  isDark.value = stored ?? prefersDark
+  isDark.value = stored ?? prefersDark().matches
 
-  // 首屏由 index.html 的内联脚本同步设置过，此处不加过渡，避免闪一下
+  // 首屏由 public/theme-init.js 同步设置过，此处不加过渡，避免闪一下
   applyToDocument(isDark.value, false)
 
   // 未手动固定时，跟随系统偏好实时变化
-  useMediaQuery('(prefers-color-scheme: dark)').subscribe((matches) => {
+  prefersDark().subscribe((matches) => {
     if (isPinned.value) return
     isDark.value = matches
     applyToDocument(matches, true)
@@ -104,19 +105,17 @@ export function useTheme() {
   /** 清除手动设置，恢复跟随系统 */
   function reset(): void {
     isPinned.value = false
-    try {
-      localStorage.removeItem(STORAGE_KEY)
-    } catch {
-      /* 忽略 */
-    }
+    removeStored(STORAGE.theme)
 
-    const prefersDark = useMediaQuery('(prefers-color-scheme: dark)').matches
-    isDark.value = prefersDark
-    applyToDocument(prefersDark, true)
+    const dark = prefersDark().matches
+    isDark.value = dark
+    applyToDocument(dark, true)
   }
 
   return {
+    /** 当前是否深色（只读：改主题请走 toggle / setMode / reset） */
     isDark: readonly(isDark),
+    /** 是否已手动固定（只读） */
     isPinned: readonly(isPinned),
     mode,
     toggle,

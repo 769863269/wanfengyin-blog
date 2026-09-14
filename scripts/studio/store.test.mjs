@@ -6,11 +6,30 @@
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
-  createArticle, getArticle, updateArticle, changeStatus, setFlags,
-  trashArticle, restoreFromTrash, purgeTrash, listTrash,
-  renameTaxonomy, queryArticles, statusCounts, runSchedule, roleOf,
-  MAX_FEATURED, featuredCount, saveSiteConfig, getPagination, readSiteConfig, ROOT,
-  savePage, readPage, listPages, deletePage,
+  createArticle,
+  getArticle,
+  updateArticle,
+  changeStatus,
+  setFlags,
+  trashArticle,
+  restoreFromTrash,
+  purgeTrash,
+  listTrash,
+  renameTaxonomy,
+  queryArticles,
+  statusCounts,
+  runSchedule,
+  roleOf,
+  MAX_FEATURED,
+  featuredCount,
+  saveSiteConfig,
+  getPagination,
+  readSiteConfig,
+  ROOT,
+  savePage,
+  readPage,
+  listPages,
+  deletePage,
 } from './store.mjs'
 
 // 随机后缀：避免与本机正在运行的 studio 调度器或上次崩溃残留抢 slug
@@ -26,25 +45,50 @@ for (const a of queryArticles({ q: 'cms-layer-test' }).items) {
   try {
     const t = trashArticle(a.file, 'test-preclean')
     purgeTrash(t.trashName)
-  } catch { /* 文件可能已被并发清走 */ }
+  } catch {
+    /* 文件可能已被并发清走 */
+  }
 }
 
 // 1. 创建（draft）
-let f = createArticle({ title: 'CMS数据层测试', slug: S, content: '## 测试\n\n正文', status: 'draft', author: '周周', category: '测试分类', tags: ['测试标签'], keywords: ['kw1', 'kw2'], publishAt: '2020-01-01 00:00' }).file
+let f = createArticle({
+  title: 'CMS数据层测试',
+  slug: S,
+  content: '## 测试\n\n正文',
+  status: 'draft',
+  author: '周周',
+  category: '测试分类',
+  tags: ['测试标签'],
+  keywords: ['kw1', 'kw2'],
+  publishAt: '2020-01-01 00:00',
+}).file
 assert('创建草稿', f === `2026-09-07-${S}.md` || f.endsWith(`-${S}.md`), f)
 
 let a = getArticle(f)
-assert('读取字段完整', a.status === 'draft' && a.category === '测试分类' && a.keywords.join() === 'kw1,kw2' && a.author === '周周')
+assert(
+  '读取字段完整',
+  a.status === 'draft' &&
+    a.category === '测试分类' &&
+    a.keywords.join() === 'kw1,kw2' &&
+    a.author === '周周',
+)
 
 // 2. 状态机
-changeStatus(f, 'review'); a = getArticle(f)
+changeStatus(f, 'review')
+a = getArticle(f)
 assert('draft→review', a.status === 'review')
-changeStatus(f, 'published'); a = getArticle(f)
+changeStatus(f, 'published')
+a = getArticle(f)
 assert('review→published（定时字段清空）', a.status === 'published' && a.publishAt === '')
-changeStatus(f, 'offline'); a = getArticle(f)
+changeStatus(f, 'offline')
+a = getArticle(f)
 assert('published→offline', a.status === 'offline')
 let bad = false
-try { changeStatus(f, 'review'); } catch { bad = true }
+try {
+  changeStatus(f, 'review')
+} catch {
+  bad = true
+}
 assert('非法流转被拦截（offline→review）', bad)
 changeStatus(f, 'published')
 
@@ -52,7 +96,10 @@ changeStatus(f, 'published')
 const roomForFeatured = featuredCount() < MAX_FEATURED
 setFlags(f, roomForFeatured ? { pinned: true, featured: true } : { pinned: true })
 a = getArticle(f)
-assert('置顶' + (roomForFeatured ? '+推荐' : '（推荐位已满，仅测置顶）'), a.pinned === true && (!roomForFeatured || a.featured === true))
+assert(
+  '置顶' + (roomForFeatured ? '+推荐' : '（推荐位已满，仅测置顶）'),
+  a.pinned === true && (!roomForFeatured || a.featured === true),
+)
 setFlags(f, roomForFeatured ? { pinned: false, featured: false } : { pinned: false })
 a = getArticle(f)
 assert('取消置顶+推荐', a.pinned === false && (!roomForFeatured || a.featured === false))
@@ -68,42 +115,79 @@ f = r.file
 
 // 5. 查询
 const hit = queryArticles({ q: '新摘要' }).items
-assert('关键词搜索命中', hit.some((x) => x.file === f))
+assert(
+  '关键词搜索命中',
+  hit.some((x) => x.file === f),
+)
 const byCat = queryArticles({ category: '测试分类' }).items
-assert('分类筛选命中', byCat.some((x) => x.file === f))
+assert(
+  '分类筛选命中',
+  byCat.some((x) => x.file === f),
+)
 
 // 6. 回收站往返
 trashArticle(f, '周周')
 assert('删除后列表不存在', !getArticle(f))
-assert('回收站可见', listTrash().some((t) => t.slug === S + '-2'))
+assert(
+  '回收站可见',
+  listTrash().some((t) => t.slug === S + '-2'),
+)
 const restored = restoreFromTrash(listTrash().find((t) => t.slug === S + '-2').trashName, '周周')
 assert('恢复', Boolean(getArticle(restored.file)))
 
 // 7. taxonomy 重命名（只影响测试文章）
 const rn = renameTaxonomy('category', '测试分类', '测试分类改')
-assert('分类重命名', rn.changed.includes(restored.file) && getArticle(restored.file).category === '测试分类改')
+assert(
+  '分类重命名',
+  rn.changed.includes(restored.file) && getArticle(restored.file).category === '测试分类改',
+)
 renameTaxonomy('tag', '测试标签', '测试标签改')
 assert('标签重命名', getArticle(restored.file).tags.includes('测试标签改'))
 
 // 8. 定时调度（publishAt 在过去 → draft 直接翻 published）
-const f2 = createArticle({ title: '定时测试', slug: S + '-sched', content: 'x'.repeat(10), status: 'draft', author: '周周', publishAt: '2020-01-01 08:00' }).file
+const f2 = createArticle({
+  title: '定时测试',
+  slug: S + '-sched',
+  content: 'x'.repeat(10),
+  status: 'draft',
+  author: '周周',
+  publishAt: '2020-01-01 08:00',
+}).file
 const flipped = runSchedule()
 assert('定时发布翻转', flipped.some((x) => x.file === f2) && getArticle(f2).status === 'published')
 
 // 8b. 状态机与定时字段联动
-const f3 = createArticle({ title: '状态机测试', slug: S + '-flow', content: 'x'.repeat(10), status: 'draft', author: '周周', publishAt: '2030-01-01 09:00', offlineAt: '2020-06-01 00:00' }).file
+const f3 = createArticle({
+  title: '状态机测试',
+  slug: S + '-flow',
+  content: 'x'.repeat(10),
+  status: 'draft',
+  author: '周周',
+  publishAt: '2030-01-01 09:00',
+  offlineAt: '2020-06-01 00:00',
+}).file
 const same = changeStatus(f3, 'draft')
 assert('同状态流转为 no-op', same.noop === true)
 changeStatus(f3, 'review')
 const pub = changeStatus(f3, 'published')
 const after = getArticle(f3)
-assert('上线清空 publishAt/offlineAt', pub.from === 'review' && !after.publishAt && !after.offlineAt && after.publishedAt)
+assert(
+  '上线清空 publishAt/offlineAt',
+  pub.from === 'review' && !after.publishAt && !after.offlineAt && after.publishedAt,
+)
 let threw = false
-try { updateArticle(f3, { status: 'review' }) } catch { threw = true }
+try {
+  updateArticle(f3, { status: 'review' })
+} catch {
+  threw = true
+}
 assert('编辑器保存受状态机白名单约束', threw) // published→review 非法
 // offlineAt 已过期 + 重新上线 → 不应再被调度器踢回 offline
 const reflip = runSchedule()
-assert('重新上线不被过期 offlineAt 秒杀', !reflip.some((x) => x.file === f3) && getArticle(f3).status === 'published')
+assert(
+  '重新上线不被过期 offlineAt 秒杀',
+  !reflip.some((x) => x.file === f3) && getArticle(f3).status === 'published',
+)
 
 // 9. 权限与作者
 assert('角色解析', roleOf('周周') === 'admin' && roleOf('不存在的人') === 'guest')
@@ -113,14 +197,48 @@ const fillFiles = []
 const toFill = MAX_FEATURED - featuredCount()
 try {
   for (let i = 0; i < toFill; i++) {
-    fillFiles.push(createArticle({ title: '推荐位测试' + i, slug: S + '-feat' + i, content: 'x'.repeat(10), status: 'published', author: '周周', featured: true }).file)
+    fillFiles.push(
+      createArticle({
+        title: '推荐位测试' + i,
+        slug: S + '-feat' + i,
+        content: 'x'.repeat(10),
+        status: 'published',
+        author: '周周',
+        featured: true,
+      }).file,
+    )
   }
   let blocked = 0
-  try { createArticle({ title: '超员创建', slug: S + '-over', content: 'x'.repeat(10), status: 'published', author: '周周', featured: true }) } catch { blocked++ }
-  const spare = createArticle({ title: '腾位测试', slug: S + '-spare', content: 'x'.repeat(10), status: 'published', author: '周周' }).file
+  try {
+    createArticle({
+      title: '超员创建',
+      slug: S + '-over',
+      content: 'x'.repeat(10),
+      status: 'published',
+      author: '周周',
+      featured: true,
+    })
+  } catch {
+    blocked++
+  }
+  const spare = createArticle({
+    title: '腾位测试',
+    slug: S + '-spare',
+    content: 'x'.repeat(10),
+    status: 'published',
+    author: '周周',
+  }).file
   fillFiles.push(spare)
-  try { updateArticle(spare, { featured: true }) } catch { blocked++ }
-  try { setFlags(spare, { featured: true }) } catch { blocked++ }
+  try {
+    updateArticle(spare, { featured: true })
+  } catch {
+    blocked++
+  }
+  try {
+    setFlags(spare, { featured: true })
+  } catch {
+    blocked++
+  }
   assert('推荐位满员三条路径全拦截', blocked === 3, 'blocked=' + blocked)
   assert('满员时推荐计数=上限', featuredCount() === MAX_FEATURED)
 } finally {
@@ -128,7 +246,9 @@ try {
     try {
       const t = trashArticle(file, '推荐位测试清理')
       purgeTrash(t.trashName)
-    } catch { /* 并发清理容错 */ }
+    } catch {
+      /* 并发清理容错 */
+    }
   }
 }
 assert('清理后推荐位回落', featuredCount() <= MAX_FEATURED)
@@ -142,7 +262,10 @@ for (const file of [restored.file, f2, f3]) {
   const t = trashArticle(file, '测试清理')
   purgeTrash(t.trashName)
 }
-assert('清理完成', !listTrash().some((t) => t.slug.startsWith(S)) && !queryArticles({ q: S }).items.length)
+assert(
+  '清理完成',
+  !listTrash().some((t) => t.slug.startsWith(S)) && !queryArticles({ q: S }).items.length,
+)
 
 // 7. 分页配置（系统设置，存 site.json）
 // ⚠️ 这一段会真写用户的 content/site.json，所以先整文件备份、结束在 finally 还原。
@@ -151,15 +274,27 @@ const siteFile = join(ROOT, 'content', 'site.json')
 const siteBackup = readFileSync(siteFile, 'utf8')
 try {
   const pg0 = getPagination()
-  assert('分页配置结构可用', pg0.sizes.join() === '5,10,20,50' && pg0.sizes.includes(pg0.defaultSize), `defaultSize=${pg0.defaultSize}`)
+  assert(
+    '分页配置结构可用',
+    pg0.sizes.join() === '5,10,20,50' && pg0.sizes.includes(pg0.defaultSize),
+    `defaultSize=${pg0.defaultSize}`,
+  )
   saveSiteConfig({ pagination: { sizes: [20, 10, 50, 5, 20], defaultSize: 20 } })
   const pg1 = getPagination()
   assert('分页配置保存+去重排序', pg1.sizes.join() === '5,10,20,50' && pg1.defaultSize === 20)
   let pgBad = false
-  try { saveSiteConfig({ pagination: { sizes: [5, 10], defaultSize: 50 } }) } catch { pgBad = true }
+  try {
+    saveSiteConfig({ pagination: { sizes: [5, 10], defaultSize: 50 } })
+  } catch {
+    pgBad = true
+  }
   assert('默认条数不在档位被拦截', pgBad)
   let pgBad2 = false
-  try { saveSiteConfig({ pagination: { sizes: [], defaultSize: 10 } }) } catch { pgBad2 = true }
+  try {
+    saveSiteConfig({ pagination: { sizes: [], defaultSize: 10 } })
+  } catch {
+    pgBad2 = true
+  }
   assert('空档位被拦截', pgBad2)
 
   // 导航：合并为「全通用」单列表（web 顶栏 + H5 抽屉同源）
@@ -173,22 +308,42 @@ try {
   })
   const navAfter = readSiteConfig().mainNav
   assert('导航单列表落盘', Array.isArray(navAfter) && navAfter.length === 3)
-  assert('showOnMobile 字段已退役', navAfter.every((n) => !('showOnMobile' in n)))
+  assert(
+    'showOnMobile 字段已退役',
+    navAfter.every((n) => !('showOnMobile' in n)),
+  )
   assert('mobileExtraNav 遗留键已清除', !('mobileExtraNav' in readSiteConfig()))
-  assert('导航项字段完整', navAfter[0].label === '首页' && navAfter[0].target === 'home'
-    && navAfter[1].target === 'archive' && navAfter[2].kind === 'external' && navAfter[2].target === 'https://example.com')
+  assert(
+    '导航项字段完整',
+    navAfter[0].label === '首页' &&
+      navAfter[0].target === 'home' &&
+      navAfter[1].target === 'archive' &&
+      navAfter[2].kind === 'external' &&
+      navAfter[2].target === 'https://example.com',
+  )
   let navBad = false
-  try { saveSiteConfig({ mainNav: [{ label: '坏页', kind: 'route', target: 'no-such-page' }] }) } catch { navBad = true }
+  try {
+    saveSiteConfig({ mainNav: [{ label: '坏页', kind: 'route', target: 'no-such-page' }] })
+  } catch {
+    navBad = true
+  }
   assert('无效页面 target 被拦截', navBad)
   let navBad2 = false
-  try { saveSiteConfig({ mainNav: [{ label: '坏链', kind: 'external', target: 'ftp://x' }] }) } catch { navBad2 = true }
+  try {
+    saveSiteConfig({ mainNav: [{ label: '坏链', kind: 'external', target: 'ftp://x' }] })
+  } catch {
+    navBad2 = true
+  }
   assert('非 http(s) 外链被拦截', navBad2)
 
   // 多级子菜单：children 递归归一化 —— 保留、空数组洗掉、深层 target 同样校验
   saveSiteConfig({
     mainNav: [
       {
-        label: '内容', icon: '📚', kind: 'route', target: 'archive',
+        label: '内容',
+        icon: '📚',
+        kind: 'route',
+        target: 'archive',
         children: [
           { label: '标签', icon: '', kind: 'route', target: 'tags', children: [] },
           { label: '测试页', icon: '', kind: 'route', target: 'dome' },
@@ -198,17 +353,32 @@ try {
     ],
   })
   const navTree = readSiteConfig().mainNav
-  assert('子菜单 children 保留且归一化', Array.isArray(navTree[0].children) && navTree[0].children.length === 2,
-    JSON.stringify(navTree[0]))
+  assert(
+    '子菜单 children 保留且归一化',
+    Array.isArray(navTree[0].children) && navTree[0].children.length === 2,
+    JSON.stringify(navTree[0]),
+  )
   assert('空 children 数组洗掉（配置不拖死键）', !('children' in navTree[0].children[0]))
-  assert('子树顺序保真且平级不受影响',
-    navTree[0].children.map((n) => n.target).join('>') === 'tags>dome' && navTree[1].target === 'about')
+  assert(
+    '子树顺序保真且平级不受影响',
+    navTree[0].children.map((n) => n.target).join('>') === 'tags>dome' &&
+      navTree[1].target === 'about',
+  )
   let navBadChild = false
   try {
     saveSiteConfig({
-      mainNav: [{ label: '内容', kind: 'route', target: 'home', children: [{ label: '坏子页', kind: 'route', target: 'no-such-page' }] }],
+      mainNav: [
+        {
+          label: '内容',
+          kind: 'route',
+          target: 'home',
+          children: [{ label: '坏子页', kind: 'route', target: 'no-such-page' }],
+        },
+      ],
     })
-  } catch { navBadChild = true }
+  } catch {
+    navBadChild = true
+  }
   assert('子菜单里的无效页面同样被拦截', navBadChild)
   const deep = { label: 'L1', kind: 'route', target: 'home' }
   let cur = deep
@@ -217,7 +387,11 @@ try {
     cur = cur.children[0]
   }
   let navTooDeep = false
-  try { saveSiteConfig({ mainNav: [deep] }) } catch { navTooDeep = true }
+  try {
+    saveSiteConfig({ mainNav: [deep] })
+  } catch {
+    navTooDeep = true
+  }
   assert('超过 5 级的子菜单被拦截', navTooDeep)
 
   // 顺序保真：后台拖拽排序只改 DOM 顺序，保存时 collectNav 按 DOM 顺序读出来，
@@ -229,7 +403,9 @@ try {
       { label: '归档', icon: '🗂', kind: 'route', target: 'archive' },
     ],
   })
-  const navOrder = readSiteConfig().mainNav.map((n) => n.target).join('>')
+  const navOrder = readSiteConfig()
+    .mainNav.map((n) => n.target)
+    .join('>')
   assert('导航顺序原样落盘（拖动排序生效前提）', navOrder === 'tags>home>archive', navOrder)
   // 再倒一次，确认不是"恰好没动"
   saveSiteConfig({
@@ -240,7 +416,9 @@ try {
   })
   assert(
     '二次重排仍按传入顺序',
-    readSiteConfig().mainNav.map((n) => n.target).join('>') === 'archive>tags',
+    readSiteConfig()
+      .mainNav.map((n) => n.target)
+      .join('>') === 'archive>tags',
   )
 } finally {
   writeFileSync(siteFile, siteBackup, 'utf8')
@@ -259,19 +437,33 @@ const reservedFile = join(ROOT, 'content', 'pages', RESERVED + '.md')
 const reservedExisted = existsSync(reservedFile)
 try {
   savePage({
-    slug: PS, title: '整页 HTML 测试', description: '', status: 'published',
-    directAccess: false, fullHtml: true, body: '<!DOCTYPE html><html><body>hi</body></html>',
+    slug: PS,
+    title: '整页 HTML 测试',
+    description: '',
+    status: 'published',
+    directAccess: false,
+    fullHtml: true,
+    body: '<!DOCTYPE html><html><body>hi</body></html>',
   })
   let rp = readPage(PS)
   assert('页面 round-trip：fullHtml 落盘并能读回', rp.fullHtml === true, String(rp.fullHtml))
-  assert('页面 round-trip：整份 HTML 原文保留', rp.body.indexOf('<!DOCTYPE html>') === 0, rp.body.slice(0, 16))
+  assert(
+    '页面 round-trip：整份 HTML 原文保留',
+    rp.body.indexOf('<!DOCTYPE html>') === 0,
+    rp.body.slice(0, 16),
+  )
   const inList = listPages().find((x) => x.slug === PS)
   assert('列表接口带 fullHtml 字段（列表页标识依赖它）', !!inList && inList.fullHtml === true)
 
   // 显式关闭：字段应从 frontmatter 移除（保持文件干净），读回为 false
   savePage({
-    slug: PS, title: '整页 HTML 测试', description: '', status: 'published',
-    directAccess: false, fullHtml: false, body: '普通正文',
+    slug: PS,
+    title: '整页 HTML 测试',
+    description: '',
+    status: 'published',
+    directAccess: false,
+    fullHtml: false,
+    body: '普通正文',
   })
   rp = readPage(PS)
   assert('关闭 fullHtml 后读回 false', rp.fullHtml === false)
@@ -282,11 +474,25 @@ try {
   // （注意保留字表是 home/archive/tags/about/random/post/page/admin/api/assets/feed，
   //   'blog' 之类的普通词并不在内 —— 别想当然）
   let reservedBlocked = false
-  try { savePage({ slug: RESERVED, title: 'x', status: 'published', body: '' }) } catch { reservedBlocked = true }
+  try {
+    savePage({ slug: RESERVED, title: 'x', status: 'published', body: '' })
+  } catch {
+    reservedBlocked = true
+  }
   assert(`保留字 slug 被拦截（${RESERVED}）`, reservedBlocked)
 } finally {
-  try { deletePage(PS) } catch { /* 可能已不存在 */ }
-  if (!reservedExisted) { try { unlinkSync(reservedFile) } catch { /* 正常情况：被拦，没落盘 */ } }
+  try {
+    deletePage(PS)
+  } catch {
+    /* 可能已不存在 */
+  }
+  if (!reservedExisted) {
+    try {
+      unlinkSync(reservedFile)
+    } catch {
+      /* 正常情况：被拦，没落盘 */
+    }
+  }
 }
 assert('测试页面已清理干净', readPage(PS) === null)
 assert('保留字用例未留残留文件', !existsSync(reservedFile))

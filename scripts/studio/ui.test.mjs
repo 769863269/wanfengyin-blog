@@ -57,7 +57,12 @@ for (;;) {
   } catch (err) {
     syntaxBad++
     console.log('  内联脚本块 ' + blocks + ' 语法失败：')
-    console.log(String(err.stderr || '').split('\n').slice(0, 8).join('\n'))
+    console.log(
+      String(err.stderr || '')
+        .split('\n')
+        .slice(0, 8)
+        .join('\n'),
+    )
   }
 }
 check('内联脚本块存在', blocks > 0, blocks + ' 块')
@@ -68,13 +73,27 @@ const jSite = {
   ok: true,
   site: {
     site: {
-      name: '探针站', fullName: '探针站全名', tagline: 'tag', description: 'desc',
-      author: '作者', email: 'a@b.c', icp: 'ICP', icpUrl: 'https://beian.example', since: 2019,
-      about: '关于文案', footerDesc: '页脚文案',
+      name: '探针站',
+      fullName: '探针站全名',
+      tagline: 'tag',
+      description: 'desc',
+      author: '作者',
+      email: 'a@b.c',
+      icp: 'ICP',
+      icpUrl: 'https://beian.example',
+      since: 2019,
+      about: '关于文案',
+      footerDesc: '页脚文案',
     },
     friendLinks: [{ label: '友链A', href: 'https://a.example' }],
     mainNav: [
-      { label: '首页', icon: '🏠', kind: 'route', target: 'home', children: [{ label: '测试页', icon: '', kind: 'route', target: 'dome' }] },
+      {
+        label: '首页',
+        icon: '🏠',
+        kind: 'route',
+        target: 'home',
+        children: [{ label: '测试页', icon: '', kind: 'route', target: 'dome' }],
+      },
       { label: '归档', icon: '', kind: 'route', target: 'archive' },
     ],
     pagination: { sizes: [5, 10], defaultSize: 5 },
@@ -96,27 +115,55 @@ const jPages = {
 const jPageFull = {
   ok: true,
   page: {
-    slug: 'html-dzj', title: '打字机HTML', description: '打字机效果', status: 'published',
+    slug: 'html-dzj',
+    title: '打字机HTML',
+    description: '打字机效果',
+    status: 'published',
     body: '<!DOCTYPE html>\n<html><body>hi</body></html>',
-    fullHtml: true, directAccess: false, referenced: true, reachable: true, url: '/page/html-dzj',
+    fullHtml: true,
+    directAccess: false,
+    referenced: true,
+    reachable: true,
+    url: '/page/html-dzj',
     updatedAt: '2026-09-14T02:00:00.000Z',
   },
 }
 const jGit = {
   ok: true,
   file: {
-    'user.name': 'WillowEcho', 'user.email': 'willowecho@163.com',
-    'http.version': 'HTTP/1.1', 'github.username': '769863269',
+    'user.name': 'WillowEcho',
+    'user.email': 'willowecho@163.com',
+    'http.version': 'HTTP/1.1',
+    'github.username': '769863269',
   },
-  live: { 'user.name': 'WillowEcho', 'user.email': 'willowecho@163.com', 'http.version': 'HTTP/1.1' },
+  live: {
+    'user.name': 'WillowEcho',
+    'user.email': 'willowecho@163.com',
+    'http.version': 'HTTP/1.1',
+  },
   cred: { hasToken: true, username: '769863269' },
 }
 const jArticle = {
   ok: true,
   article: {
-    file: 'probe.md', title: '探针文章', slug: 'probe', excerpt: '', status: 'draft', body: '# 探针',
-    publishedAt: '2026-09-01', publishedTime: '', tags: [], keywords: [], category: '', author: '周周',
-    pinned: false, featured: false, publishAt: '', offlineAt: '', seoDescription: '', cover: '',
+    file: 'probe.md',
+    title: '探针文章',
+    slug: 'probe',
+    excerpt: '',
+    status: 'draft',
+    body: '# 探针',
+    publishedAt: '2026-09-01',
+    publishedTime: '',
+    tags: [],
+    keywords: [],
+    category: '',
+    author: '周周',
+    pinned: false,
+    featured: false,
+    publishAt: '',
+    offlineAt: '',
+    seoDescription: '',
+    cover: '',
   },
 }
 // 「每个字段都是一个独有标记值」的文章桩 —— 专治「回填漏字段」这一类 bug。
@@ -173,9 +220,17 @@ const dom = new JSDOM(html, {
   virtualConsole: vc,
   beforeParse(window) {
     // jsdom 不实现这几个 API，不打桩会让整个脚本块中断，后面的 IIFE 全不执行
-    window.matchMedia = window.matchMedia || function () {
-      return { matches: false, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} }
-    }
+    window.matchMedia =
+      window.matchMedia ||
+      function () {
+        return {
+          matches: false,
+          addEventListener() {},
+          removeEventListener() {},
+          addListener() {},
+          removeListener() {},
+        }
+      }
     window.scrollTo = function () {}
     window.__fetchLog = []
     window.__fetchBodies = [] // 记录写请求的 payload，用来断言「提交了什么」
@@ -185,15 +240,19 @@ const dom = new JSDOM(html, {
       if (init && init.body) window.__fetchBodies.push({ path: p, body: String(init.body) })
       let body = { ok: true, articles: [], trash: [], logs: [] }
       if (p.indexOf('/api/meta') === 0) body = jMeta
-      else if (p.indexOf('/api/article/probe-full.md') === 0) body = jArticleFull // 必须在通用规则之前
-      else if (p.indexOf('/api/article/') === 0) body = jArticle
-      else if (p.indexOf('/api/articles') === 0) body = { ok: true, articles: [], total: 0, totalPages: 1, page: 1 }
+      else if (p.indexOf('/api/articles/probe-full.md') === 0)
+        body = jArticleFull // 必须在通用规则之前
+      else if (p.indexOf('/api/articles/') === 0) body = jArticle
+      else if (p.indexOf('/api/articles') === 0)
+        body = { ok: true, articles: [], total: 0, totalPages: 1, page: 1 }
       else if (p.indexOf('/api/site') === 0) body = jSite
-      else if (p.indexOf('/api/pages/') === 0) body = jPageFull // 单页读取：必须在列表之前判断
+      else if (p.indexOf('/api/pages/') === 0)
+        body = jPageFull // 单页读取：必须在列表之前判断
       else if (p.indexOf('/api/pages') === 0) body = jPages
       else if (p.indexOf('/api/git-config/verify') === 0) body = { ok: true, message: '凭证可用' }
       else if (p.indexOf('/api/git-config') === 0) body = jGit
-      else if (p.indexOf('/api/authors') === 0) body = { ok: true, me: { role: 'admin' }, authors: jMeta.authors }
+      else if (p.indexOf('/api/authors') === 0)
+        body = { ok: true, me: { role: 'admin' }, authors: jMeta.authors }
       return Promise.resolve({ json: () => Promise.resolve(body) })
     }
   },
@@ -207,13 +266,26 @@ const $$ = (sel) => Array.from(doc.querySelectorAll(sel))
 
 console.log('\n[2] 侧栏信息架构')
 const navItems = $$('.nav-item')
-check('侧栏 8 项（5 个状态筛选已收进页面内的标签页）', navItems.length === 8, '实际 ' + navItems.length)
-check('分组标题：内容 / 站点 / 系统',
-  $$('.nav-group').map((g) => g.textContent).join('/') === '内容/站点/系统',
-  $$('.nav-group').map((g) => g.textContent).join('/'))
-check('顺序：文章/自定义页面/分类与标签/回收站/站点设置/系统设置/作者与权限/操作日志',
-  navItems.map((a) => a.getAttribute('data-nav')).join(',') === 'list,pages,taxonomy,trash,site,settings,authors,logs',
-  navItems.map((a) => a.getAttribute('data-nav')).join(','))
+check(
+  '侧栏 8 项（5 个状态筛选已收进页面内的标签页）',
+  navItems.length === 8,
+  '实际 ' + navItems.length,
+)
+check(
+  '分组标题：内容 / 站点 / 系统',
+  $$('.nav-group')
+    .map((g) => g.textContent)
+    .join('/') === '内容/站点/系统',
+  $$('.nav-group')
+    .map((g) => g.textContent)
+    .join('/'),
+)
+check(
+  '顺序：文章/自定义页面/分类与标签/回收站/站点设置/系统设置/作者与权限/操作日志',
+  navItems.map((a) => a.getAttribute('data-nav')).join(',') ===
+    'list,pages,taxonomy,trash,site,settings,authors,logs',
+  navItems.map((a) => a.getAttribute('data-nav')).join(','),
+)
 check('身份选择器渲染', !!$('#meSelect'))
 
 console.log('\n[3] 站点设置：标签页分区')
@@ -221,10 +293,17 @@ window.location.hash = '#/site'
 await sleep(400)
 const tabs = $$('.site-tab')
 const panels = $$('.site-panel')
-const visiblePanels = () => panels.filter((p) => p.style.display !== 'none').map((p) => p.getAttribute('data-panel')).join()
+const visiblePanels = () =>
+  panels
+    .filter((p) => p.style.display !== 'none')
+    .map((p) => p.getAttribute('data-panel'))
+    .join()
 check('标签按钮 4 个', tabs.length === 4, '实际 ' + tabs.length)
-check('标签文案齐全', tabs.map((t) => t.textContent).join('/') === '基本信息/文案与友链/关于页/导航菜单',
-  tabs.map((t) => t.textContent).join('/'))
+check(
+  '标签文案齐全',
+  tabs.map((t) => t.textContent).join('/') === '基本信息/文案与友链/关于页/导航菜单',
+  tabs.map((t) => t.textContent).join('/'),
+)
 check('面板 4 个', panels.length === 4, '实际 ' + panels.length)
 check('默认只显示「基本信息」', visiblePanels() === 'basic', visiblePanels())
 
@@ -234,17 +313,22 @@ function clickTab(id) {
 }
 clickTab('nav')
 check('切「导航菜单」只显示 nav', visiblePanels() === 'nav', visiblePanels())
-check('导航行与拖拽手柄仍在（父 + 子 + 平级 = 3 行）',
+check(
+  '导航行与拖拽手柄仍在（父 + 子 + 平级 = 3 行）',
   $$('#navRows .nav-row').length === 3 && $$('#navRows .nv-drag').length === 3,
-  $$('#navRows .nav-row').length + ' 行')
+  $$('#navRows .nav-row').length + ' 行',
+)
 console.log('\n[3.5] 导航层级：缩进渲染与升降级')
 const navRowsAll = $$('#navRows .nav-row')
 const childRow = navRowsAll[1]
 const flatRow = navRowsAll[2]
-check('子项渲染缩进（data-depth=1，margin-left=26px，级别标记）',
-  childRow.dataset.depth === '1' && childRow.style.marginLeft === '26px' &&
+check(
+  '子项渲染缩进（data-depth=1，margin-left=26px，级别标记）',
+  childRow.dataset.depth === '1' &&
+    childRow.style.marginLeft === '26px' &&
     childRow.querySelector('.nv-depth-tag').textContent.indexOf('2级') >= 0,
-  'depth=' + childRow.dataset.depth + ' ml=' + childRow.style.marginLeft)
+  'depth=' + childRow.dataset.depth + ' ml=' + childRow.style.marginLeft,
+)
 function clickNavBtn(row, cls) {
   row.querySelector(cls).dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
 }
@@ -256,12 +340,17 @@ clickNavBtn(childRow, '.nv-indent')
 check('上一项层级不够时 ⇥ 被拦', childRow.dataset.depth === '1', childRow.dataset.depth)
 // 平级行（归档）可降为首页的第二个子菜单，再升回顶级
 clickNavBtn(flatRow, '.nv-indent')
-check('⇥ 降为上一项的子菜单（2 级缩进）',
+check(
+  '⇥ 降为上一项的子菜单（2 级缩进）',
   flatRow.dataset.depth === '1' && flatRow.style.marginLeft === '26px',
-  'depth=' + flatRow.dataset.depth)
+  'depth=' + flatRow.dataset.depth,
+)
 clickNavBtn(flatRow, '.nv-outdent')
-check('⇤ 升回顶级', flatRow.dataset.depth === '0' && flatRow.style.marginLeft === '0px',
-  'depth=' + flatRow.dataset.depth)
+check(
+  '⇤ 升回顶级',
+  flatRow.dataset.depth === '0' && flatRow.style.marginLeft === '0px',
+  'depth=' + flatRow.dataset.depth,
+)
 clickNavBtn(flatRow, '.nv-outdent')
 check('顶级再升被拦（提示不越界）', flatRow.dataset.depth === '0', flatRow.dataset.depth)
 clickTab('copy')
@@ -272,7 +361,11 @@ check('关于页三字段到位', !!$('#sAbIntro') && !!$('#sAbStack') && !!$('#
 clickTab('basic')
 check('切回「基本信息」', visiblePanels() === 'basic', visiblePanels())
 // 备案链接与建站年份：site.json 里一直有、前台页脚在用，但后台此前没有输入框
-check('备案链接已回填', ($('#sIcpUrl') || {}).value === 'https://beian.example', ($('#sIcpUrl') || {}).value)
+check(
+  '备案链接已回填',
+  ($('#sIcpUrl') || {}).value === 'https://beian.example',
+  ($('#sIcpUrl') || {}).value,
+)
 check('建站年份已回填', ($('#sSince') || {}).value === '2019', ($('#sSince') || {}).value)
 
 console.log('\n[4] 站点设置：保存与数据完整性')
@@ -281,8 +374,11 @@ check('旧底部悬浮条已移除', !$('#sSave'))
 // 切页只是 display:none，字段必须还在 DOM 里 —— 否则保存会丢别的标签页的改动
 clickTab('nav')
 const hiddenName = $('#sName')
-check('隐藏面板字段仍在 DOM（切页不丢数据）', !!hiddenName && hiddenName.value === '探针站',
-  hiddenName ? hiddenName.value : 'missing')
+check(
+  '隐藏面板字段仍在 DOM（切页不丢数据）',
+  !!hiddenName && hiddenName.value === '探针站',
+  hiddenName ? hiddenName.value : 'missing',
+)
 check('友链行不受切换影响', $$('#flRows .fl-label').length === 1)
 
 // 保存 payload 契约：此前 since / icpUrl 只存在于 site.json，后台表单既不显示也不提交，
@@ -294,23 +390,38 @@ const sitePut = window.__fetchBodies.filter((b) => b.path.indexOf('/api/site') =
 const siteBody = sitePut ? JSON.parse(sitePut.body) : {}
 check('保存发出站点 PUT', !!sitePut)
 check('payload 带 icpUrl', siteBody.icpUrl === 'https://beian.example', String(siteBody.icpUrl))
-check('payload 带 since 且为数字（前台做算术拼接）',
-  siteBody.since === 2019, typeof siteBody.since + ' / ' + siteBody.since)
+check(
+  'payload 带 since 且为数字（前台做算术拼接）',
+  siteBody.since === 2019,
+  typeof siteBody.since + ' / ' + siteBody.since,
+)
 
 console.log('\n[5] 文章列表：页头 + 状态标签页')
 window.location.hash = '#/list/all'
 await sleep(400)
 const stabs = $$('.status-tab')
 check('状态标签页 5 个', stabs.length === 5, '实际 ' + stabs.length)
-check('默认「全部」为激活态',
+check(
+  '默认「全部」为激活态',
   !!stabs[0] && stabs[0].classList.contains('active') && stabs[0].textContent.indexOf('全部') === 0,
-  stabs[0] ? stabs[0].textContent : 'missing')
-check('状态标签页挂在文章路由下',
+  stabs[0] ? stabs[0].textContent : 'missing',
+)
+check(
+  '状态标签页挂在文章路由下',
   stabs[0] && stabs[0].getAttribute('href') === '#/list/all',
-  stabs[0] ? String(stabs[0].getAttribute('href')) : 'missing')
-check('统一页头渲染出标题', (($('h2') || {}).textContent || '') === '文章', ($('h2') || {}).textContent || '')
-check('文章菜单项处于高亮态',
-  $$('.nav-item').filter((a) => a.getAttribute('data-nav') === 'list')[0].classList.contains('active'))
+  stabs[0] ? String(stabs[0].getAttribute('href')) : 'missing',
+)
+check(
+  '统一页头渲染出标题',
+  (($('h2') || {}).textContent || '') === '文章',
+  ($('h2') || {}).textContent || '',
+)
+check(
+  '文章菜单项处于高亮态',
+  $$('.nav-item')
+    .filter((a) => a.getAttribute('data-nav') === 'list')[0]
+    .classList.contains('active'),
+)
 
 console.log('\n[6] 编辑器：进出与离场清理')
 window.location.hash = '#/editor/new'
@@ -336,15 +447,27 @@ window.location.hash = '#/settings'
 await sleep(420)
 check('Git 配置卡片渲染', !!$('#gitName') && !!$('#gitEmail') && !!$('#gitHttp') && !!$('#gitUser'))
 check('提交身份已回填', ($('#gitName') || {}).value === 'WillowEcho', ($('#gitName') || {}).value)
-check('邮箱已回填', ($('#gitEmail') || {}).value === 'willowecho@163.com', ($('#gitEmail') || {}).value)
+check(
+  '邮箱已回填',
+  ($('#gitEmail') || {}).value === 'willowecho@163.com',
+  ($('#gitEmail') || {}).value,
+)
 check('协议已回填', ($('#gitHttp') || {}).value === 'HTTP/1.1', ($('#gitHttp') || {}).value)
-check('GitHub 账号名已回填', ($('#gitUser') || {}).value === '769863269', ($('#gitUser') || {}).value)
-check('凭证徽标显示「已配置」',
+check(
+  'GitHub 账号名已回填',
+  ($('#gitUser') || {}).value === '769863269',
+  ($('#gitUser') || {}).value,
+)
+check(
+  '凭证徽标显示「已配置」',
   (($('#gitCredBadge') || {}).textContent || '').indexOf('已配置') >= 0,
-  (($('#gitCredBadge') || {}).textContent || '').trim())
-check('加载提示已收尾（不残留「正在读取」）',
+  (($('#gitCredBadge') || {}).textContent || '').trim(),
+)
+check(
+  '加载提示已收尾（不残留「正在读取」）',
   (($('#gitMsg') || {}).textContent || '').indexOf('正在读取') < 0,
-  ($('#gitMsg') || {}).textContent)
+  ($('#gitMsg') || {}).textContent,
+)
 const gitHits = window.__fetchLog.filter((u) => u.indexOf('/api/git-config') === 0).length
 check('进设置页只请求一次 git 配置', gitHits === 1, '请求 ' + gitHits + ' 次')
 
@@ -361,17 +484,39 @@ check('publishedAt 回填', ($('#eDate') || {}).value === '2026-09-07', ($('#eDa
 check('excerpt 回填', ($('#eExcerpt') || {}).value === '标记摘要E', ($('#eExcerpt') || {}).value)
 check('正文回填', ($('#eContent') || {}).value === '标记正文B', ($('#eContent') || {}).value)
 check('category 回填', ($('#eCategory') || {}).value === '标记分类C', ($('#eCategory') || {}).value)
-check('tags 回填（数组 → 逗号串）', ($('#eTags') || {}).value === '标记标签1, 标记标签2', ($('#eTags') || {}).value)
-check('keywords 回填', ($('#eKeywords') || {}).value === '标记关键词1', ($('#eKeywords') || {}).value)
-check('seoDescription 回填', ($('#eSeoDesc') || {}).value === '标记SEO描述D', ($('#eSeoDesc') || {}).value)
-check('status 回填（review）', ($('#eStatus') || {}).value === 'review', ($('#eStatus') || {}).value)
+check(
+  'tags 回填（数组 → 逗号串）',
+  ($('#eTags') || {}).value === '标记标签1, 标记标签2',
+  ($('#eTags') || {}).value,
+)
+check(
+  'keywords 回填',
+  ($('#eKeywords') || {}).value === '标记关键词1',
+  ($('#eKeywords') || {}).value,
+)
+check(
+  'seoDescription 回填',
+  ($('#eSeoDesc') || {}).value === '标记SEO描述D',
+  ($('#eSeoDesc') || {}).value,
+)
+check(
+  'status 回填（review）',
+  ($('#eStatus') || {}).value === 'review',
+  ($('#eStatus') || {}).value,
+)
 check('author 回填', ($('#eAuthor') || {}).value === '周周', ($('#eAuthor') || {}).value)
 check('pinned 回填为勾选', ($('#ePinned') || {}).checked === true)
 check('featured 回填为勾选', ($('#eFeatured') || {}).checked === true)
-check('publishAt 回填（datetime-local 需 T 分隔）',
-  ($('#ePublishAt') || {}).value === '2026-10-01T08:30', ($('#ePublishAt') || {}).value)
-check('offlineAt 回填（datetime-local 需 T 分隔）',
-  ($('#eOfflineAt') || {}).value === '2026-11-02T09:45', ($('#eOfflineAt') || {}).value)
+check(
+  'publishAt 回填（datetime-local 需 T 分隔）',
+  ($('#ePublishAt') || {}).value === '2026-10-01T08:30',
+  ($('#ePublishAt') || {}).value,
+)
+check(
+  'offlineAt 回填（datetime-local 需 T 分隔）',
+  ($('#eOfflineAt') || {}).value === '2026-11-02T09:45',
+  ($('#eOfflineAt') || {}).value,
+)
 
 console.log('\n[7.8] 文章编辑器：保存 payload 完整性与作者兜底')
 // 模拟「meta 还没加载完 / 加载失败」：作者下拉没有 option 时 value 就是空串。
@@ -382,18 +527,44 @@ while (auSel.options.length) auSel.remove(0)
 auSel.value = ''
 $('#eSave').dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
 await sleep(260)
-const putReq = window.__fetchBodies.filter((b) => b.path.indexOf('/api/article/probe-full.md') === 0)[0]
+const putReq = window.__fetchBodies.filter(
+  (b) => b.path.indexOf('/api/articles/probe-full.md') === 0,
+)[0]
 check('保存发出 PUT 请求', !!putReq)
 const putBody = putReq ? JSON.parse(putReq.body) : {}
-check('作者兜底：下拉为空也不把 author 写空（核心回归）', putBody.author === '周周', String(putBody.author))
-check('payload 带全部可编辑字段',
-  ['title', 'slug', 'publishedAt', 'excerpt', 'content', 'status', 'pinned', 'featured', 'category',
-    'tags', 'keywords', 'seoDescription', 'author', 'publishAt', 'offlineAt', 'cover']
-    .every((k) => Object.prototype.hasOwnProperty.call(putBody, k)),
-  Object.keys(putBody).join(','))
+check(
+  '作者兜底：下拉为空也不把 author 写空（核心回归）',
+  putBody.author === '周周',
+  String(putBody.author),
+)
+check(
+  'payload 带全部可编辑字段',
+  [
+    'title',
+    'slug',
+    'publishedAt',
+    'excerpt',
+    'content',
+    'status',
+    'pinned',
+    'featured',
+    'category',
+    'tags',
+    'keywords',
+    'seoDescription',
+    'author',
+    'publishAt',
+    'offlineAt',
+    'cover',
+  ].every((k) => Object.prototype.hasOwnProperty.call(putBody, k)),
+  Object.keys(putBody).join(','),
+)
 check('tags 提交为数组', Array.isArray(putBody.tags) && putBody.tags.length === 2)
-check('cover 取自打开时的原值（不在 DOM 里，不能丢）',
-  putBody.cover === '/images/covers/mark-cover.jpg', String(putBody.cover))
+check(
+  'cover 取自打开时的原值（不在 DOM 里，不能丢）',
+  putBody.cover === '/images/covers/mark-cover.jpg',
+  String(putBody.cover),
+)
 check('pinned/featured 提交为布尔', putBody.pinned === true && putBody.featured === true)
 
 console.log('\n[8] 性能回归：meta 缓存与视图清理契约')
@@ -409,7 +580,11 @@ check('存在视图离场清理钩子 onLeave', html.indexOf('function onLeave('
 check('存在统一页头组件 pageHead', html.indexOf('function pageHead(') >= 0)
 check('存在状态标签页组件 statusTabs', html.indexOf('function statusTabs(') >= 0)
 const pasteBinds = html.split("document.addEventListener('paste'").length - 1
-check('document 上只绑一次 paste 监听（防每次进编辑器叠加）', pasteBinds === 1, '实际 ' + pasteBinds + ' 处')
+check(
+  'document 上只绑一次 paste 监听（防每次进编辑器叠加）',
+  pasteBinds === 1,
+  '实际 ' + pasteBinds + ' 处',
+)
 
 console.log('\n[9] 自定义页面编辑器：勾选框回填与模式提示')
 // 回归背景：load 回填曾漏掉 pgFullHtml —— 打开整页 HTML 页面时勾选框显示未选中，
@@ -418,27 +593,41 @@ window.location.hash = '#/pages/edit/html-dzj'
 await sleep(450)
 check('页面编辑器渲染', !!$('#pgTitle') && !!$('#pgBody') && !!$('#pgFullHtml'))
 check('标题已回填', ($('#pgTitle') || {}).value === '打字机HTML', ($('#pgTitle') || {}).value)
-check('正文已回填（整份 HTML 原文）',
+check(
+  '正文已回填（整份 HTML 原文）',
   (($('#pgBody') || {}).value || '').indexOf('<!DOCTYPE html>') === 0,
-  (($('#pgBody') || {}).value || '').slice(0, 20))
+  (($('#pgBody') || {}).value || '').slice(0, 20),
+)
 check('「完整 HTML 独立页」勾选框回填为选中（核心回归）', ($('#pgFullHtml') || {}).checked === true)
 check('「允许直接访问」按实际值回填（false）', ($('#pgDirect') || {}).checked === false)
-check('「状态」按实际值回填（published）', ($('#pgStatus') || {}).value === 'published', ($('#pgStatus') || {}).value)
-check('正文标题显示整页 HTML 模式',
+check(
+  '「状态」按实际值回填（published）',
+  ($('#pgStatus') || {}).value === 'published',
+  ($('#pgStatus') || {}).value,
+)
+check(
+  '正文标题显示整页 HTML 模式',
   (($('#pgBodyLabel') || {}).textContent || '').indexOf('完整 HTML') >= 0,
-  ($('#pgBodyLabel') || {}).textContent)
-check('模式说明给出真实落盘路径',
+  ($('#pgBodyLabel') || {}).textContent,
+)
+check(
+  '模式说明给出真实落盘路径',
   (($('#pgModeHint') || {}).textContent || '').indexOf('public/page-html/html-dzj.html') >= 0,
-  (($('#pgModeHint') || {}).textContent || '').slice(0, 40))
+  (($('#pgModeHint') || {}).textContent || '').slice(0, 40),
+)
 
 const fh = $('#pgFullHtml')
 fh.checked = false
 fh.dispatchEvent(new window.Event('change', { bubbles: true }))
-check('取消勾选后标题切回 Markdown 片段',
+check(
+  '取消勾选后标题切回 Markdown 片段',
   (($('#pgBodyLabel') || {}).textContent || '').indexOf('Markdown') >= 0,
-  ($('#pgBodyLabel') || {}).textContent)
-check('取消后说明回到片段规则',
-  (($('#pgModeHint') || {}).textContent || '').indexOf('HTML 片段规则') >= 0)
+  ($('#pgBodyLabel') || {}).textContent,
+)
+check(
+  '取消后说明回到片段规则',
+  (($('#pgModeHint') || {}).textContent || '').indexOf('HTML 片段规则') >= 0,
+)
 
 // 关闭整页 HTML 属不可逆降级：保存必须弹二次确认，不能一点就存
 $('#pgSave').dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
@@ -450,8 +639,10 @@ check('取消后弹窗关闭', $('#modal').classList.contains('hidden'))
 
 fh.checked = true
 fh.dispatchEvent(new window.Event('change', { bubbles: true }))
-check('重新勾选恢复整页 HTML 提示',
-  (($('#pgBodyLabel') || {}).textContent || '').indexOf('完整 HTML') >= 0)
+check(
+  '重新勾选恢复整页 HTML 提示',
+  (($('#pgBodyLabel') || {}).textContent || '').indexOf('完整 HTML') >= 0,
+)
 
 console.log('\n[9.5] 自定义页面列表：整页 HTML 标识')
 window.location.hash = '#/pages'
@@ -463,6 +654,104 @@ await sleep(250)
 
 console.log('\n[10] 页面运行时报错')
 check('无未捕获报错', errors.length === 0, errors.slice(0, 3).join(' | '))
+
+/* ---------- 11. 元数据单一真源（防漂移契约） ----------
+ * 客户端的状态标签/流转白名单曾各手抄一份，两边漂移不会报错、只会静默不一致。
+ * 现在客户端只读服务端注入的 WF_META，这一节负责盯住「注入值 == 数据层真源」。 */
+console.log('\n[11] 元数据单一真源')
+{
+  const marker = 'var WF_META = '
+  const at = html.indexOf(marker)
+  check('页面已注入 WF_META', at > 0)
+
+  if (at > 0) {
+    const line = html.slice(at, html.indexOf('\n', at))
+    let meta = null
+    try {
+      meta = JSON.parse(line.slice(marker.length))
+    } catch (e) {
+      check('WF_META 是合法 JSON', false, e.message)
+    }
+
+    if (meta) {
+      const truth = await import('./store.mjs')
+
+      check(
+        '状态枚举与 store.STATUSES 一致',
+        JSON.stringify(meta.statusValues) === JSON.stringify(truth.STATUSES),
+        meta.statusValues.join(','),
+      )
+      check(
+        '状态标签与 store.STATUS_LABELS 一致',
+        JSON.stringify(meta.statusLabels) === JSON.stringify(truth.STATUS_LABELS),
+      )
+      check(
+        '流转白名单与 store.TRANSITIONS 一致',
+        JSON.stringify(meta.transitions) === JSON.stringify(truth.TRANSITIONS),
+      )
+      check(
+        '角色下拉与 store.ROLE_OPTIONS 一致',
+        JSON.stringify(meta.roleOptions) === JSON.stringify(truth.ROLE_OPTIONS),
+      )
+      check(
+        '角色标签含 guest 且与 store.ROLE_LABELS 对齐',
+        meta.roleLabels.guest === '访客(只读)' &&
+          truth.ROLES.every((r) => meta.roleLabels[r] === truth.ROLE_LABELS[r]),
+      )
+
+      // 配色表是 UI 专属常量，但键必须覆盖全部状态 —— 少一个就是「某个状态没徽标色」
+      check(
+        '状态配色覆盖全部状态',
+        truth.STATUSES.every((s) => typeof meta.statusStyles[s] === 'string'),
+      )
+      check(
+        '状态动作词覆盖全部状态',
+        truth.STATUSES.every((s) => typeof meta.statusActions[s] === 'string'),
+      )
+      check(
+        '页面状态与 store.PAGE_STATUSES 一致（顺序也一致）',
+        JSON.stringify(meta.pageStatuses.map((o) => o.value)) ===
+          JSON.stringify(truth.PAGE_STATUSES),
+        meta.pageStatuses.map((o) => o.value).join(','),
+      )
+      check(
+        '列表页签覆盖全部状态 + 全部',
+        meta.statusTabs.length === truth.STATUSES.length + 1 && meta.statusTabs[0].value === 'all',
+      )
+
+      // 客户端不得再出现手抄的状态标签字面量（有就是回归）。
+      // 注意要先把 WF_META 那一行摘掉 —— 它就是标签的合法来源，不摘会自己命中自己。
+      const scriptStart = html.indexOf('<script nonce=')
+      const scriptEnd = html.indexOf('</script>')
+      const withMeta = html.slice(scriptStart, scriptEnd)
+      const clientScript = withMeta
+        .split('\n')
+        .filter((l) => l.indexOf(marker) !== 0)
+        .join('\n')
+      const labels = Object.values(truth.STATUS_LABELS)
+      const hardcoded = labels.filter(
+        (l) => clientScript.indexOf("'" + l + "'") >= 0 || clientScript.indexOf('"' + l + '"') >= 0,
+      )
+      check('客户端无手抄的状态标签', hardcoded.length === 0, hardcoded.join(','))
+      check('WF_META 只有一处注入点', withMeta.split(marker).length === 2)
+    }
+  }
+}
+
+/* ---------- 12. localStorage 键规范 ---------- */
+console.log('\n[12] localStorage 键规范')
+{
+  const clientScript = html.slice(html.indexOf('<script nonce='), html.indexOf('</script>'))
+  check('身份键使用 wf:actor', clientScript.indexOf("'wf:actor'") > 0)
+  check('新建草稿键使用 wf:studio:draft-new', clientScript.indexOf("'wf:studio:draft-new'") > 0)
+  check('旧键仅作为迁移来源保留', clientScript.indexOf("legacy: 'wf-actor'") > 0)
+
+  // 更精确的收敛判据：裸调用里不得出现字面量键名（一律传 entry.key / entry.legacy）。
+  // 数量阈值容易被无关改动误伤，这里只盯「有没有绕过注册表」。
+  const literalKeyCalls = clientScript.match(/localStorage\.(get|set|remove)Item\(\s*['"]/g) || []
+  check('无字面量键名绕过注册表', literalKeyCalls.length === 0, literalKeyCalls.join(' '))
+  check('键名集中在 LS 注册表', clientScript.indexOf('var LS = {') > 0)
+}
 
 console.log('\n结果：' + pass + ' 通过，' + fail + ' 失败')
 process.exit(fail ? 1 : 0)

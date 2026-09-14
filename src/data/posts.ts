@@ -25,13 +25,14 @@ export const posts: readonly PostSummary[] = generatedPosts
  * 按发布时间倒序（新 → 旧），置顶文章（Studio CMS 的 pinned）排最前。
  * 数据源无需手工维护顺序，避免新增文章时忘记插入位置。
  */
-export const sortedPosts: readonly PostSummary[] = [...posts]
-  .sort((a, b) => {
-    if (Boolean(b.pinned) !== Boolean(a.pinned)) return Number(Boolean(b.pinned)) - Number(Boolean(a.pinned))
-    // 发布时间精确到分钟（publishedTime），同日内新发的排前面
-    const ts = (p: PostSummary) => new Date(`${p.publishedAt}T${p.publishedTime || '00:00'}`).getTime()
-    return ts(b) - ts(a)
-  })
+export const sortedPosts: readonly PostSummary[] = [...posts].sort((a, b) => {
+  if (Boolean(b.pinned) !== Boolean(a.pinned))
+    return Number(Boolean(b.pinned)) - Number(Boolean(a.pinned))
+  // 发布时间精确到分钟（publishedTime），同日内新发的排前面
+  const ts = (p: PostSummary) =>
+    new Date(`${p.publishedAt}T${p.publishedTime || '00:00'}`).getTime()
+  return ts(b) - ts(a)
+})
 
 /** 轮播展示的精选文章（Studio CMS 的 featured）。无封面的走渐变兜底，侧栏「推荐阅读」消费；上限 10 篇与后台配额一致 */
 export const featuredPosts: readonly PostSummary[] = sortedPosts
@@ -57,7 +58,9 @@ export const carouselPosts: readonly PostSummary[] = [
 export const hotPosts = computed<readonly HotPost[]>(() => {
   const read = [...posts]
     .filter((post) => localViews(post.slug) > 0)
-    .sort((a, b) => localViews(b.slug) - localViews(a.slug) || lastReadAt(b.slug) - lastReadAt(a.slug))
+    .sort(
+      (a, b) => localViews(b.slug) - localViews(a.slug) || lastReadAt(b.slug) - lastReadAt(a.slug),
+    )
     .slice(0, 4)
   const rest = sortedPosts.filter((post) => !read.some((r) => r.slug === post.slug))
   return [...read, ...rest].slice(0, 4).map(({ slug, title }) => ({ slug, title }))

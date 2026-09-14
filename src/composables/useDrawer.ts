@@ -2,10 +2,12 @@ import { readonly, ref } from 'vue'
 import { lockBodyScroll, unlockBodyScroll } from '@/utils/scrollLock'
 
 /**
- * 移动端抽屉菜单状态（全局单例）
+ * 移动端抽屉菜单状态（@singleton 全局单例）
  *
  * 原始模板把菜单逻辑内联在页面里，靠 getElementById 抓取 DOM。
  * 这里改为状态驱动：trigger 与 drawer 是两个独立组件也能天然同步。
+ *
+ * 状态对外只读：改开合状态一律走 open / close / toggle。
  */
 
 const isOpen = ref(false)

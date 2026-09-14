@@ -13,7 +13,10 @@ import type { PostSummary } from '@/types'
 
 const { slides } = defineProps<{ slides: readonly PostSummary[] }>()
 
-const { activeIndex, isHovered, select, next, prev } = useCarousel(() => slides.length, CAROUSEL_INTERVAL)
+const { activeIndex, isHovered, select, next, prev } = useCarousel(
+  () => slides.length,
+  CAROUSEL_INTERVAL,
+)
 
 /** 键盘可达性：聚焦轮播后方向键切换 */
 function handleKeydown(event: KeyboardEvent): void {

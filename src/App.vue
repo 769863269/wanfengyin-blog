@@ -12,14 +12,10 @@ import MobileDrawer from '@/components/layout/MobileDrawer.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 import SearchModal from '@/components/common/SearchModal.vue'
 import { useTheme } from '@/composables/useTheme'
-import { useDrawer } from '@/composables/useDrawer'
-import { useSearch } from '@/composables/useSearch'
 import { takePendingScroll } from '@/router'
 
-// 三个全局状态在根组件统一挂载，子组件各自 useXxx() 取同一实例
+// 主题在这里挂一次即完成初始化（模块级单例，子组件各自 useTheme() 拿到同一份状态）
 useTheme()
-const drawer = useDrawer()
-const search = useSearch()
 
 /**
  * 页面过渡 enter 时恢复滚动位置（浏览器返回 / 前进）。
@@ -41,7 +37,11 @@ onErrorCaptured((err) => {
   <!-- 键盘用户跳过导航直达内容（a11y） -->
   <a class="skip-link" href="#main">跳到主内容</a>
   <AppHeader />
-  <MobileDrawer v-model:open="drawer.isOpen.value" />
+  <!-- MobileDrawer / SearchModal 都不接收 props：它们各自 useDrawer() / useSearch()
+       直接取同一个模块级单例状态。此前误挂了 v-model:open，而组件既没有
+       defineProps 也没有 defineEmits —— 那行绑定不产生任何效果，还写向
+       readonly 状态（一旦组件补上 emit 就会触发 Vue 的只读警告）。 -->
+  <MobileDrawer />
   <main id="main" tabindex="-1">
     <RouterView v-slot="{ Component }">
       <Transition name="page" mode="out-in" @enter="onPageEnter">
@@ -50,7 +50,7 @@ onErrorCaptured((err) => {
     </RouterView>
   </main>
   <AppFooter />
-  <SearchModal v-model:open="search.isOpen.value" />
+  <SearchModal />
 </template>
 
 <style scoped>

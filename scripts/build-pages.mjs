@@ -189,7 +189,9 @@ console.log(
     `（菜单 ${viaMenu}，直链 ${pages.length - viaMenu}` +
     (skipped ? `，跳过草稿 ${skipped}` : '') +
     (offline ? `，跳过未上线 ${offline}` : '') +
-    (fullHtmlFiles.size ? `，完整 HTML 独立页 ${fullHtmlFiles.size} 个已落盘 public/page-html/` : '') +
+    (fullHtmlFiles.size
+      ? `，完整 HTML 独立页 ${fullHtmlFiles.size} 个已落盘 public/page-html/`
+      : '') +
     (pruned ? `，清理下线残留 ${pruned} 个` : '') +
     '）' +
     (highlighted || degraded ? `（代码块高亮 ${highlighted}，降级 ${degraded}）` : ''),

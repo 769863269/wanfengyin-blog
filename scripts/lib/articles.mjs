@@ -155,9 +155,7 @@ export function blocksPlainText(blocks) {
     .map((block) => {
       if (block.type === 'table') return [...block.head, ...block.rows.flat()].join(' ')
       if (block.type === 'list') {
-        return block.items
-          .map((item) => (typeof item === 'string' ? item : item.text))
-          .join(' ')
+        return block.items.map((item) => (typeof item === 'string' ? item : item.text)).join(' ')
       }
       return 'text' in block ? block.text : ''
     })

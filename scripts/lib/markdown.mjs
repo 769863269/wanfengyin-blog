@@ -86,10 +86,44 @@ function safeImageSrc(raw) {
 
 /** HTML 片段可用的标签 */
 export const HTML_TAG_ALLOWLIST = [
-  'a', 'b', 'blockquote', 'br', 'caption', 'code', 'del', 'div', 'em', 'figcaption',
-  'figure', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img', 'li', 'mark',
-  'ol', 'p', 'pre', 's', 'span', 'strong', 'sub', 'sup', 'table', 'tbody', 'td',
-  'th', 'thead', 'tr', 'u', 'ul',
+  'a',
+  'b',
+  'blockquote',
+  'br',
+  'caption',
+  'code',
+  'del',
+  'div',
+  'em',
+  'figcaption',
+  'figure',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'hr',
+  'i',
+  'img',
+  'li',
+  'mark',
+  'ol',
+  'p',
+  'pre',
+  's',
+  'span',
+  'strong',
+  'sub',
+  'sup',
+  'table',
+  'tbody',
+  'td',
+  'th',
+  'thead',
+  'tr',
+  'u',
+  'ul',
 ]
 
 /**
@@ -98,21 +132,65 @@ export const HTML_TAG_ALLOWLIST = [
  * width / height 让 img 能按原始尺寸展示。
  */
 export const HTML_ATTR_ALLOWLIST = [
-  'alt', 'class', 'colspan', 'decoding', 'height', 'href', 'id', 'loading', 'rel',
-  'rowspan', 'src', 'srcset', 'style', 'target', 'title', 'width',
+  'alt',
+  'class',
+  'colspan',
+  'decoding',
+  'height',
+  'href',
+  'id',
+  'loading',
+  'rel',
+  'rowspan',
+  'src',
+  'srcset',
+  'style',
+  'target',
+  'title',
+  'width',
 ]
 
 /** 连同内容一起丢弃：留着标签就等于留下执行面或外链面 */
 const HTML_DROP_WITH_CONTENT = new Set([
-  'script', 'style', 'iframe', 'object', 'embed', 'link', 'meta', 'base', 'form',
-  'input', 'button', 'textarea', 'select', 'option', 'svg', 'math', 'template',
-  'noscript', 'frame', 'frameset', 'applet',
+  'script',
+  'style',
+  'iframe',
+  'object',
+  'embed',
+  'link',
+  'meta',
+  'base',
+  'form',
+  'input',
+  'button',
+  'textarea',
+  'select',
+  'option',
+  'svg',
+  'math',
+  'template',
+  'noscript',
+  'frame',
+  'frameset',
+  'applet',
 ])
 
 /** 自闭合标签：没有闭合标签，不参与配平 */
 const HTML_VOID = new Set([
-  'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta',
-  'param', 'source', 'track', 'wbr',
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
 ])
 
 /** 页面自身占用的 id：用户写了会顶掉 Vue 挂载点或预渲染数据块 */
@@ -162,7 +240,8 @@ function safeAttrUrl(raw) {
 function safeStyleValue(raw) {
   const value = String(raw)
   if (/[<>\\]/.test(value)) return null
-  if (/expression\s*\(|javascript:|vbscript:|behavior\s*:|@import|binding\s*:/i.test(value)) return null
+  if (/expression\s*\(|javascript:|vbscript:|behavior\s*:|@import|binding\s*:/i.test(value))
+    return null
   if (/url\s*\(\s*['"]?\s*(?!https:\/\/|\/|\.\.?\/)/i.test(value)) return null
   return value
 }
@@ -266,7 +345,8 @@ export function sanitizeHtmlBlock(raw) {
     i = j + 1
 
     if (dropping) {
-      if (new RegExp('^/\\s*' + dropping + '(?![a-zA-Z0-9-])', 'i').test(inner.trim())) dropping = null
+      if (new RegExp('^/\\s*' + dropping + '(?![a-zA-Z0-9-])', 'i').test(inner.trim()))
+        dropping = null
       continue
     }
 
@@ -284,7 +364,11 @@ export function sanitizeHtmlBlock(raw) {
     if (!HTML_TAG_ALLOWLIST.includes(tag.name)) continue
 
     const attrs = sanitizeHtmlAttrs(tag.name, tag.attrs)
-    out += '<' + normalizeHtmlTagName(tag.name) + (attrs ? ' ' + attrs : '') + (tag.selfClosing ? ' />' : '>')
+    out +=
+      '<' +
+      normalizeHtmlTagName(tag.name) +
+      (attrs ? ' ' + attrs : '') +
+      (tag.selfClosing ? ' />' : '>')
   }
   return out
 }
@@ -339,7 +423,9 @@ export function renderInline(text) {
 
   s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, label, href) => {
     const url = safeHref(href)
-    return url ? '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + label + '</a>' : m
+    return url
+      ? '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + label + '</a>'
+      : m
   })
 
   s = s.replace(/\uE000(\d+)\uE001/g, (_, n) => slots[Number(n)] ?? '')

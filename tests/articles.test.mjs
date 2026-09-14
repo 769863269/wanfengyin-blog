@@ -81,7 +81,10 @@ describe('readArticle 数据门禁', () => {
   })
 
   it('html 形式的内联 base64 同样拦下', () => {
-    const file = write('b64-html.md', article({ body: '<img src="data:image/jpeg;base64,/9j/4AAQ" />' }))
+    const file = write(
+      'b64-html.md',
+      article({ body: '<img src="data:image/jpeg;base64,/9j/4AAQ" />' }),
+    )
     expect(() => readArticle(dir, file)).toThrow(/内联 base64/)
   })
 
@@ -99,7 +102,10 @@ describe('readArticle 数据门禁', () => {
     const draft = write('draft.md', '---\nslug: d\nstatus: draft\n---\n\n写到一半\n')
     expect(readArticle(dir, draft).skipped).toBe(true)
 
-    const badDraft = write('draft-b64.md', article({ slug: 'd2', status: 'draft', body: '![a](data:image/png;base64,AAA)' }))
+    const badDraft = write(
+      'draft-b64.md',
+      article({ slug: 'd2', status: 'draft', body: '![a](data:image/png;base64,AAA)' }),
+    )
     expect(() => readArticle(dir, badDraft)).toThrow(/内联 base64/)
   })
 })

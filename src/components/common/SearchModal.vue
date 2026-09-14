@@ -18,7 +18,7 @@ import type { ArticleBlock } from '@/types'
 const MAX_RESULTS = 8
 
 const router = useRouter()
-const { isOpen, keyword, close } = useSearch()
+const { isOpen, keyword, close, setKeyword } = useSearch()
 
 const inputRef = ref<HTMLInputElement | null>(null)
 
@@ -84,6 +84,16 @@ function handleKeydown(event: KeyboardEvent): void {
   if (event.key === 'Escape') close()
 }
 
+/**
+ * 不能用 `v-model`（keyword 对外只读），但也**不能**改写成
+ * `:model-value` + `@update:model-value` —— 那是组件间的约定事件名，
+ * 原生 <input> 永远不会派发它，输入框会彻底失去响应（搜索恒为空结果）。
+ * 原生元素上只有 `v-model` 会被编译成 `:value` + `@input`，所以这里手写这一对。
+ */
+function handleInput(event: Event): void {
+  setKeyword((event.target as HTMLInputElement).value)
+}
+
 onMounted(() => document.addEventListener('keydown', handleKeydown))
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleKeydown)
@@ -106,12 +116,13 @@ onBeforeUnmount(() => {
 
       <input
         ref="inputRef"
-        v-model="keyword"
+        :value="keyword"
         class="search-modal__input"
         type="search"
         placeholder="搜索文章标题或内容…"
         aria-label="搜索关键词"
         autocomplete="off"
+        @input="handleInput"
       />
 
       <button class="search-modal__close" type="button" aria-label="关闭搜索" @click="close">

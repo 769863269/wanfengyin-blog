@@ -7,8 +7,10 @@ import globals from 'globals'
 export default tseslint.config(
   {
     ignores: [
-      'dist/**',
-      'dist-smoke/**',
+      // 通配写法：clean-smoke 删不掉产物时会改名成 dist-smoke.old-<ts>，
+      // 写精确名 dist-smoke 会漏掉它们（minified bundle 一次性刷出上百条 error）。
+      // 与 .gitignore 的 dist-smoke*、.prettierignore 的 dist-smoke*/ 保持一致。
+      'dist*/**',
       'node_modules/**',
       'public/**',
       '*.d.ts',
@@ -46,6 +48,19 @@ export default tseslint.config(
       'vue/multi-word-component-names': 'off',
       'vue/attributes-order': 'warn',
       'vue/require-default-prop': 'off',
+    },
+  },
+
+  {
+    // ArticleBody 是全项目唯一允许 v-html 的地方：每个注入点都过 sanitizeHtml
+    // （DOMPurify），或来自构建期白名单产物（Shiki 高亮 codeHtml）。
+    //
+    // 这里用文件级关闭，而不是就地写 20 处 eslint-disable-next-line：
+    // 逐行抑制是按行生效的，prettier 一旦把标签折成多行，v-html 就掉出抑制范围，
+    // 规则静默复活报警（且只是 warning，不会让 lint 失败，极易无人察觉）。
+    files: ['src/components/article/ArticleBody.vue'],
+    rules: {
+      'vue/no-v-html': 'off',
     },
   },
 

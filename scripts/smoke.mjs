@@ -120,7 +120,8 @@ async function main() {
   await sleep(50)
   const after = html0.classList.contains('night')
   check('点击切换 night class', before !== after)
-  check('localStorage 持久化', window.localStorage.getItem('night') === (after ? '1' : '0'))
+  // 键名统一为 wf:theme（见 src/utils/storage.ts），旧键 night 只作迁移来源
+  check('localStorage 持久化', window.localStorage.getItem('wf:theme') === (after ? '1' : '0'))
   click($$('.theme-toggle')[1])
   await sleep(50)
   check('第二个按钮同步切换', html0.classList.contains('night') === before)
@@ -166,7 +167,10 @@ async function main() {
     window.dispatchEvent(new window.PopStateEvent('popstate'))
     // 必须等到标题「文本」匹配 —— 只等元素存在会立刻命中上一个页面残留的标题（连续切页时必踩）
     await waitFor(() => $('.custom-page__title')?.textContent.includes(p.title))
-    check(`已上线页面 /page/${p.slug} 渲染`, $('.custom-page__title')?.textContent.includes(p.title))
+    check(
+      `已上线页面 /page/${p.slug} 渲染`,
+      $('.custom-page__title')?.textContent.includes(p.title),
+    )
   }
   window.history.pushState({}, '', '/page/__unlisted_probe__')
   window.dispatchEvent(new window.PopStateEvent('popstate'))

@@ -13,7 +13,8 @@
  *   - 行内格式 —— renderInline 先转义再挂白名单标签；
  *   - html.html —— 生成端 sanitizeHtmlBlock 净化的 HTML 片段。
  */
-export type ArticleListItem = string | { text: string; children: string[]; childrenOrdered: boolean }
+export type ArticleListItem =
+  string | { text: string; children: string[]; childrenOrdered: boolean }
 
 export type ArticleBlock =
   | { type: 'paragraph'; text: string }
@@ -22,8 +23,16 @@ export type ArticleBlock =
   | { type: 'image'; src: string; alt: string }
   | { type: 'list'; ordered: boolean; items: ArticleListItem[] }
   | { type: 'table'; head: string[]; rows: string[][] }
-  | { type: 'code'; lang: string; text: string; /** 构建期 Shiki 高亮的 <code> 内部 HTML（可选，缺省走纯文本） */ codeHtml?: string }
-  | { type: 'html'; /** 已按白名单净化的 HTML 片段（生成端 sanitizeHtmlBlock 产物） */ html: string }
+  | {
+      type: 'code'
+      lang: string
+      text: string
+      /** 构建期 Shiki 高亮的 <code> 内部 HTML（可选，缺省走纯文本） */ codeHtml?: string
+    }
+  | {
+      type: 'html'
+      /** 已按白名单净化的 HTML 片段（生成端 sanitizeHtmlBlock 产物） */ html: string
+    }
 
 /**
  * 文章元数据（不含正文）—— 列表页与首屏使用。

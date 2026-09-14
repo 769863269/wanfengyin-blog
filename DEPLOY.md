@@ -53,6 +53,7 @@ Vercel 的多规则语义：**同一响应头以后定义的规则为准**（每
 2. 自定义域名：Settings → Pages → Custom domain，DNS 加 CNAME 记录。
 
 > 子路径部署（`https://<用户名>.github.io/<仓库名>/`）时：
+>
 > - `vite.config.ts` 的 `base` 要设为 `/仓库名/`
 > - `src/config/site.ts` 的 `domain` 要改成含子路径的完整地址
 > - `vercel.json` 里的 `/assets/(.*)`、`/page-html/(.*)` 规则在 Pages 上不生效，
@@ -91,6 +92,7 @@ server {
 `index.html` 里标注 `<!-- 统计代码占位 -->` 的注释替换为统计脚本即可。
 
 自托管可选 [umami](https://umami.is)（开源、无 Cookie），同样插一段 script 标签。
+
 > 注意：接入外站脚本后要同步放宽 `vercel.json` 与 `public/_headers` 的 `script-src` /
 > `connect-src`，否则会被 CSP 拦掉（用 `npm run check:headers` 确认两份同步）。
 

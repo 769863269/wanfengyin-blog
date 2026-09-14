@@ -12,7 +12,21 @@
  */
 
 /** 覆盖博客现有文章涉及的全部语言；新增语言后在此补充即可 */
-const LANGS = ['ts', 'js', 'vue', 'css', 'scss', 'html', 'json', 'yaml', 'md', 'bash', 'shell', 'diff', 'text']
+const LANGS = [
+  'ts',
+  'js',
+  'vue',
+  'css',
+  'scss',
+  'html',
+  'json',
+  'yaml',
+  'md',
+  'bash',
+  'shell',
+  'diff',
+  'text',
+]
 
 const THEME = 'github-dark'
 

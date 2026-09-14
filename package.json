@@ -30,6 +30,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "verify": "npm run lint && npm run format:check && npm run type-check && npm run test && npm run check:headers && npm run test:studio && npm run test:studio:ui && npm run test:studio:git",
     "test": "vitest run",
     "test:watch": "vitest",
     "smoke": "node scripts/clean-smoke.mjs && vite build --config vite.config.smoke.ts && node scripts/smoke.mjs"

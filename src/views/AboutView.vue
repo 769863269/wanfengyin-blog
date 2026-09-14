@@ -17,7 +17,8 @@ useSeoMeta({
 
 /** 配置缺失/损坏时的兜底（与 site.json 初始内容一致） */
 const fallback: AboutPageContent = {
-  intro: '{{fullName}}，「{{tagline}}」——记录开发中的实战笔记、踩坑复盘与一些技术碎碎念。目前已有 {{count}} 篇文章，持续更新中。',
+  intro:
+    '{{fullName}}，「{{tagline}}」——记录开发中的实战笔记、踩坑复盘与一些技术碎碎念。目前已有 {{count}} 篇文章，持续更新中。',
   techStack: [
     { name: 'Vite 8（Rolldown）', role: '构建引擎，秒级冷启动' },
     { name: 'Vue 3.5', role: '<script setup> 组合式 API' },
@@ -29,13 +30,21 @@ const fallback: AboutPageContent = {
   ],
   milestones: [
     { date: '2026-04', text: '博客上线，第一篇文章发布' },
-    { date: '2026-08', text: '整套架构从静态 HTML 迁移到 Vite + Vue 3 + TS，支持 Markdown 发文、RSS、预渲染与自动部署' },
-    { date: '2026-09', text: '自研 Studio CMS 后台上线：后台写文章、发布状态机、回收站与操作日志，一键推送上线；全站 DOMPurify + CSP 双层防护，热门榜按真实阅读动态排序' },
+    {
+      date: '2026-08',
+      text: '整套架构从静态 HTML 迁移到 Vite + Vue 3 + TS，支持 Markdown 发文、RSS、预渲染与自动部署',
+    },
+    {
+      date: '2026-09',
+      text: '自研 Studio CMS 后台上线：后台写文章、发布状态机、回收站与操作日志，一键推送上线；全站 DOMPurify + CSP 双层防护，热门榜按真实阅读动态排序',
+    },
   ],
 }
 
 const cfg: AboutPageContent =
-  aboutPageConfig && typeof aboutPageConfig.intro === 'string' && Array.isArray(aboutPageConfig.techStack)
+  aboutPageConfig &&
+  typeof aboutPageConfig.intro === 'string' &&
+  Array.isArray(aboutPageConfig.techStack)
     ? aboutPageConfig
     : fallback
 
@@ -69,8 +78,7 @@ const milestones = cfg.milestones
             </li>
           </ul>
           <p class="about-page__hint">
-            本站完全开源静态：Markdown 写文章，构建时编译 + 高亮 + 预渲染，
-            没有后端、没有追踪脚本。
+            本站完全开源静态：Markdown 写文章，构建时编译 + 高亮 + 预渲染， 没有后端、没有追踪脚本。
           </p>
         </section>
 
@@ -87,10 +95,13 @@ const milestones = cfg.milestones
         <section class="about-page__section">
           <h2>找到我</h2>
           <p>
-            邮箱：<a :href="`mailto:${siteConfig.email}`">{{ siteConfig.email }}</a>
+            邮箱：
+            <a :href="`mailto:${siteConfig.email}`">{{ siteConfig.email }}</a>
             ，或通过页脚的社交图标。订阅更新可
-            <a href="/feed.xml">使用 RSS</a>，或去
-            <RouterLink :to="{ name: 'archive' }">归档页</RouterLink>按时间浏览。
+            <a href="/feed.xml">使用 RSS</a>
+            ，或去
+            <RouterLink :to="{ name: 'archive' }">归档页</RouterLink>
+            按时间浏览。
           </p>
         </section>
       </div>

@@ -6,11 +6,17 @@ import type { NavItem } from '../src/types'
 /** 分支节点高亮：子树内是否有叶子指向当前路由（顶栏下拉 / 抽屉折叠组共用） */
 describe('navSubtreeHas', () => {
   const tree: NavItem = {
-    id: 'n0', label: '测试', icon: '', kind: 'disabled',
+    id: 'n0',
+    label: '测试',
+    icon: '',
+    kind: 'disabled',
     children: [
       { id: 'n0-0', label: '混合布局', icon: '', kind: 'route', to: 'html-mixed' },
       {
-        id: 'n0-1', label: '更深', icon: '', kind: 'disabled',
+        id: 'n0-1',
+        label: '更深',
+        icon: '',
+        kind: 'disabled',
         children: [{ id: 'n0-1-0', label: '单页', icon: '', kind: 'route', to: 'html-showcase' }],
       },
     ],
@@ -39,7 +45,9 @@ describe('navReferencedSlugs', () => {
       mainNav: [
         { label: '首页', kind: 'route', target: 'home' },
         {
-          label: '内容', kind: 'route', target: 'archive',
+          label: '内容',
+          kind: 'route',
+          target: 'archive',
           children: [
             { label: '页面', kind: 'route', target: 'dome' },
             { label: '占位', kind: 'disabled', target: '' },
@@ -56,7 +64,12 @@ describe('navReferencedSlugs', () => {
   it('hidden 整枝跳过（父项隐藏则子级引用一并失效）', () => {
     const slugs = navReferencedSlugs({
       mainNav: [
-        { label: '隐藏组', kind: 'hidden', target: '', children: [{ label: '页面', kind: 'route', target: 'dome' }] },
+        {
+          label: '隐藏组',
+          kind: 'hidden',
+          target: '',
+          children: [{ label: '页面', kind: 'route', target: 'dome' }],
+        },
         { label: '可见', kind: 'route', target: 'home' },
       ],
     })
@@ -78,7 +91,9 @@ describe('isPageReachable', () => {
     expect(isPageReachable({ slug: 'dome', status: 'published' }, slugs)).toBe(true)
   })
   it('published + directAccess（字符串 true 也认）→ 可达', () => {
-    expect(isPageReachable({ slug: 'x', status: 'published', directAccess: 'true' }, slugs)).toBe(true)
+    expect(isPageReachable({ slug: 'x', status: 'published', directAccess: 'true' }, slugs)).toBe(
+      true,
+    )
   })
   it('draft → 不可达', () => {
     expect(isPageReachable({ slug: 'dome', status: 'draft' }, slugs)).toBe(false)

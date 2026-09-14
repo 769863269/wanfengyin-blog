@@ -7,22 +7,60 @@
 import { createServer } from 'node:http'
 import { spawn } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
-import { createReadStream, existsSync, mkdirSync, readFileSync, statSync, watch, writeFileSync } from 'node:fs'
+import {
+  createReadStream,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  statSync,
+  watch,
+  writeFileSync,
+} from 'node:fs'
 import { join, extname, sep } from 'node:path'
 import {
   ROOT,
-  STATUSES, STATUS_LABELS, ROLES, ROLE_LABELS,
-  MAX_FEATURED, featuredCount,
-  can, canTouchArticle, roleOf, listAuthors, saveAuthors,
-  log, readLogs,
-  getArticle, createArticle, updateArticle,
-  changeStatus, setFlags,
-  trashArticle, listTrash, restoreFromTrash, purgeTrash,
-  taxonomy, renameTaxonomy, queryArticles, statusCounts, runSchedule,
-  readSiteConfig, saveSiteConfig, getPagination,
+  STATUSES,
+  STATUS_LABELS,
+  ROLES,
+  ROLE_LABELS,
+  ROLE_OPTIONS,
+  MAX_FEATURED,
+  featuredCount,
+  can,
+  canTouchArticle,
+  roleOf,
+  listAuthors,
+  saveAuthors,
+  log,
+  readLogs,
+  getArticle,
+  createArticle,
+  updateArticle,
+  changeStatus,
+  setFlags,
+  trashArticle,
+  listTrash,
+  restoreFromTrash,
+  purgeTrash,
+  taxonomy,
+  renameTaxonomy,
+  queryArticles,
+  statusCounts,
+  runSchedule,
+  readSiteConfig,
+  saveSiteConfig,
+  getPagination,
 } from './store.mjs'
 import { page } from './page.mjs'
-import { readGitConfigFile, readGitConfigLive, saveGitConfig, readGithubCredStatus, saveGithubToken, updateGithubUsername, verifyGithubCred } from './gitconfig.mjs'
+import {
+  readGitConfigFile,
+  readGitConfigLive,
+  saveGitConfig,
+  readGithubCredStatus,
+  saveGithubToken,
+  updateGithubUsername,
+  verifyGithubCred,
+} from './gitconfig.mjs'
 import { listPages, readPage, savePage, deletePage } from './store.mjs'
 
 const coversDir = join(ROOT, 'public', 'images', 'covers')
@@ -36,9 +74,16 @@ const MIME = {
   js: 'text/javascript; charset=utf-8',
   css: 'text/css; charset=utf-8',
   json: 'application/json; charset=utf-8',
-  woff: 'font/woff', woff2: 'font/woff2', ttf: 'font/ttf',
-  png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', svg: 'image/svg+xml',
-  webp: 'image/webp', avif: 'image/avif',
+  woff: 'font/woff',
+  woff2: 'font/woff2',
+  ttf: 'font/ttf',
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  gif: 'image/gif',
+  svg: 'image/svg+xml',
+  webp: 'image/webp',
+  avif: 'image/avif',
   mp3: 'audio/mpeg',
 }
 
@@ -136,7 +181,12 @@ function runBuildScript(script, onDone) {
   const child = spawn(process.execPath, ['scripts/' + script], { cwd: ROOT, windowsHide: true })
   let tail = []
   const onChunk = (b) => {
-    tail.push(...b.toString('utf8').split('\n').filter((l) => l.trim()))
+    tail.push(
+      ...b
+        .toString('utf8')
+        .split('\n')
+        .filter((l) => l.trim()),
+    )
     tail = tail.slice(-5)
   }
   child.stdout.on('data', onChunk)
@@ -186,7 +236,11 @@ function scheduleBlogBuild() {
 }
 
 function startBlogWatcher() {
-  const targets = [join(ROOT, 'articles'), join(ROOT, 'public', 'images', 'covers'), join(ROOT, 'content', 'pages')]
+  const targets = [
+    join(ROOT, 'articles'),
+    join(ROOT, 'public', 'images', 'covers'),
+    join(ROOT, 'content', 'pages'),
+  ]
   for (const dir of targets) {
     try {
       mkdirSync(dir, { recursive: true }) // 目录不存在先建（如首次启动还没有 content/pages），否则 watch 抛错被跳过
@@ -313,7 +367,9 @@ export function startStudio(port = 5199) {
           'Content-Type': 'text/html; charset=utf-8',
           'Cache-Control': 'no-store',
           'Content-Security-Policy':
-            "default-src 'self'; script-src 'self' 'nonce-" + nonce + "'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+            "default-src 'self'; script-src 'self' 'nonce-" +
+            nonce +
+            "'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
         })
         res.end(page(nonce))
         return
@@ -331,7 +387,12 @@ export function startStudio(port = 5199) {
       if (req.method === 'GET' && path.startsWith('/vditor/')) {
         const rel = decodeURIComponent(path.slice('/vditor/'.length))
         const file = join(vditorRoot, rel)
-        if (rel.includes('..') || !file.startsWith(vditorRoot + sep) || !existsSync(file) || !statSync(file).isFile()) {
+        if (
+          rel.includes('..') ||
+          !file.startsWith(vditorRoot + sep) ||
+          !existsSync(file) ||
+          !statSync(file).isFile()
+        ) {
           res.writeHead(404).end('not found')
           return
         }
@@ -348,7 +409,12 @@ export function startStudio(port = 5199) {
       if (req.method === 'GET' && path.startsWith('/covers/')) {
         const rel = decodeURIComponent(path.slice('/covers/'.length))
         const file = join(coversDir, rel)
-        if (rel.includes('..') || !file.startsWith(coversDir + sep) || !existsSync(file) || !statSync(file).isFile()) {
+        if (
+          rel.includes('..') ||
+          !file.startsWith(coversDir + sep) ||
+          !existsSync(file) ||
+          !statSync(file).isFile()
+        ) {
           res.writeHead(404).end('not found')
           return
         }
@@ -365,7 +431,7 @@ export function startStudio(port = 5199) {
       if (req.method === 'GET' && path === '/api/meta') {
         ok(res, {
           statuses: STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] })),
-          roles: ROLES.map((r) => ({ value: r, label: ROLE_LABELS[r] })),
+          roles: ROLE_OPTIONS,
           authors: listAuthors(),
           counts: statusCounts(),
           taxonomy: taxonomy(),
@@ -373,7 +439,11 @@ export function startStudio(port = 5199) {
           featured: { count: featuredCount(), max: MAX_FEATURED },
           pagination: getPagination(),
           pending: pendingChanges(),
-          blog: { building: blogBuild.building, builtAt: blogBuild.builtAt, lastError: blogBuild.lastError },
+          blog: {
+            building: blogBuild.building,
+            builtAt: blogBuild.builtAt,
+            lastError: blogBuild.lastError,
+          },
         })
         return
       }
@@ -391,7 +461,10 @@ export function startStudio(port = 5199) {
           author: url.searchParams.get('author') ?? '',
           sort: url.searchParams.get('sort') ?? '',
           page: url.searchParams.get('page') ?? '',
-          pageSize: Number.isInteger(reqSize) && pagination.sizes.includes(reqSize) ? reqSize : pagination.defaultSize,
+          pageSize:
+            Number.isInteger(reqSize) && pagination.sizes.includes(reqSize)
+              ? reqSize
+              : pagination.defaultSize,
         })
         ok(res, {
           articles: result.items,
@@ -403,7 +476,8 @@ export function startStudio(port = 5199) {
         return
       }
 
-      const articleFile = path.match(/^\/api\/article\/([\w.-]+\.md)(\/(status|flags))?$/)
+      // 单条文章的资源路径与集合保持同一复数形式：/api/articles/<file>[/status|/flags]
+      const articleFile = path.match(/^\/api\/articles\/([\w.-]+\.md)(\/(status|flags))?$/)
       if (articleFile) {
         const file = articleFile[1]
         const sub = articleFile[3]
@@ -448,7 +522,12 @@ export function startStudio(port = 5199) {
             return
           }
           const result = changeStatus(file, to)
-          log(actor, `status:${result.to}`, file, `${STATUS_LABELS[result.from]} → ${STATUS_LABELS[result.to]}`)
+          log(
+            actor,
+            `status:${result.to}`,
+            file,
+            `${STATUS_LABELS[result.from]} → ${STATUS_LABELS[result.to]}`,
+          )
           return ok(res, result)
         }
 
@@ -544,7 +623,12 @@ export function startStudio(port = 5199) {
         if (!guard('taxonomy:rename')) return
         const body = JSON.parse(await readBody(req))
         const result = renameTaxonomy(body.type, body.from, body.to)
-        log(actor, 'taxonomy:rename', `${body.type}:${body.from}→${body.to}`, `${result.changed.length} 篇受影响`)
+        log(
+          actor,
+          'taxonomy:rename',
+          `${body.type}:${body.from}→${body.to}`,
+          `${result.changed.length} 篇受影响`,
+        )
         return ok(res, result)
       }
 
@@ -559,8 +643,10 @@ export function startStudio(port = 5199) {
         const authors = listAuthors()
         const name = String(body.name ?? '').trim()
         if (!name) return sendJson(res, 400, { ok: false, output: '作者名不能为空' })
-        if (authors.some((a) => a.name === name)) return sendJson(res, 400, { ok: false, output: '作者已存在' })
-        if (!ROLES.includes(body.role)) return sendJson(res, 400, { ok: false, output: '角色不合法' })
+        if (authors.some((a) => a.name === name))
+          return sendJson(res, 400, { ok: false, output: '作者已存在' })
+        if (!ROLES.includes(body.role))
+          return sendJson(res, 400, { ok: false, output: '角色不合法' })
         authors.push({ name, role: body.role })
         saveAuthors(authors)
         log(actor, 'authors:add', name, `角色：${ROLE_LABELS[body.role]}`)
@@ -572,7 +658,8 @@ export function startStudio(port = 5199) {
         const name = decodeURIComponent(authorMatch[1])
         const authors = listAuthors()
         const left = authors.filter((a) => a.name !== name)
-        if (left.length === authors.length) return sendJson(res, 404, { ok: false, output: '作者不存在' })
+        if (left.length === authors.length)
+          return sendJson(res, 404, { ok: false, output: '作者不存在' })
         if (!left.some((a) => a.role === 'admin')) {
           return sendJson(res, 400, { ok: false, output: '至少保留一名管理员' })
         }
@@ -597,12 +684,20 @@ export function startStudio(port = 5199) {
         const body = JSON.parse(await readBody(req).catch(() => ({})))
         try {
           const result = savePage(body)
-          const state = result.status === 'draft'
-            ? '草稿'
-            : result.reachable
-              ? (result.directAccess ? '已发布 · 直链可访问' : '已发布 · 菜单可访问')
-              : '已发布 · 未上线'
-          log(actor, result.created ? 'page:create' : 'page:update', `content/pages/${result.slug}.md`, `「${body.title || result.slug}」${result.created ? '新建' : '更新'}（${state}）`)
+          const state =
+            result.status === 'draft'
+              ? '草稿'
+              : result.reachable
+                ? result.directAccess
+                  ? '已发布 · 直链可访问'
+                  : '已发布 · 菜单可访问'
+                : '已发布 · 未上线'
+          log(
+            actor,
+            result.created ? 'page:create' : 'page:update',
+            `content/pages/${result.slug}.md`,
+            `「${body.title || result.slug}」${result.created ? '新建' : '更新'}（${state}）`,
+          )
           return ok(res, { ...result, pages: listPages() })
         } catch (e) {
           return sendJson(res, 400, { ok: false, output: e.message })
@@ -613,7 +708,12 @@ export function startStudio(port = 5199) {
         if (role !== 'admin' && role !== 'editor') return deny(res, '自定义页面仅管理员/编辑可删除')
         try {
           const result = deletePage(pageDel[1])
-          log(actor, 'page:delete', `content/pages/${result.slug}.md`, `删除自定义页面「${result.slug}」`)
+          log(
+            actor,
+            'page:delete',
+            `content/pages/${result.slug}.md`,
+            `删除自定义页面「${result.slug}」`,
+          )
           return ok(res, { ...result, pages: listPages() })
         } catch (e) {
           return sendJson(res, 400, { ok: false, output: e.message })
@@ -650,7 +750,11 @@ export function startStudio(port = 5199) {
        * 注意：这几个读值都是异步的（git 子进程在本机约 2 秒），绝不能写成同步版 ——
        * 同步会把事件循环按住十几秒，整个后台（切菜单、拉列表）全部排队卡死。 */
       if (path === '/api/git-config' && req.method === 'GET') {
-        return ok(res, { file: readGitConfigFile(), live: await readGitConfigLive(), cred: readGithubCredStatus() })
+        return ok(res, {
+          file: readGitConfigFile(),
+          live: await readGitConfigLive(),
+          cred: readGithubCredStatus(),
+        })
       }
       if (path === '/api/git-config' && req.method === 'POST') {
         if (role !== 'admin') return deny(res, 'Git 配置仅管理员可修改')
@@ -661,9 +765,24 @@ export function startStudio(port = 5199) {
           if (body.githubToken) await saveGithubToken(body.githubToken, body.githubUsername)
           // 只改账号名、没重填 Token：独立走一条保留原 PAT 的路径（否则改动静默丢失）
           else if (body.githubUsername) updateGithubUsername(body.githubUsername)
-          log(actor, 'git-config:update', 'git.config.local', '更新本地 git 配置: ' + applied.join(', ')
-            + (body.githubToken ? '；保存 GitHub 推送凭证' : (body.githubUsername ? '；更新 GitHub 账号名' : '')))
-          return ok(res, { file: readGitConfigFile(), live: await readGitConfigLive(), applied, cred: readGithubCredStatus() })
+          log(
+            actor,
+            'git-config:update',
+            'git.config.local',
+            '更新本地 git 配置: ' +
+              applied.join(', ') +
+              (body.githubToken
+                ? '；保存 GitHub 推送凭证'
+                : body.githubUsername
+                  ? '；更新 GitHub 账号名'
+                  : ''),
+          )
+          return ok(res, {
+            file: readGitConfigFile(),
+            live: await readGitConfigLive(),
+            applied,
+            cred: readGithubCredStatus(),
+          })
         } catch (e) {
           return sendJson(res, 400, { ok: false, output: e.message })
         }
@@ -683,11 +802,32 @@ export function startStudio(port = 5199) {
         if (body.dryRun) {
           // 预演：起 job 跑 --dry-run，前端同样走轮询
           const id = randomUUID().replace(/-/g, '').slice(0, 10)
-          const job = { id, status: 'running', lines: [], startedAt: Date.now(), endedAt: null, actor }
+          const job = {
+            id,
+            status: 'running',
+            lines: [],
+            startedAt: Date.now(),
+            endedAt: null,
+            actor,
+          }
           jobs.set(id, job)
           const child = spawn(process.execPath, ['scripts/publish.mjs', '--dry-run'], { cwd: ROOT })
-          child.stdout.on('data', (b) => job.lines.push(...b.toString('utf8').split('\n').filter((l) => l.trim())))
-          child.stderr.on('data', (b) => job.lines.push(...b.toString('utf8').split('\n').filter((l) => l.trim())))
+          child.stdout.on('data', (b) =>
+            job.lines.push(
+              ...b
+                .toString('utf8')
+                .split('\n')
+                .filter((l) => l.trim()),
+            ),
+          )
+          child.stderr.on('data', (b) =>
+            job.lines.push(
+              ...b
+                .toString('utf8')
+                .split('\n')
+                .filter((l) => l.trim()),
+            ),
+          )
           child.on('close', (code) => {
             job.status = code === 0 ? 'success' : 'error'
             job.endedAt = Date.now()
@@ -729,7 +869,10 @@ export function startStudio(port = 5199) {
           })
         }
         mkdirSync(coversDir, { recursive: true })
-        const fileName = `${(body.slug || `cover-${Date.now()}`).toString().toLowerCase().replace(/[^a-z0-9-]/g, '')}${ext === '.jpeg' ? '.jpg' : ext}`
+        const fileName = `${(body.slug || `cover-${Date.now()}`)
+          .toString()
+          .toLowerCase()
+          .replace(/[^a-z0-9-]/g, '')}${ext === '.jpeg' ? '.jpg' : ext}`
         writeFileSync(join(coversDir, fileName), bytes)
         return ok(res, { fileName })
       }

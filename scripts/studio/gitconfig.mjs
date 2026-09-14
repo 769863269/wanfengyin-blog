@@ -38,7 +38,15 @@ const CONFIG_FILE = join(ROOT, 'git.config.local')
 const CRED_FILE = join(homedir(), '.git-credentials')
 
 /** 允许在后台设置的 git 配置项白名单 */
-export const GIT_KEYS = ['http.version', 'user.name', 'user.email', 'core.autocrlf', 'pull.rebase', 'push.default', 'credential.helper']
+export const GIT_KEYS = [
+  'http.version',
+  'user.name',
+  'user.email',
+  'core.autocrlf',
+  'pull.rebase',
+  'push.default',
+  'credential.helper',
+]
 
 const FILE_HEADER = [
   '# 本项目本地 git 配置（不入库，不上传 GitHub）',
@@ -191,7 +199,8 @@ export function readGitConfigLive() {
   if (direct) return Promise.resolve(direct) // 主路径：文件读，约 1ms，永远是最新值
 
   // 兜底路径（起进程，慢）才需要缓存
-  if (liveCache.value && Date.now() - liveCache.at < LIVE_TTL) return Promise.resolve(liveCache.value)
+  if (liveCache.value && Date.now() - liveCache.at < LIVE_TTL)
+    return Promise.resolve(liveCache.value)
   const pending = refreshLiveConfig().catch(() => liveCache.value || {})
   if (liveCache.value) return Promise.resolve(liveCache.value) // 有旧值：先用旧值，后台刷新
   return pending
@@ -241,7 +250,10 @@ function upsertFileLine(key, value) {
   const target = `${key}=${value}`
   let found = false
   const out = lines.map((l) => {
-    if (!found && l.trim().startsWith(key + '=')) { found = true; return target }
+    if (!found && l.trim().startsWith(key + '=')) {
+      found = true
+      return target
+    }
     return l
   })
   if (!found) out.push(target)
@@ -252,8 +264,14 @@ function upsertFileLine(key, value) {
 export function readGithubCredStatus() {
   let hasToken = false
   try {
-    hasToken = existsSync(CRED_FILE) && readFileSync(CRED_FILE, 'utf8').split(/\r?\n/).some((l) => l.indexOf('@github.com') !== -1)
-  } catch { /* 读取失败按未配置处理 */ }
+    hasToken =
+      existsSync(CRED_FILE) &&
+      readFileSync(CRED_FILE, 'utf8')
+        .split(/\r?\n/)
+        .some((l) => l.indexOf('@github.com') !== -1)
+  } catch {
+    /* 读取失败按未配置处理 */
+  }
   const f = readGitConfigFile()
   return { hasToken, username: f['github.username'] || '' }
 }
@@ -269,9 +287,14 @@ export function readGithubCredStatus() {
  */
 export function updateGithubUsername(username) {
   const user = String(username || '').trim()
-  if (!/^[A-Za-z0-9-]{1,39}$/.test(user)) throw new Error('GitHub 用户名格式不对（字母/数字/连字符，最长 39 位）')
+  if (!/^[A-Za-z0-9-]{1,39}$/.test(user))
+    throw new Error('GitHub 用户名格式不对（字母/数字/连字符，最长 39 位）')
 
-  const lines = existsSync(CRED_FILE) ? readFileSync(CRED_FILE, 'utf8').split(/\r?\n/).filter((l) => l.trim()) : []
+  const lines = existsSync(CRED_FILE)
+    ? readFileSync(CRED_FILE, 'utf8')
+        .split(/\r?\n/)
+        .filter((l) => l.trim())
+    : []
   const idx = lines.findIndex((l) => l.indexOf('@github.com') !== -1)
   let hasToken = false
   if (idx >= 0) {
@@ -280,7 +303,11 @@ export function updateGithubUsername(username) {
       hasToken = true
       lines[idx] = `https://${user}:${m[2]}@github.com`
       writeFileSync(CRED_FILE, lines.join('\n') + '\n', 'utf8')
-      try { chmodSync(CRED_FILE, 0o600) } catch { /* Windows 下权限位无意义，忽略 */ }
+      try {
+        chmodSync(CRED_FILE, 0o600)
+      } catch {
+        /* Windows 下权限位无意义，忽略 */
+      }
     }
   }
   upsertFileLine('github.username', user)
@@ -301,18 +328,30 @@ export async function saveGithubToken(token, username) {
   if (!user) {
     try {
       const { stdout } = await git(['remote', 'get-url', 'origin'])
-      const m = String(stdout).trim().match(/github\.com[/:]([^/]+)/)
+      const m = String(stdout)
+        .trim()
+        .match(/github\.com[/:]([^/]+)/)
       if (m) user = m[1]
-    } catch { /* 没有 origin 时报用户名缺失 */ }
+    } catch {
+      /* 没有 origin 时报用户名缺失 */
+    }
   }
   if (!/^[A-Za-z0-9-]{1,39}$/.test(user)) throw new Error('GitHub 用户名缺失或格式不对')
 
   // 合并写入凭证库：保留其他条目，替换 github.com 旧条目
-  const lines = existsSync(CRED_FILE) ? readFileSync(CRED_FILE, 'utf8').split(/\r?\n/).filter((l) => l.trim()) : []
+  const lines = existsSync(CRED_FILE)
+    ? readFileSync(CRED_FILE, 'utf8')
+        .split(/\r?\n/)
+        .filter((l) => l.trim())
+    : []
   const kept = lines.filter((l) => l.indexOf('@github.com') === -1)
   kept.push(`https://${user}:${token}@github.com`)
   writeFileSync(CRED_FILE, kept.join('\n') + '\n', 'utf8')
-  try { chmodSync(CRED_FILE, 0o600) } catch { /* Windows 下权限位无意义，忽略 */ }
+  try {
+    chmodSync(CRED_FILE, 0o600)
+  } catch {
+    /* Windows 下权限位无意义，忽略 */
+  }
 
   upsertFileLine('github.username', user)
   return { username: user }

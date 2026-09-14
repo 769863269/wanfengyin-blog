@@ -44,13 +44,21 @@ const indentStyle = { paddingLeft: `calc(22px + ${depth} * 18px)` }
     >
       <span v-if="item.icon" class="dgroup__icon" aria-hidden="true">{{ item.icon }}</span>
       <span>{{ item.label }}</span>
-      <span class="dgroup__caret" :class="{ 'dgroup__caret--open': open }" aria-hidden="true">▸</span>
+      <span class="dgroup__caret" :class="{ 'dgroup__caret--open': open }" aria-hidden="true">
+        ▸
+      </span>
     </button>
 
     <div v-show="open" class="dgroup__list">
       <template v-for="child in item.children" :key="child.id">
         <DrawerGroup v-if="child.children?.length" :item="child" :depth="depth + 1" />
-        <NavLink v-else :item="child" class="dgroup__link" :style="{ paddingLeft: `calc(22px + ${depth + 1} * 18px)` }" @click="closeDrawer" />
+        <NavLink
+          v-else
+          :item="child"
+          class="dgroup__link"
+          :style="{ paddingLeft: `calc(22px + ${depth + 1} * 18px)` }"
+          @click="closeDrawer"
+        />
       </template>
     </div>
   </div>

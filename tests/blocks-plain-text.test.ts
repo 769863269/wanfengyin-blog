@@ -36,7 +36,13 @@ const CASES: { name: string; blocks: ArticleBlock[] }[] = [
   },
   {
     name: '有序列表：单项',
-    blocks: [{ type: 'list', ordered: true, items: [{ text: '只有一项', children: [], childrenOrdered: false }] }],
+    blocks: [
+      {
+        type: 'list',
+        ordered: true,
+        items: [{ text: '只有一项', children: [], childrenOrdered: false }],
+      },
+    ],
   },
   {
     name: '表格：表头 + 多行',

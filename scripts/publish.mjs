@@ -54,14 +54,30 @@ function git(args, options = {}) {
  */
 const TRACKED_PATHS = [
   // 内容与源码
-  'articles', 'content', 'public', 'src', 'scripts', 'tests',
-  'index.html', 'package.json', 'package-lock.json',
+  'articles',
+  'content',
+  'public',
+  'src',
+  'scripts',
+  'tests',
+  'index.html',
+  'package.json',
+  'package-lock.json',
   // 构建与规范配置
-  'tsconfig.json', 'tsconfig.app.json', 'tsconfig.node.json',
-  'vite.config.ts', 'vite.config.smoke.ts', 'vercel.json',
-  'tailwind.config.cjs', 'eslint.config.js',
+  'tsconfig.json',
+  'tsconfig.app.json',
+  'tsconfig.node.json',
+  'vite.config.ts',
+  'vite.config.smoke.ts',
+  'vercel.json',
+  'tailwind.config.cjs',
+  'eslint.config.js',
   // 文档与约定文件
-  '.gitignore', '.gitattributes', 'git.config.local.example', 'README.md', 'DEPLOY.md',
+  '.gitignore',
+  '.gitattributes',
+  'git.config.local.example',
+  'README.md',
+  'DEPLOY.md',
 ]
 
 /** 密钥 / 本地环境文件特征：暂存区里出现任何一条就中止提交 */

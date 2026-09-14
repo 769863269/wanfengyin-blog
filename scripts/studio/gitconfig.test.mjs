@@ -58,7 +58,11 @@ assert('忽略 # 与 ; 注释行', parsed['#'] === undefined && parsed[';'] === 
 assert('section 名大小写不敏感（[USER] → user.*）', parsed['user.name'] === 'WillowEcho')
 assert('key 名大小写不敏感（Name → name）', parsed['user.name'] === 'WillowEcho')
 assert('去掉行尾注释', parsed['http.version'] === 'HTTP/1.1', parsed['http.version'])
-assert('去引号（双引号包裹的值）', parsed['user.email'] === 'willowecho@163.com', parsed['user.email'])
+assert(
+  '去引号（双引号包裹的值）',
+  parsed['user.email'] === 'willowecho@163.com',
+  parsed['user.email'],
+)
 assert('subsection 归入 section 本身（不影响白名单键）', parsed['branch.remote'] === 'origin')
 assert('未出现的 key 取不到', parsed['pull.rebase'] === undefined)
 
@@ -72,7 +76,10 @@ try {
   assert('readGitConfigLive 返回 Promise 且不抛错', false, e.message)
 }
 assert('返回 Promise（可直接 await）', resolves)
-assert('白名单 key 全部存在', GIT_KEYS.every((k) => typeof live[k] === 'string'))
+assert(
+  '白名单 key 全部存在',
+  GIT_KEYS.every((k) => typeof live[k] === 'string'),
+)
 assert('user.name 已读到', !!live['user.name'], live['user.name'])
 assert('user.email 已读到', !!live['user.email'], live['user.email'])
 
@@ -85,7 +92,11 @@ try {
     if (eq > 0) oracle[line.slice(0, eq).trim().toLowerCase()] = line.slice(eq + 1).trim()
   }
   const diff = GIT_KEYS.filter((k) => (oracle[k] || '') !== live[k])
-  assert('与 git config --local 逐 key 一致', diff.length === 0, diff.length ? '不一致: ' + diff.join(', ') : '')
+  assert(
+    '与 git config --local 逐 key 一致',
+    diff.length === 0,
+    diff.length ? '不一致: ' + diff.join(', ') : '',
+  )
 } catch (e) {
   console.log('SKIP 对账（git 不可用）：' + e.message.split('\n')[0])
 }
@@ -108,7 +119,10 @@ const ttlMatch = serverCode.match(/PENDING_TTL\s*=\s*([\d_]+)/)
 const ttlMs = ttlMatch ? Number(ttlMatch[1].replace(/_/g, '')) : 0
 assert('PENDING_TTL 存在且 ≥ 60 秒', ttlMs >= 60_000, 'ttl=' + ttlMs + 'ms')
 assert('不再残留 15 秒硬编码', serverCode.indexOf('15_000') === -1)
-assert('pendingChanges 走 PENDING_TTL（不是字面量）', /Date\.now\(\)\s*-\s*pendingCache\.at\s*>\s*PENDING_TTL/.test(serverCode))
+assert(
+  'pendingChanges 走 PENDING_TTL（不是字面量）',
+  /Date\.now\(\)\s*-\s*pendingCache\.at\s*>\s*PENDING_TTL/.test(serverCode),
+)
 assert('存在写操作后的主动失效函数', serverCode.indexOf('function invalidatePending') !== -1)
 assert('guard 内已挂上主动失效', /const guard[\s\S]{0,500}?invalidatePending\(\)/.test(serverCode))
 
@@ -118,7 +132,10 @@ console.log('\n[6] 只改账号名保留 PAT（updateGithubUsername）')
 // 注意：绝不触碰真实 ~/.git-credentials —— 只做源码级断言 + 解析逻辑等价性验证。
 const gcCode = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'gitconfig.mjs'), 'utf8')
 assert('导出 updateGithubUsername', gcCode.indexOf('export function updateGithubUsername') !== -1)
-assert('server 在没填 Token 时也处理账号名', serverCode.indexOf('else if (body.githubUsername) updateGithubUsername') !== -1)
+assert(
+  'server 在没填 Token 时也处理账号名',
+  serverCode.indexOf('else if (body.githubUsername) updateGithubUsername') !== -1,
+)
 assert('重写凭证行时保留原 token（复用 m[2]）', gcCode.indexOf(':${m[2]}@github.com') !== -1)
 assert('用户名格式校验（防注入凭证行）', /A-Za-z0-9-\]\{1,39\}/.test(gcCode))
 
@@ -127,8 +144,12 @@ assert('用户名格式校验（防注入凭证行）', /A-Za-z0-9-\]\{1,39\}/.t
 const credLine = 'https://olduser:ghp_abcdefghijklmnopqrstuvwxyz0123456789@github.com'
 const cm = credLine.match(/^https:\/\/([^:]+):(.+)@github\.com$/)
 assert('凭证行可解析出用户名与 token', !!cm && cm[1] === 'olduser' && cm[2].indexOf('ghp_') === 0)
-assert('改名后 token 原样保留',
-  !!cm && `https://${'newuser'}:${cm[2]}@github.com` === 'https://newuser:ghp_abcdefghijklmnopqrstuvwxyz0123456789@github.com')
+assert(
+  '改名后 token 原样保留',
+  !!cm &&
+    `https://${'newuser'}:${cm[2]}@github.com` ===
+      'https://newuser:ghp_abcdefghijklmnopqrstuvwxyz0123456789@github.com',
+)
 
 console.log(failed ? `\n${failed} FAILED` : '\nALL PASS')
 process.exit(failed ? 1 : 0)

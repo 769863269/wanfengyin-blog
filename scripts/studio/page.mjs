@@ -6,6 +6,76 @@
  */
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import {
+  STATUSES,
+  STATUS_LABELS,
+  TRANSITIONS,
+  PAGE_STATUSES,
+  PAGE_LABEL_SUFFIX,
+  ROLE_LABELS,
+  ROLE_OPTIONS,
+} from './store.mjs'
+
+/* ================= 后台元数据：单一真源 =================
+ *
+ * 分三层，每层只有一个定义处，客户端一律从注入值读取、绝不手抄：
+ *   1. 数据契约  STATUSES / ROLES        —— store.mjs（前后端共用）
+ *   2. 中文标签  STATUS_LABELS / ROLE_LABELS —— store.mjs（server.mjs 亦从此取）
+ *   3. UI 专属   STATUS_STYLE / STATUS_ACTION —— 本文件（纯后台展示，数据层不该关心）
+ *
+ * 曾经的坑：客户端把标签手抄了三份（STATUS_LABEL / LIST_STATUSES / 批量操作 labels），
+ * 加一个状态就要记得改四处，漏一处就是「筛选页签有、列表徽标没有」这类静默不一致。
+ * 现在全部由 buildClientMeta() 统一序列化后随 nonce 内联脚本注入。
+ */
+
+/** 状态徽标配色（Tailwind 类名）。键必须与 STATUSES 完全一致 —— 由 ui.test.mjs 断言 */
+const STATUS_STYLE = {
+  draft: 'bg-[#f0f0f2] text-[#6e6e73]',
+  review: 'bg-[#fff4e0] text-[#b25e02]',
+  published: 'bg-[#e8f6ec] text-[#1d7a35]',
+  offline: 'bg-[#fdecec] text-[#c0392b]',
+}
+
+/** 状态流转动作的动词短语（区别于 STATUS_LABELS 的「已发布」这类结果态用词） */
+const STATUS_ACTION = {
+  draft: '转为草稿',
+  review: '提交审核',
+  published: '发布',
+  offline: '下线',
+}
+
+/** 访客不是 author 表里的真实角色，是「没匹配到作者」时的身份，故只存在于后台展示层 */
+const GUEST_ROLE_LABEL = '访客(只读)'
+
+/**
+ * 列表筛选页签。顺序按使用频率排（已发布紧跟全部），不等同于 STATUSES 的枚举顺序 ——
+ * 这是展示决策，故在这里显式列出；标签文案仍取自 STATUS_LABELS，不手抄。
+ * 形状与 /api/meta 的 statuses 一致（{value,label}），客户端不必再分辨数组/对象两种形态。
+ */
+const LIST_TAB_STATUSES = ['all', 'published', 'draft', 'review', 'offline'].map((value) => ({
+  value,
+  label: value === 'all' ? '全部' : STATUS_LABELS[value],
+}))
+
+/** 序列化为注入给客户端脚本的元数据对象字面量 */
+function clientMetaLiteral() {
+  const payload = {
+    statusTabs: LIST_TAB_STATUSES,
+    statusLabels: STATUS_LABELS,
+    statusStyles: STATUS_STYLE,
+    statusActions: STATUS_ACTION,
+    statusValues: STATUSES,
+    transitions: TRANSITIONS,
+    pageStatuses: PAGE_STATUSES.map((value) => ({
+      value,
+      label: STATUS_LABELS[value] + (PAGE_LABEL_SUFFIX[value] || ''),
+    })),
+    roleLabels: { ...ROLE_LABELS, guest: GUEST_ROLE_LABEL },
+    roleOptions: ROLE_OPTIONS,
+  }
+  // 纯数据字面量，无注入风险；转义 < 以防将来有人往里塞含 </script> 的内容
+  return JSON.stringify(payload).replaceAll('<', '\\u003c')
+}
 
 /* Vditor 4 工具栏图标 = <use> 引用 SVG 符号表，符号表由其自带的
  * icons/ant.js 注入——但那个加载器走「XHR 拉内容 + 内联 script 执行」，
@@ -138,10 +208,44 @@ export function page(nonce) {
 
 ${vditorIconSprite}
 <script nonce="${nonce || 'noncerequired'}">
+/* 服务端注入的元数据（状态枚举/标签/配色/动作词/角色标签）。
+ * 随下方唯一的 nonce 内联脚本一起下发，不额外增加 script 节点。 */
+var WF_META = ${clientMetaLiteral()}
+
+/* ================= 持久化 =================
+ * localStorage 键统一带 wf: 前缀（与前台同一命名空间），且只在此处定义；
+ * 旧键在首次读取时自动迁移，用户的身份选择不会被重置。
+ * 前台对应实现在 src/utils/storage.ts，两边的键名规范保持一致。 */
+var LS = {
+  actor: { key: 'wf:actor', legacy: 'wf-actor' },
+  draftNew: { key: 'wf:studio:draft-new', legacy: 'studio-draft-new' },
+}
+function lsRead(entry) {
+  try {
+    var cur = localStorage.getItem(entry.key)
+    if (cur !== null) return cur
+    if (!entry.legacy) return null
+    var old = localStorage.getItem(entry.legacy)
+    if (old === null) return null
+    localStorage.setItem(entry.key, old)
+    localStorage.removeItem(entry.legacy)
+    return old
+  } catch (e) { return null }
+}
+function lsWrite(entry, value) {
+  try { localStorage.setItem(entry.key, value); return true } catch (e) { return false }
+}
+function lsRemove(entry) {
+  try {
+    localStorage.removeItem(entry.key)
+    if (entry.legacy) localStorage.removeItem(entry.legacy)
+  } catch (e) { /* 删不掉不影响功能 */ }
+}
+
 /* ================= 基础设施 ================= */
 var $ = function (id) { return document.getElementById(id) }
 var view = $('view')
-var me = localStorage.getItem('wf-actor') || '周周'
+var me = lsRead(LS.actor) || '周周'
 
 function esc(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
@@ -190,14 +294,10 @@ $('modalOk').onclick = function () {
   modalCb = null
 }
 
-var STATUS_STYLE = {
-  draft:     'bg-[#f0f0f2] text-[#6e6e73]',
-  review:    'bg-[#fff4e0] text-[#b25e02]',
-  published: 'bg-[#e8f6ec] text-[#1d7a35]',
-  offline:   'bg-[#fdecec] text-[#c0392b]',
-}
-var STATUS_LABEL = { draft: '草稿', review: '审核中', published: '已发布', offline: '已下线' }
-var ROLE_LABEL = { admin: '管理员', editor: '编辑', author: '作者', guest: '访客(只读)' }
+/* 以下三个映射均为 WF_META 的别名 —— 定义处只有服务端一处，客户端不再手抄 */
+var STATUS_STYLE = WF_META.statusStyles
+var STATUS_LABEL = WF_META.statusLabels
+var ROLE_LABEL = WF_META.roleLabels
 var myRole = 'guest'
 var BLOG_URL = 'http://' + location.hostname + ':5173'
 
@@ -238,13 +338,20 @@ function emptyRow(colspan, text) {
 
 /* 文章状态标签页：侧栏不再为 5 个状态各占一行，改为列表页内切换。
  * 计数用 data-count 让 applyMeta 一起填，数字为空时由 CSS 隐藏。 */
-var LIST_STATUSES = [['all', '全部'], ['published', '已发布'], ['draft', '草稿'], ['review', '审核中'], ['offline', '已下线']]
+var LIST_STATUSES = WF_META.statusTabs
 function statusTabs(active) {
   return '<div class="mb-4 flex flex-wrap items-center gap-1 rounded-2xl border border-black/5 bg-white p-1.5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
     LIST_STATUSES.map(function (s) {
-      return '<a class="status-tab' + (s[0] === active ? ' active' : '') + '" href="#/list/' + s[0] + '">' + s[1] +
-        '<span class="st-n" data-count="' + s[0] + '"></span></a>'
+      return '<a class="status-tab' + (s.value === active ? ' active' : '') + '" href="#/list/' + s.value + '">' + s.label +
+        '<span class="st-n" data-count="' + s.value + '"></span></a>'
     }).join('') + '</div>'
+}
+
+/** 由 {value,label} 列表生成 <option>；选中项由调用方在数据到位后再赋值（异步回填统一走这条路径） */
+function optionList(list) {
+  return list.map(function (o) {
+    return '<option value="' + o.value + '">' + o.label + '</option>'
+  }).join('')
 }
 
 /* ================= 元信息 ================= */
@@ -267,7 +374,7 @@ function applyMeta(d) {
     })
     sel.value = d.authors.some(function (a) { return a.name === me }) ? me : (d.authors[0] ? d.authors[0].name : '')
     me = sel.value
-    localStorage.setItem('wf-actor', me)
+    lsWrite(LS.actor, me)
   }
   Object.keys(d.counts).forEach(function (k) {
     // 侧栏徽标与列表内的状态标签页共用同一批计数，这里必须填全部匹配项
@@ -306,7 +413,7 @@ function invalidateMeta() { metaCache = null; metaCacheAt = 0 }
 
 $('meSelect').addEventListener('change', function () {
   me = $('meSelect').value
-  localStorage.setItem('wf-actor', me)
+  lsWrite(LS.actor, me)
   location.reload()
 })
 
@@ -561,7 +668,7 @@ function renderRows(status) {
         if (flagBtn) {
           var f = flagBtn.dataset.flag
           var patch = {}; patch[f] = flagBtn.dataset.on !== 'true'
-          api('/api/article/' + encodeURIComponent(flagBtn.dataset.file) + '/flags', { method: 'POST', body: patch })
+          api('/api/articles/' + encodeURIComponent(flagBtn.dataset.file) + '/flags', { method: 'POST', body: patch })
             .then(function () { toast(f === 'pinned' ? '置顶已更新' : '推荐已更新'); loadMeta(true); renderRows(status) })
             .catch(function (e2) { toast(e2.message, true) })
           return
@@ -662,14 +769,14 @@ function flagBtn(a, key, icon, label) {
 function rowAction(act, file) {
   if (act === 'delete') {
     confirmBox('删除「' + file + '」？', '会移入回收站，可随时恢复', function () {
-      api('/api/article/' + encodeURIComponent(file), { method: 'DELETE' })
+      api('/api/articles/' + encodeURIComponent(file), { method: 'DELETE' })
         .then(function () { toast('已移入回收站'); loadMeta(); navigate() })
         .catch(function (e) { toast(e.message, true) })
     })
     return
   }
-  var labels = { published: '发布', offline: '下线', review: '提交审核', draft: '转为草稿' }
-  api('/api/article/' + encodeURIComponent(file) + '/status', { method: 'POST', body: { to: act } })
+  var labels = WF_META.statusActions
+  api('/api/articles/' + encodeURIComponent(file) + '/status', { method: 'POST', body: { to: act } })
     .then(function () { toast(labels[act] + '成功'); loadMeta(); navigate() })
     .catch(function (e) { toast(e.message, true) })
 }
@@ -718,7 +825,7 @@ function doBatch(action, files, value) {
 onRoute('editor/*', function (file) {
   var isNew = file === 'new'
   var load = isNew ? Promise.resolve({ article: blankArticle() })
-    : api('/api/article/' + encodeURIComponent(file))
+    : api('/api/articles/' + encodeURIComponent(file))
 
   load.then(function (d) {
     var a = d.article
@@ -780,15 +887,10 @@ onRoute('editor/*', function (file) {
             '<p class="mb-3 text-[13px] font-semibold text-[#6e6e73]">发布管理</p>' +
             field('状态', '<select id="eStatus" class="w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]">' +
               (function () {
-                // 与后端状态机白名单一致：非法流转直接禁用，选不了就不会保存失败
-                var FLOW = {
-                  draft: ['review', 'published', 'offline'],
-                  review: ['published', 'draft', 'offline'],
-                  published: ['offline', 'draft'],
-                  offline: ['published', 'draft'],
-                }
-                var allowed = FLOW[a.status] || []
-                return ['draft', 'review', 'published', 'offline'].map(function (s) {
+                // 流转白名单来自服务端注入（WF_META.transitions，真源是 store.mjs 的 TRANSITIONS）：
+                // 非法流转直接禁用，选不了就不会保存失败。此处不再手抄一份，避免两边漂移。
+                var allowed = WF_META.transitions[a.status] || []
+                return WF_META.statusValues.map(function (s) {
                   var dis = (myRole === 'author' && (s === 'published' || s === 'offline')) ? ' disabled' : ''
                   var illegal = s !== a.status && allowed.indexOf(s) === -1 ? ' disabled' : ''
                   return '<option value="' + s + '"' + (a.status === s ? ' selected' : '') + dis + illegal + '>' + STATUS_LABEL[s] + '</option>'
@@ -1117,14 +1219,13 @@ onRoute('editor/*', function (file) {
       }).join('')
     }
 
-    var DKEY = 'studio-draft-new'
     var draftTimer = null
     function scheduleDraft() {
       if (!isNew) return // 只对新建自动存草稿；编辑旧文以服务器为准
       clearTimeout(draftTimer)
       draftTimer = setTimeout(function () {
         try {
-          localStorage.setItem(DKEY, JSON.stringify({
+          lsWrite(LS.draftNew, JSON.stringify({
             title: $('eTitle').value, slug: $('eSlug').value, publishedAt: $('eDate').value,
             excerpt: $('eExcerpt').value, content: getContent(), category: $('eCategory').value,
             tags: $('eTags').value, keywords: $('eKeywords').value, seoDescription: $('eSeoDesc').value,
@@ -1169,7 +1270,7 @@ onRoute('editor/*', function (file) {
 
     if (isNew) {
       var draft = null
-      try { draft = JSON.parse(localStorage.getItem(DKEY) || 'null') } catch (e) { /* 忽略坏数据 */ }
+      try { draft = JSON.parse(lsRead(LS.draftNew) || 'null') } catch (e) { /* 忽略坏数据 */ }
       if (draft && (draft.title || (draft.content || '').trim())) {
         var dbar = $('eDraftBar')
         dbar.classList.remove('hidden')
@@ -1206,7 +1307,7 @@ onRoute('editor/*', function (file) {
           toast('草稿已恢复')
         })
         $('eDraftDrop').addEventListener('click', function () {
-          localStorage.removeItem(DKEY)
+          lsRemove(LS.draftNew)
           dbar.classList.remove('flex')
           dbar.classList.add('hidden')
           toast('草稿已丢弃')
@@ -1276,10 +1377,10 @@ onRoute('editor/*', function (file) {
       finishUpload.then(function () {
         var req = isNew
           ? api('/api/articles', { method: 'POST', body: data })
-          : api('/api/article/' + encodeURIComponent(a.file), { method: 'PUT', body: data })
+          : api('/api/articles/' + encodeURIComponent(a.file), { method: 'PUT', body: data })
         return req.then(function (d2) {
           editDirty = false
-          if (isNew) { try { localStorage.removeItem(DKEY) } catch (e) { /* 忽略 */ } }
+          if (isNew) lsRemove(LS.draftNew)
           $('eMsg').textContent = '✓ 已保存 ' + new Date().toLocaleTimeString()
           toast('保存成功')
           if (d2.file) a.file = d2.file
@@ -1361,10 +1462,15 @@ onRoute('trash', function () {
 /* ================= 视图：自定义页面 ================= */
 
 // 页面状态徽标：草稿 / 未上线（已发布但没进菜单也没开直链）/ 已发布
+// 文案与配色一律取自状态元数据，不再手写 —— 此前这里用的绿色是 #e8f3ec，
+// 而状态色表里是 #e8f6ec，同一「已发布」两种绿就是这么漂出来的。
 function pageBadge(p) {
-  if (p.status !== 'published') return { text: '草稿', cls: 'bg-[#f0f0f2] text-[#6e6e73]' }
+  if (p.status !== 'published') return { text: STATUS_LABEL.draft, cls: STATUS_STYLE.draft }
   if (!p.reachable) return { text: '未上线', cls: 'bg-[#fdf3e6] text-[#9a6400]' }
-  return { text: p.directAccess ? '已发布 · 直链' : '已发布', cls: 'bg-[#e8f3ec] text-[#1d7a35]' }
+  return {
+    text: p.directAccess ? STATUS_LABEL.published + ' · 直链' : STATUS_LABEL.published,
+    cls: STATUS_STYLE.published,
+  }
 }
 
 onRoute('pages', function () {
@@ -1443,7 +1549,7 @@ onRoute('pages/*', function (arg) {
         '<label class="block text-[12.5px] text-[#6e6e73] md:col-span-2">SEO 描述（选填，最长 160 字）' +
           '<input id="pgDesc" type="text" class="mt-1 w-full rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" /></label>' +
         '<label class="block text-[12.5px] text-[#6e6e73]">状态' +
-          '<select id="pgStatus" class="mt-1 w-40 rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"><option value="published">已发布</option><option value="draft">草稿（仅后台可见）</option></select></label>' +
+          '<select id="pgStatus" class="mt-1 w-40 rounded-lg border border-[#d2d2d7] px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]">' + optionList(WF_META.pageStatuses) + '</select></label>' +
         '<div class="rounded-xl bg-[#f5f5f7] px-4 py-3 md:col-span-3">' +
           '<label class="flex items-center gap-2.5 text-[13px] font-medium text-[#1d1d1f]"><input id="pgDirect" type="checkbox" class="h-4 w-4 shrink-0" />允许直接访问（分享 /page/slug 链接即可打开）</label>' +          '<label class="flex items-center gap-2.5 text-[13px] font-medium text-[#1d1d1f]" style="margin-top:12px"><input id="pgFullHtml" type="checkbox" class="h-4 w-4 shrink-0" />完整 HTML 独立页（iframe 隔离渲染，支持 &lt;script&gt; 交互）</label>' +          '<p class="mt-1.5 text-[11.5px] leading-relaxed text-[#86868b]">开启后正文按「完整 HTML 文档」原样使用（DOCTYPE / &lt;style&gt; / &lt;script&gt; 都支持，且不做 Markdown 解析），构建期落成 public/page-html/&lt;slug&gt;.html，前台用 sandbox iframe 加载 —— 脚本只在沙箱里跑，拿不到主站 cookie / localStorage，不影响主站安全；关闭则按「Markdown + HTML 片段」规则渲染</p>' +
           '<p class="mt-1.5 text-[11.5px] leading-relaxed text-[#86868b]">关闭时：只有出现在导航菜单里的页面，前台才能访问（该菜单在电脑顶栏与手机抽屉同时生效）；不在菜单里 → 前台 404，无法用 URL 强行打开</p>' +
@@ -1635,7 +1741,7 @@ onRoute('authors', function () {
       (isAdmin ?
         '<div class="mt-5 flex flex-wrap items-end gap-3 rounded-2xl border border-black/5 bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">' +
         '<div><label class="mb-1 block text-[12.5px] font-semibold text-[#6e6e73]">作者名</label><input id="aName" class="rounded-lg border border-[#d2d2d7] px-3 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" /></div>' +
-        '<div><label class="mb-1 block text-[12.5px] font-semibold text-[#6e6e73]">角色</label><select id="aRole" class="rounded-lg border border-[#d2d2d7] px-3 py-2 text-[13.5px] outline-none focus:border-[#0071e3]"><option value="author">作者</option><option value="editor">编辑</option><option value="admin">管理员</option></select></div>' +
+        '<div><label class="mb-1 block text-[12.5px] font-semibold text-[#6e6e73]">角色</label><select id="aRole" class="rounded-lg border border-[#d2d2d7] px-3 py-2 text-[13.5px] outline-none focus:border-[#0071e3]">' + optionList(WF_META.roleOptions) + '</select></div>' +
         '<button id="aAdd" class="rounded-full bg-[#0071e3] px-5 py-2 text-[13.5px] font-semibold text-white hover:bg-[#0077ed]">添加</button></div>' : '')
 
     var add = $('aAdd')

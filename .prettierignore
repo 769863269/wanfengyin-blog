@@ -1,0 +1,25 @@
+# Prettier 忽略清单
+#
+# 原则：prettier 只管「代码」，不管「内容」与「生成物」。
+#   内容（articles/ content/）由作者和 Studio 后台维护，排版是人写的；
+#   生成物（*.generated.ts / studio.css）的格式由生成脚本负责，
+#   让 prettier 介入只会造成「格式化一次 → 下次构建又变回去」的反复改动。
+
+# ── 构建产物 ──
+dist/
+dist-smoke*/
+dist-ssr/
+
+# ── 依赖 ──
+node_modules/
+
+# ── 生成物 ──
+src/data/*.generated.ts
+scripts/studio-assets/
+
+# ── 内容与运营数据（非代码） ──
+articles/
+content/
+
+# ── 本地状态（已 gitignore，格式无意义） ──
+.studio/

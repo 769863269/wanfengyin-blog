@@ -43,7 +43,9 @@ const iframeAttrs = computed<Record<string, string> | null>(() =>
 )
 
 useSeoMeta({
-  title: page.value ? `${page.value.title} · ${siteConfig.name}` : `页面不存在 · ${siteConfig.name}`,
+  title: page.value
+    ? `${page.value.title} · ${siteConfig.name}`
+    : `页面不存在 · ${siteConfig.name}`,
   description: page.value?.description || `「${page.value?.title ?? ''}」页面`,
 })
 </script>
@@ -53,7 +55,12 @@ useSeoMeta({
     <div class="layout__content">
       <div v-if="page" class="card">
         <h1 class="custom-page__title">{{ page.title }}</h1>
-        <iframe v-if="iframeAttrs" v-bind="iframeAttrs" class="full-html-frame" title="自定义 HTML 页面"></iframe>
+        <iframe
+          v-if="iframeAttrs"
+          v-bind="iframeAttrs"
+          class="full-html-frame"
+          title="自定义 HTML 页面"
+        ></iframe>
         <ArticleBody v-else :blocks="page.body" />
       </div>
       <div v-else class="card custom-page__missing">

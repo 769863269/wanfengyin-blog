@@ -44,6 +44,13 @@ export function stringifyFrontmatter(data, body) {
     if (s === '') continue
     lines.push(`${key}: ${quoteIfNeeded(s)}`)
   }
-  lines.push('---', '', String(body ?? '').replace(/\r\n/g, '\n').trim(), '')
+  lines.push(
+    '---',
+    '',
+    String(body ?? '')
+      .replace(/\r\n/g, '\n')
+      .trim(),
+    '',
+  )
   return lines.join('\n')
 }

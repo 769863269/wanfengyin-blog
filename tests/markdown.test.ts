@@ -69,7 +69,11 @@ describe('markdownToBlocks', () => {
   })
 
   it('图片 src 走协议白名单：放行相对路径与 http(s)', () => {
-    expect(markdownToBlocks('![x](./a.png)')[0]).toEqual({ type: 'image', src: './a.png', alt: 'x' })
+    expect(markdownToBlocks('![x](./a.png)')[0]).toEqual({
+      type: 'image',
+      src: './a.png',
+      alt: 'x',
+    })
     expect(markdownToBlocks('![x](../a/b.png)')[0]?.type).toBe('image')
     expect(markdownToBlocks('![x](https://cdn.example.com/a.png)')[0]).toEqual({
       type: 'image',
@@ -103,9 +107,7 @@ describe('markdownToBlocks', () => {
 
   it('代码块内部的 # 与 > 不当作语法解析', () => {
     const blocks = markdownToBlocks('```\n# 注释不是标题\n> 也不是引文\n```')
-    expect(blocks).toEqual([
-      { type: 'code', lang: 'text', text: '# 注释不是标题\n> 也不是引文' },
-    ])
+    expect(blocks).toEqual([{ type: 'code', lang: 'text', text: '# 注释不是标题\n> 也不是引文' }])
   })
 
   it('未闭合代码块取到文末', () => {
@@ -278,7 +280,9 @@ describe('块级 HTML 片段', () => {
       'style="color:red;padding:4px"',
     )
     // url() 只放行 https / 站内相对路径
-    expect(sanitizeHtmlBlock('<div style="background:url(javascript:alert(1))">t</div>')).not.toContain('style=')
+    expect(
+      sanitizeHtmlBlock('<div style="background:url(javascript:alert(1))">t</div>'),
+    ).not.toContain('style=')
     expect(sanitizeHtmlBlock('<div style="background:url(https://a.com/x.png)">t</div>')).toContain(
       'url(https://a.com/x.png)',
     )
@@ -287,7 +291,9 @@ describe('块级 HTML 片段', () => {
   })
 
   it('href / src 危险协议被剥除', () => {
-    const clean = sanitizeHtmlBlock('<a href="javascript:alert(1)">x</a><img src="data:image/png;base64,AA" alt="y" />')
+    const clean = sanitizeHtmlBlock(
+      '<a href="javascript:alert(1)">x</a><img src="data:image/png;base64,AA" alt="y" />',
+    )
     expect(clean).not.toContain('href=')
     expect(clean).not.toContain('src=')
     expect(clean).toContain('x')
@@ -327,7 +333,12 @@ describe('blocksToHtml', () => {
 
   it('代码块带高亮 HTML 时直接输出（构建期产物可信），无则转义纯文本', () => {
     const highlighted = blocksToHtml([
-      { type: 'code', lang: 'ts', text: 'const a = 1', codeHtml: '<span style="color:#f00">const</span> a = 1' },
+      {
+        type: 'code',
+        lang: 'ts',
+        text: 'const a = 1',
+        codeHtml: '<span style="color:#f00">const</span> a = 1',
+      },
     ])
     expect(highlighted).toContain('<span style="color:#f00">const</span>')
 
@@ -343,18 +354,14 @@ describe('blocksToHtml', () => {
   })
 
   it('代码块渲染为 pre code 且内容转义', () => {
-    const html = blocksToHtml([
-      { type: 'code', lang: 'html', text: '<script>alert(1)</script>' },
-    ])
+    const html = blocksToHtml([{ type: 'code', lang: 'html', text: '<script>alert(1)</script>' }])
     expect(html).toContain('class="article-body__code" data-lang="html"')
     expect(html).not.toContain('<script>')
     expect(html).toContain('&lt;script&gt;')
   })
 
   it('表格渲染为 table 且单元格行内格式生效', () => {
-    const html = blocksToHtml([
-      { type: 'table', head: ['阶段'], rows: [['**基础建设**']] },
-    ])
+    const html = blocksToHtml([{ type: 'table', head: ['阶段'], rows: [['**基础建设**']] }])
     expect(html).toContain('class="article-body__tablewrap"')
     expect(html).toContain('<th>阶段</th>')
     expect(html).toContain('<td><strong>基础建设</strong></td>')

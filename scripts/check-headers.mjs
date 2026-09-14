@@ -114,7 +114,9 @@ for (const scope of SCOPES) {
     const a = key === 'Content-Security-Policy' ? normalizeCsp(vv) : vv
     const b = key === 'Content-Security-Policy' ? normalizeCsp(nn) : nn
     if (a !== b) {
-      problems.push(`[${scope.name}] ${key} 两边不一致：\n  vercel.json     : ${vv}\n  public/_headers : ${nn}`)
+      problems.push(
+        `[${scope.name}] ${key} 两边不一致：\n  vercel.json     : ${vv}\n  public/_headers : ${nn}`,
+      )
     }
   }
 }
