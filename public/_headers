@@ -1,3 +1,9 @@
+# ⚠️ Vercel 上真正生效的是仓库根目录的 vercel.json —— Vercel 不读 public/_headers。
+#    2026-09-14 实测证据：/assets/* 返回 Vercel 默认的 `public, max-age=0, must-revalidate`，
+#    而不是本文件里写的 `max-age=31536000, immutable`，说明本文件在 Vercel 上从未生效。
+#    本文件保留给 Netlify / Cloudflare Pages 这类「发布目录 _headers」的平台使用。
+#    **改头部规则时两处都要改**（public/_headers 与 vercel.json），别只改一边。
+#
 # Vercel 静态响应头：全站 XSS 防纵深（CSP + 防嗅探 + 防点击劫持）
 # CSP 说明：
 #   script-src 'self' https://giscus.app —— 仅本站脚本与 giscus 评论组件，无内联脚本
