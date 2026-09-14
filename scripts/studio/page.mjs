@@ -723,7 +723,6 @@ onRoute('editor/*', function (file) {
   load.then(function (d) {
     var a = d.article
     var canEdit = myRole === 'admin' || myRole === 'editor' || (myRole === 'author' && a.author === me && (isNew || a.status === 'draft'))
-    var mdBar = '' // Vditor 自带工具栏，手搓版已退役（保留变量名防旧引用报错）
 
     view.innerHTML =
       '<div id="eDraftBar" class="mb-4 hidden flex-wrap items-center gap-3 rounded-xl border border-[#f0d78c] bg-[#fdf6ec] px-4 py-2.5 text-[13px] text-[#8a6d1a]">' +
@@ -1914,9 +1913,7 @@ onRoute('site', function () {
       return out
     }
     var mainNavList = Array.isArray(d.site.mainNav) ? d.site.mainNav : []
-    // 兼容旧配置：曾把「仅手机抽屉」的项单独存在 mobileExtraNav，这里合并进同一列表
-    var legacyExtraList = Array.isArray(d.site.mobileExtraNav) ? d.site.mobileExtraNav : []
-    flattenNav(mainNavList.concat(legacyExtraList), 0).forEach(function (e) { navRow(navRows, e.item, e.depth) })
+    flattenNav(mainNavList, 0).forEach(function (e) { navRow(navRows, e.item, e.depth) })
 
     // 拖拽排序：手柄 dragstart 记下当前行 → dragover 按鼠标 Y 与各行中线比较，
     // 实时 insertBefore 到目标位置（所见即所得，松手即定）。

@@ -26,6 +26,13 @@ export const generatedPages: CustomPage[] = [
     "body": []
   },
   {
+    "slug": "html-dzj",
+    "title": "打字机HTML",
+    "description": "好看简约的打字机特效效果页面",
+    "fullHtml": true,
+    "body": []
+  },
+  {
     "slug": "html-mixed",
     "title": "HTML 片段 · Markdown 混排",
     "description": "测试 HTML 块与 Markdown 段落、列表、引用、代码块交错渲染",

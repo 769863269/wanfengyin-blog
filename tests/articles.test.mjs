@@ -4,7 +4,7 @@
  * 门禁是防止「图片内联 base64 拖垮首屏」这类问题的第一道闸，
  * 必须有测试兜着，否则哪天被顺手删掉都没人发现。
  */
-import { mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'

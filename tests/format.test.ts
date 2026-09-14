@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { estimateReadingTime, formatCount, formatDate, formatRelativeTime } from '@/utils/format'
+import { formatCount, formatDate, formatRelativeTime } from '@/utils/format'
 
 /** 固定基准时间，避免测试随时间推移而失真 */
 const NOW = new Date('2026-09-04T12:00:00+08:00')
@@ -65,15 +65,5 @@ describe('formatCount', () => {
   it('非法输入兜底为 0', () => {
     expect(formatCount(Number.NaN)).toBe('0')
     expect(formatCount(-5)).toBe('0')
-  })
-})
-
-describe('estimateReadingTime', () => {
-  it('短文本至少 1 分钟', () => {
-    expect(estimateReadingTime('短文本')).toBe(1)
-  })
-
-  it('中文按 350 字/分钟估算', () => {
-    expect(estimateReadingTime('字'.repeat(700))).toBe(2)
   })
 })

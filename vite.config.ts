@@ -3,9 +3,11 @@ import { defineConfig, type Plugin } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
 // 只取元数据（纯数据文件、无 Vue 运行时依赖）：构建配置在 Node 侧运行，
 // 引 posts.ts 会连带引出 vue 与 localStorage 相关模块，容易在这里炸。
-import { generatedPosts } from './src/data/posts.generated'
-import { generatedPages } from './src/data/pages.generated'
-import { domain, siteConfig } from './src/config/site'
+// 注意：相对导入必须带 .ts 扩展名（配 tsconfig.node.json 的 allowImportingTsExtensions）——
+// 这样 Vite 切到 native config loader（Node 原生解析、不做扩展名补全）后依然能加载。
+import { generatedPosts } from './src/data/posts.generated.ts'
+import { generatedPages } from './src/data/pages.generated.ts'
+import { domain, siteConfig } from './src/config/site.ts'
 
 /**
  * 构建时生成 sitemap.xml

@@ -64,9 +64,11 @@ describe('navReferencedSlugs', () => {
     expect(slugs.has('home')).toBe(true)
   })
 
-  it('兼容旧 mobileExtraNav（读侧容忍）', () => {
+  it('只认 mainNav：已退役的 mobileExtraNav 不再产生引用', () => {
+    // 导航早已合并为「全通用」单列表，后台保存时会主动清掉该遗留键（store.mjs）。
+    // 这条断言把「退役」钉住，防止哪天 compat 分支被顺手加回来。
     const slugs = navReferencedSlugs({ mobileExtraNav: [{ kind: 'route', target: 'dome' }] })
-    expect(slugs.has('dome')).toBe(true)
+    expect(slugs.size).toBe(0)
   })
 })
 

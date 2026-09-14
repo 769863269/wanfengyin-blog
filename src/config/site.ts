@@ -3,22 +3,25 @@ import type { GiscusConfig, NavItem, SocialLink } from '@/types'
 /**
  * 站点全局配置
  *
- * ⚠️ 上线前必须替换的占位项（搜索 TODO 即可定位全部）：
- *   1. domain        —— 真实域名，影响 sitemap / og:image / 规范链接
- *   2. icp           —— 备案号
- *   3. giscus        —— 评论区配置，见 README
- *   4. 各类 disabled 导航项 —— 功能就绪后改为 route / external
+ * ⚠️ 待处理项（domain 已配置完成，其余搜 TODO 定位）：
+ *   1. icp           —— 备案号（改 content/site.json）
+ *   2. giscus        —— 评论区配置，见 README
+ *   3. 各类 disabled 导航项 —— 功能就绪后改为 route / external
  */
 
-/** TODO: 以后绑定自定义域名时替换（当前为 GitHub Pages 项目页地址，含子路径） */
+/** 站点域名（根域名，不含子路径）：影响 sitemap / og:image / 规范链接 */
 export const domain = 'https://wanfengyin-blog.vercel.app'
 
 /**
  * 站点文案数据源：content/site.json（Studio 后台「站点设置」页维护，可增删改查）。
  * 本文件只保留结构映射与代码级配置（导航/社交图标/giscus），文本内容一律改 JSON。
- * 注意：本文件被 vite.config.ts 在 Node 侧引用，必须用相对路径导入。
+ *
+ * 两点约束：
+ *   1. 本文件被 vite.config.ts 在 Node 侧引用，必须用相对路径导入；
+ *   2. JSON 导入必须带 import attribute（`with { type: 'json' }`），
+ *      否则 Vite 切到 native config loader（Node 原生解析）后会拒绝加载。
  */
-import siteData from '../../content/site.json'
+import siteData from '../../content/site.json' with { type: 'json' }
 
 export const siteConfig = {
   ...siteData.site,

@@ -16,6 +16,7 @@
     "test:studio:ui": "node scripts/studio/ui.test.mjs",
     "test:studio:git": "node scripts/studio/gitconfig.test.mjs",
     "studio:css": "tailwindcss -c tailwind.config.cjs -o scripts/studio-assets/studio.css --minify",
+    "check:headers": "node scripts/check-headers.mjs",
     "setup:git": "node scripts/setup-git.mjs",
     "new": "node scripts/new-post.mjs",
     "pub": "node scripts/publish.mjs",

@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url'
 import { parseFrontmatter } from '../lib/markdown.mjs'
 import { stringifyFrontmatter } from '../lib/frontmatter.mjs'
 import { navReferencedSlugs, isPageReachable, isTrue } from '../lib/nav.mjs'
+import { BUILTIN_ROUTES, assertSlug } from '../lib/slug.mjs'
 
 const root = dirname(dirname(dirname(fileURLToPath(import.meta.url))))
 const articlesDir = join(root, 'articles')
@@ -151,9 +152,10 @@ export function saveAuthors(authors) {
 
 export const SITE_TEXT_FIELDS = ['name', 'fullName', 'tagline', 'description', 'author', 'since', 'email', 'icp', 'icpUrl', 'about', 'footerDesc']
 
-/** 导航菜单可选类型与页面路由白名单（route kind 的 target 必须是其中之一） */
+/** 导航菜单可选类型与页面路由白名单（route kind 的 target 必须是其中之一）
+ *  内置路由表与 slug 保留字共用一处实现：scripts/lib/slug.mjs */
 export const NAV_KINDS = ['route', 'external', 'disabled', 'hidden']
-export const NAV_ROUTES = ['home', 'archive', 'tags', 'about', 'random']
+export const NAV_ROUTES = BUILTIN_ROUTES
 
 /** 已发布的自定义页面 slug 列表（route kind 合法 target = 内置路由 + 这些） */
 export function publishedPageSlugs() {
@@ -821,15 +823,6 @@ export function runSchedule() {
 ensureDirs()
 
 /* ---------------- 自定义页面（content/pages/*.md，文件名即 slug） ---------------- */
-
-const SLUG_RE = /^[a-z0-9][a-z0-9-]{0,49}$/
-/** 保留 slug：与内置路由 / 关键路径冲突的禁止使用 */
-const RESERVED_SLUGS = [...NAV_ROUTES, 'post', 'page', 'admin', 'api', 'assets', 'feed']
-
-function assertSlug(slug) {
-  if (!SLUG_RE.test(slug)) throw new Error('slug 只能是小写字母 / 数字 / 连字符，且以字母或数字开头（最长 50 字符）')
-  if (RESERVED_SLUGS.includes(slug)) throw new Error(`slug "${slug}" 是保留字，请换一个`)
-}
 
 /** 页面文件完整路径（slug 已过正则校验，无路径注入风险） */
 function pagePath(slug) {

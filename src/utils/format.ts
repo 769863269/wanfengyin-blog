@@ -76,9 +76,3 @@ export function formatCount(value: number): string {
 
   return `${formatted}k`
 }
-
-/** 估算阅读时长（中文按 350 字/分钟） */
-export function estimateReadingTime(text: string): number {
-  const length = text.trim().length
-  return Math.max(1, Math.round(length / 350))
-}

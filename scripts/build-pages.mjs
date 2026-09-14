@@ -18,18 +18,22 @@
  *   内联脚本拦掉，线上表现为「本地能点、Vercel 点不动」。改成独立文件后，
  *   子文档用自己响应头里的 CSP（见 public/_headers 的 /page-html/* 规则）。
  *
+ * ⚠️ slug 规则唯一实现在 scripts/lib/slug.mjs（格式 + 保留字表）：后台保存与这里
+ *   构建共用同一套校验，别再复制正则 —— 曾出现「后台拒绝、构建放行」的缺口。
+ *
  * ⚠️ 可达性（与 scripts/lib/nav.mjs 同一套规则）：
  *   只有「已发布 且（开启 directAccess 或 已被导航菜单引用）」的页面才注册路由。
  *   已发布但两者都没有 = 未上线 → 不注册，前台 /page/<slug> 走 404。
  *
  * 由 build-posts.mjs 之后的同步链自动触发，也可手动 `npm run pages`。
  */
-import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync, unlinkSync } from 'node:fs'
+import { readdirSync, readFileSync, writeFileSync, mkdirSync, unlinkSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseFrontmatter, markdownToBlocks } from './lib/markdown.mjs'
 import { highlightToCodeHtml } from './lib/highlight.mjs'
 import { navReferencedSlugs, isPageReachable, isTrue } from './lib/nav.mjs'
+import { assertSlug } from './lib/slug.mjs'
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const pagesDir = join(root, 'content', 'pages')
@@ -38,15 +42,13 @@ const outputFile = join(root, 'src', 'data', 'pages.generated.ts')
 // 完整 HTML 独立页的落盘目录（vite 会把 public/ 原样拷进 dist/）
 const pageHtmlDir = join(root, 'public', 'page-html')
 
-const SLUG_RE = /^[a-z0-9][a-z0-9-]{0,49}$/
-
 function fail(file, message) {
   console.error(`[pages] ${file}: ${message}`)
   process.exit(1)
 }
 
 // 菜单引用（site.json 缺失/损坏时视为没有菜单引用：宁可不注册路由，也不放行）
-let navSlugs = new Set()
+let navSlugs
 try {
   navSlugs = navReferencedSlugs(JSON.parse(readFileSync(siteFile, 'utf8')))
 } catch {
@@ -71,7 +73,13 @@ let viaMenu = 0 // 靠菜单引用上线
 
 for (const file of files) {
   const slug = file.replace(/\.md$/, '')
-  if (!SLUG_RE.test(slug)) fail(file, 'slug 只能是小写字母 / 数字 / 连字符，且以字母或数字开头')
+  try {
+    // 与后台共用同一套校验（含保留字表）—— 两边强度必须一致，否则会出现
+    // 「后台拒绝、构建放行」的缺口，详见 lib/slug.mjs
+    assertSlug(slug)
+  } catch (err) {
+    fail(file, String(err.message || err))
+  }
   if (seen.has(slug)) fail(file, `slug "${slug}" 重复`)
   const raw = readFileSync(join(pagesDir, file), 'utf8')
   const { data, body } = parseFrontmatter(raw)

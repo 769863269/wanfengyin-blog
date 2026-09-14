@@ -147,6 +147,8 @@ function parseHtmlTag(inner) {
 function safeAttrUrl(raw) {
   const value = String(raw)
   if (value.includes('<') || value.includes('>')) return null
+  // 控制字符是刻意要剥的（URL 里夹 \t\n\0 可绕过协议检查），不是笔误
+  // eslint-disable-next-line no-control-regex
   const probe = value.toLowerCase().replace(/[\s\u0000-\u001f]/g, '')
   const hit = probe.split(',').some((part) => UNSAFE_SCHEMES.some((s) => part.startsWith(s)))
   return hit ? null : value

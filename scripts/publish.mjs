@@ -58,7 +58,7 @@ const TRACKED_PATHS = [
   'index.html', 'package.json', 'package-lock.json',
   // 构建与规范配置
   'tsconfig.json', 'tsconfig.app.json', 'tsconfig.node.json',
-  'vite.config.ts', 'vite.config.smoke.ts',
+  'vite.config.ts', 'vite.config.smoke.ts', 'vercel.json',
   'tailwind.config.cjs', 'eslint.config.js',
   // 文档与约定文件
   '.gitignore', '.gitattributes', 'git.config.local.example', 'README.md', 'DEPLOY.md',

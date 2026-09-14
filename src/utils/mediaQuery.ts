@@ -56,8 +56,3 @@ export function useMediaQuery(query: string): SafeMediaQuery {
     },
   }
 }
-
-/** 是否为移动端视口（≤768px，与 CSS 断点保持一致） */
-export function useIsMobile(): SafeMediaQuery {
-  return useMediaQuery('(max-width: 768px)')
-}

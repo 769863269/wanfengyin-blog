@@ -8,8 +8,8 @@
  *   - 代码块保持站点一贯的深底设计，token 配色用 github-dark，浅色主题下
  *     深底代码块与站点风格同样成立；
  *   - 未收录的语言或 Shiki 加载失败时静默降级为纯文本，绝不阻断构建。
+ *     （返回 null，调用方自行 escapeHtml —— escapeHtml 在 lib/markdown.mjs）
  */
-import { escapeHtml } from './markdown.mjs'
 
 /** 覆盖博客现有文章涉及的全部语言；新增语言后在此补充即可 */
 const LANGS = ['ts', 'js', 'vue', 'css', 'scss', 'html', 'json', 'yaml', 'md', 'bash', 'shell', 'diff', 'text']
@@ -48,9 +48,4 @@ export async function highlightToCodeHtml(code, lang) {
   } catch {
     return null
   }
-}
-
-/** 纯文本兜底：与 highlightToCodeHtml 返回值同构 */
-export function plainCodeHtml(code) {
-  return escapeHtml(code)
 }
