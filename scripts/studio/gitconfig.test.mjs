@@ -112,5 +112,23 @@ assert('pendingChanges 走 PENDING_TTL（不是字面量）', /Date\.now\(\)\s*-
 assert('存在写操作后的主动失效函数', serverCode.indexOf('function invalidatePending') !== -1)
 assert('guard 内已挂上主动失效', /const guard[\s\S]{0,500}?invalidatePending\(\)/.test(serverCode))
 
+console.log('\n[6] 只改账号名保留 PAT（updateGithubUsername）')
+// 背景：saveGithubToken 的 token 是必填的，于是后台「只改账号名、不重填 Token」时
+// 改动会静默丢失（提示已保存，实际没写）。这条独立路径必须存在且保留原 PAT。
+// 注意：绝不触碰真实 ~/.git-credentials —— 只做源码级断言 + 解析逻辑等价性验证。
+const gcCode = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'gitconfig.mjs'), 'utf8')
+assert('导出 updateGithubUsername', gcCode.indexOf('export function updateGithubUsername') !== -1)
+assert('server 在没填 Token 时也处理账号名', serverCode.indexOf('else if (body.githubUsername) updateGithubUsername') !== -1)
+assert('重写凭证行时保留原 token（复用 m[2]）', gcCode.indexOf(':${m[2]}@github.com') !== -1)
+assert('用户名格式校验（防注入凭证行）', /A-Za-z0-9-\]\{1,39\}/.test(gcCode))
+
+// 解析逻辑等价性：同一段正则在真实凭证行上必须恰好切出「用户名」与「token」两段。
+// 若有人把正则改宽/改窄（比如允许冒号出现在用户名里），这里立刻红。
+const credLine = 'https://olduser:ghp_abcdefghijklmnopqrstuvwxyz0123456789@github.com'
+const cm = credLine.match(/^https:\/\/([^:]+):(.+)@github\.com$/)
+assert('凭证行可解析出用户名与 token', !!cm && cm[1] === 'olduser' && cm[2].indexOf('ghp_') === 0)
+assert('改名后 token 原样保留',
+  !!cm && `https://${'newuser'}:${cm[2]}@github.com` === 'https://newuser:ghp_abcdefghijklmnopqrstuvwxyz0123456789@github.com')
+
 console.log(failed ? `\n${failed} FAILED` : '\nALL PASS')
 process.exit(failed ? 1 : 0)

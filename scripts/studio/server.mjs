@@ -22,7 +22,7 @@ import {
   readSiteConfig, saveSiteConfig, getPagination,
 } from './store.mjs'
 import { page } from './page.mjs'
-import { readGitConfigFile, readGitConfigLive, saveGitConfig, readGithubCredStatus, saveGithubToken, verifyGithubCred } from './gitconfig.mjs'
+import { readGitConfigFile, readGitConfigLive, saveGitConfig, readGithubCredStatus, saveGithubToken, updateGithubUsername, verifyGithubCred } from './gitconfig.mjs'
 import { listPages, readPage, savePage, deletePage } from './store.mjs'
 
 const coversDir = join(ROOT, 'public', 'images', 'covers')
@@ -659,7 +659,10 @@ export function startStudio(port = 5199) {
           const { applied } = await saveGitConfig(body.entries)
           // PAT 可选：填了才写凭证库；日志永不包含 token
           if (body.githubToken) await saveGithubToken(body.githubToken, body.githubUsername)
-          log(actor, 'git-config:update', 'git.config.local', '更新本地 git 配置: ' + applied.join(', ') + (body.githubToken ? '；保存 GitHub 推送凭证' : ''))
+          // 只改账号名、没重填 Token：独立走一条保留原 PAT 的路径（否则改动静默丢失）
+          else if (body.githubUsername) updateGithubUsername(body.githubUsername)
+          log(actor, 'git-config:update', 'git.config.local', '更新本地 git 配置: ' + applied.join(', ')
+            + (body.githubToken ? '；保存 GitHub 推送凭证' : (body.githubUsername ? '；更新 GitHub 账号名' : '')))
           return ok(res, { file: readGitConfigFile(), live: await readGitConfigLive(), applied, cred: readGithubCredStatus() })
         } catch (e) {
           return sendJson(res, 400, { ok: false, output: e.message })

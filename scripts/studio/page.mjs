@@ -1127,7 +1127,11 @@ onRoute('editor/*', function (file) {
           localStorage.setItem(DKEY, JSON.stringify({
             title: $('eTitle').value, slug: $('eSlug').value, publishedAt: $('eDate').value,
             excerpt: $('eExcerpt').value, content: getContent(), category: $('eCategory').value,
-            tags: $('eTags').value, keywords: $('eKeywords').value, seoDescription: $('eSeoDesc').value, ts: Date.now(),
+            tags: $('eTags').value, keywords: $('eKeywords').value, seoDescription: $('eSeoDesc').value,
+            // 这几项此前没进草稿：刷新后点「恢复草稿」会静默回退到打开页面时的值
+            status: $('eStatus').value, pinned: $('ePinned').checked, featured: $('eFeatured').checked,
+            author: $('eAuthor').value, publishAt: $('ePublishAt').value, offlineAt: $('eOfflineAt').value,
+            ts: Date.now(),
           }))
         } catch (e) { /* 隐私模式存不了就算了 */ }
       }, 800)
@@ -1139,6 +1143,14 @@ onRoute('editor/*', function (file) {
     ;['eTitle', 'eSlug', 'eDate', 'eExcerpt', 'eContent', 'eTags', 'eCategory', 'eKeywords', 'eSeoDesc'].forEach(function (id) {
       var el = $(id)
       el.addEventListener('input', function () { markDirty(); updateCheck() })
+    })
+    // 下拉/复选框用 input+change 双绑（部分浏览器对 select 只发 change，checkbox 两者都发；
+    // 重复触发有 800ms 防抖兜底，不会重复写盘）。不绑它们的话，改完状态直接刷新就丢改动。
+    ;['eStatus', 'ePinned', 'eFeatured', 'eAuthor', 'ePublishAt', 'eOfflineAt'].forEach(function (id) {
+      var el = $(id)
+      if (!el) return
+      el.addEventListener('input', markDirty)
+      el.addEventListener('change', markDirty)
     })
     contentEl.addEventListener('input', function () { updateStats() })
     updateStats()
@@ -1174,6 +1186,20 @@ onRoute('editor/*', function (file) {
           $('eTags').value = draft.tags || ''
           $('eKeywords').value = draft.keywords || ''
           $('eSeoDesc').value = draft.seoDescription || ''
+          // 状态按「当前角色可选项」回填：草稿可能是在别的身份下存的（如管理员存了 published，
+          // 现在切成作者身份 —— 那个 option 是 disabled 的，硬赋值等于绕过权限约束）
+          if (draft.status) {
+            var so = [].filter.call($('eStatus').options, function (o) { return o.value === draft.status && !o.disabled })[0]
+            if (so) $('eStatus').value = draft.status
+          }
+          if (draft.publishAt) $('ePublishAt').value = draft.publishAt
+          if (draft.offlineAt) $('eOfflineAt').value = draft.offlineAt
+          $('ePinned').checked = !!draft.pinned
+          $('eFeatured').checked = !!draft.featured
+          // 作者下拉的选项由 loadMeta 异步填充：还没填好时赋值会被吞成空串，先确认选项存在
+          if (draft.author && [].some.call($('eAuthor').options, function (o) { return o.value === draft.author })) {
+            $('eAuthor').value = draft.author
+          }
           $('eDraftBar').classList.add('hidden')
           updateStats()
           updateCheck()
@@ -1218,7 +1244,10 @@ onRoute('editor/*', function (file) {
         tags: $('eTags').value.split(/[,，]/).map(function (t) { return t.trim() }).filter(Boolean),
         keywords: $('eKeywords').value.split(/[,，]/).map(function (t) { return t.trim() }).filter(Boolean),
         seoDescription: $('eSeoDesc').value.trim(),
-        author: $('eAuthor').value,
+        // eAuthor 是下拉，选项由 loadMeta 异步填充：meta 慢/失败时 value 是空串，
+        // 直接提交会把作者写空（orderedData 对空字符串省略字段 → frontmatter 里 author 消失）。
+        // 兜底顺序：下拉当前值 → 打开时的原值 → 当前身份。
+        author: $('eAuthor').value || a.author || me,
         publishAt: $('ePublishAt').value.replace('T', ' '),
         offlineAt: $('eOfflineAt').value.replace('T', ' '),
         cover: a.cover,
@@ -1712,6 +1741,8 @@ onRoute('site', function () {
             field('站长署名', 'sAuthor', s.author) +
             field('邮箱', 'sEmail', s.email) +
             field('备案号', 'sIcp', s.icp) +
+            field('备案链接', 'sIcpUrl', s.icpUrl) +
+            field('建站年份（页脚版权起始年）', 'sSince', s.since) +
           '</div>' +
           saveRow +
         '</div>' +
@@ -2026,7 +2057,12 @@ onRoute('site', function () {
             name: $('sName').value.trim(), fullName: $('sFullName').value.trim(),
             tagline: $('sTagline').value.trim(), description: $('sDesc').value.trim(),
             author: $('sAuthor').value.trim(), email: $('sEmail').value.trim(),
-            icp: $('sIcp').value.trim(), about: $('sAbout').value.trim(),
+            icp: $('sIcp').value.trim(),
+            // 备案链接与建站年份：site.json 里一直有、页脚也在用，但后台此前没有输入框
+            // （只能手改 JSON）。since 必须是数字，前台拿它拼 © {since}-{今年}。
+            icpUrl: $('sIcpUrl').value.trim(),
+            since: Number($('sSince').value.trim()) || new Date().getFullYear(),
+            about: $('sAbout').value.trim(),
             footerDesc: $('sFooterDesc').value.trim(), friendLinks: links,
             mainNav: navTree,
             aboutPage: { intro: $('sAbIntro').value.trim(), techStack: abStack, milestones: abMiles },
@@ -2232,10 +2268,9 @@ onRoute('settings', function () {
           'http.version': $('gitHttp').value,
           'credential.helper': 'store',
         } }
-        if (token) {
-          body.githubToken = token
-          body.githubUsername = $('gitUser').value.trim()
-        }
+        if (token) body.githubToken = token
+        // 账号名独立提交：只改用户名、不重填 Token 时也要生效（后端保留已存的 PAT）
+        body.githubUsername = $('gitUser').value.trim()
         api('/api/git-config', { method: 'POST', body: body }).then(function () {
           $('gitToken').value = ''
           if (token) {

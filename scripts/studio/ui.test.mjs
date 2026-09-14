@@ -69,7 +69,8 @@ const jSite = {
   site: {
     site: {
       name: '探针站', fullName: '探针站全名', tagline: 'tag', description: 'desc',
-      author: '作者', email: 'a@b.c', icp: 'ICP', about: '关于文案', footerDesc: '页脚文案',
+      author: '作者', email: 'a@b.c', icp: 'ICP', icpUrl: 'https://beian.example', since: 2019,
+      about: '关于文案', footerDesc: '页脚文案',
     },
     friendLinks: [{ label: '友链A', href: 'https://a.example' }],
     mainNav: [
@@ -118,6 +119,34 @@ const jArticle = {
     pinned: false, featured: false, publishAt: '', offlineAt: '', seoDescription: '', cover: '',
   },
 }
+// 「每个字段都是一个独有标记值」的文章桩 —— 专治「回填漏字段」这一类 bug。
+//
+// 为什么必须这样造数据：如果桩里字段是空/默认值，DOM 里没回填也是空的，
+// 「DOM 值 === 接口值」的断言永远通过 —— 上次 pgFullHtml 漏回填就是这么逃过测试的。
+// 给每个字段一个唯一值后，漏回填 = DOM 值对不上，测试立刻红。
+const jArticleFull = {
+  ok: true,
+  article: {
+    file: 'probe-full.md',
+    title: '标记标题T',
+    slug: 'mark-slug-s',
+    excerpt: '标记摘要E',
+    body: '标记正文B',
+    publishedAt: '2026-09-07',
+    publishedTime: '09:41',
+    tags: ['标记标签1', '标记标签2'],
+    keywords: ['标记关键词1'],
+    category: '标记分类C',
+    author: '周周',
+    status: 'review',
+    pinned: true,
+    featured: true,
+    publishAt: '2026-10-01 08:30',
+    offlineAt: '2026-11-02 09:45',
+    seoDescription: '标记SEO描述D',
+    cover: '/images/covers/mark-cover.jpg',
+  },
+}
 const jMeta = {
   ok: true,
   me: { name: '周周', role: 'admin' },
@@ -149,11 +178,14 @@ const dom = new JSDOM(html, {
     }
     window.scrollTo = function () {}
     window.__fetchLog = []
-    window.fetch = function (path) {
+    window.__fetchBodies = [] // 记录写请求的 payload，用来断言「提交了什么」
+    window.fetch = function (path, init) {
       const p = String(path)
       window.__fetchLog.push(p)
+      if (init && init.body) window.__fetchBodies.push({ path: p, body: String(init.body) })
       let body = { ok: true, articles: [], trash: [], logs: [] }
       if (p.indexOf('/api/meta') === 0) body = jMeta
+      else if (p.indexOf('/api/article/probe-full.md') === 0) body = jArticleFull // 必须在通用规则之前
       else if (p.indexOf('/api/article/') === 0) body = jArticle
       else if (p.indexOf('/api/articles') === 0) body = { ok: true, articles: [], total: 0, totalPages: 1, page: 1 }
       else if (p.indexOf('/api/site') === 0) body = jSite
@@ -239,6 +271,9 @@ check('切「关于页」只显示 about', visiblePanels() === 'about', visibleP
 check('关于页三字段到位', !!$('#sAbIntro') && !!$('#sAbStack') && !!$('#sAbMiles'))
 clickTab('basic')
 check('切回「基本信息」', visiblePanels() === 'basic', visiblePanels())
+// 备案链接与建站年份：site.json 里一直有、前台页脚在用，但后台此前没有输入框
+check('备案链接已回填', ($('#sIcpUrl') || {}).value === 'https://beian.example', ($('#sIcpUrl') || {}).value)
+check('建站年份已回填', ($('#sSince') || {}).value === '2019', ($('#sSince') || {}).value)
 
 console.log('\n[4] 站点设置：保存与数据完整性')
 check('四个面板各一个保存按钮', $$('.site-save').length === 4, '实际 ' + $$('.site-save').length)
@@ -249,6 +284,18 @@ const hiddenName = $('#sName')
 check('隐藏面板字段仍在 DOM（切页不丢数据）', !!hiddenName && hiddenName.value === '探针站',
   hiddenName ? hiddenName.value : 'missing')
 check('友链行不受切换影响', $$('#flRows .fl-label').length === 1)
+
+// 保存 payload 契约：此前 since / icpUrl 只存在于 site.json，后台表单既不显示也不提交，
+// 页脚却拿它们渲染版权年份与备案链接（改不了 = 只能手改 JSON）
+window.__fetchBodies.length = 0
+$$('.site-save')[0].dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
+await sleep(220)
+const sitePut = window.__fetchBodies.filter((b) => b.path.indexOf('/api/site') === 0)[0]
+const siteBody = sitePut ? JSON.parse(sitePut.body) : {}
+check('保存发出站点 PUT', !!sitePut)
+check('payload 带 icpUrl', siteBody.icpUrl === 'https://beian.example', String(siteBody.icpUrl))
+check('payload 带 since 且为数字（前台做算术拼接）',
+  siteBody.since === 2019, typeof siteBody.since + ' / ' + siteBody.since)
 
 console.log('\n[5] 文章列表：页头 + 状态标签页')
 window.location.hash = '#/list/all'
@@ -300,6 +347,54 @@ check('加载提示已收尾（不残留「正在读取」）',
   ($('#gitMsg') || {}).textContent)
 const gitHits = window.__fetchLog.filter((u) => u.indexOf('/api/git-config') === 0).length
 check('进设置页只请求一次 git 配置', gitHits === 1, '请求 ' + gitHits + ' 次')
+
+console.log('\n[7.7] 文章编辑器：字段回填契约（桩里每个字段都是唯一标记值）')
+// 回归背景：自定义页面编辑器曾漏回填 pgFullHtml（打开显示未选中，一点保存就把整页 HTML
+// 静默降级）。同类风险文章编辑器同样有，而此前桩的字段全是空值 —— DOM 没回填也是空，
+// 「DOM === 接口值」永远成立，漏回填看不出来。这里每个字段给唯一值，逐项比对。
+window.location.hash = '#/editor/probe-full.md'
+await sleep(520)
+check('编辑器渲染', !!$('#eTitle') && !!$('#eContent'))
+check('title 回填', ($('#eTitle') || {}).value === '标记标题T', ($('#eTitle') || {}).value)
+check('slug 回填', ($('#eSlug') || {}).value === 'mark-slug-s', ($('#eSlug') || {}).value)
+check('publishedAt 回填', ($('#eDate') || {}).value === '2026-09-07', ($('#eDate') || {}).value)
+check('excerpt 回填', ($('#eExcerpt') || {}).value === '标记摘要E', ($('#eExcerpt') || {}).value)
+check('正文回填', ($('#eContent') || {}).value === '标记正文B', ($('#eContent') || {}).value)
+check('category 回填', ($('#eCategory') || {}).value === '标记分类C', ($('#eCategory') || {}).value)
+check('tags 回填（数组 → 逗号串）', ($('#eTags') || {}).value === '标记标签1, 标记标签2', ($('#eTags') || {}).value)
+check('keywords 回填', ($('#eKeywords') || {}).value === '标记关键词1', ($('#eKeywords') || {}).value)
+check('seoDescription 回填', ($('#eSeoDesc') || {}).value === '标记SEO描述D', ($('#eSeoDesc') || {}).value)
+check('status 回填（review）', ($('#eStatus') || {}).value === 'review', ($('#eStatus') || {}).value)
+check('author 回填', ($('#eAuthor') || {}).value === '周周', ($('#eAuthor') || {}).value)
+check('pinned 回填为勾选', ($('#ePinned') || {}).checked === true)
+check('featured 回填为勾选', ($('#eFeatured') || {}).checked === true)
+check('publishAt 回填（datetime-local 需 T 分隔）',
+  ($('#ePublishAt') || {}).value === '2026-10-01T08:30', ($('#ePublishAt') || {}).value)
+check('offlineAt 回填（datetime-local 需 T 分隔）',
+  ($('#eOfflineAt') || {}).value === '2026-11-02T09:45', ($('#eOfflineAt') || {}).value)
+
+console.log('\n[7.8] 文章编辑器：保存 payload 完整性与作者兜底')
+// 模拟「meta 还没加载完 / 加载失败」：作者下拉没有 option 时 value 就是空串。
+// 不兜底的话保存会把 author 写空，orderedData 对空字符串省略字段 → frontmatter 丢作者。
+window.__fetchBodies.length = 0
+const auSel = $('#eAuthor')
+while (auSel.options.length) auSel.remove(0)
+auSel.value = ''
+$('#eSave').dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
+await sleep(260)
+const putReq = window.__fetchBodies.filter((b) => b.path.indexOf('/api/article/probe-full.md') === 0)[0]
+check('保存发出 PUT 请求', !!putReq)
+const putBody = putReq ? JSON.parse(putReq.body) : {}
+check('作者兜底：下拉为空也不把 author 写空（核心回归）', putBody.author === '周周', String(putBody.author))
+check('payload 带全部可编辑字段',
+  ['title', 'slug', 'publishedAt', 'excerpt', 'content', 'status', 'pinned', 'featured', 'category',
+    'tags', 'keywords', 'seoDescription', 'author', 'publishAt', 'offlineAt', 'cover']
+    .every((k) => Object.prototype.hasOwnProperty.call(putBody, k)),
+  Object.keys(putBody).join(','))
+check('tags 提交为数组', Array.isArray(putBody.tags) && putBody.tags.length === 2)
+check('cover 取自打开时的原值（不在 DOM 里，不能丢）',
+  putBody.cover === '/images/covers/mark-cover.jpg', String(putBody.cover))
+check('pinned/featured 提交为布尔', putBody.pinned === true && putBody.featured === true)
 
 console.log('\n[8] 性能回归：meta 缓存与视图清理契约')
 window.__fetchLog.length = 0

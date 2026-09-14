@@ -259,6 +259,35 @@ export function readGithubCredStatus() {
 }
 
 /**
+ * 只更新 GitHub 账号名（保留已存的 PAT）。
+ *
+ * 背景：saveGithubToken 的 token 是必填的，于是后台「只改账号名、不重填 Token」时
+ * 改动会静默不生效（提示「已保存」，实际什么都没写）。这里补上这条独立路径：
+ * 从凭证库已有条目里取回 token、用新用户名重写同一行；库里没有 token 时就只记录用户名。
+ * @param {string} username GitHub 账号名
+ * @returns {{username: string, hasToken: boolean}}
+ */
+export function updateGithubUsername(username) {
+  const user = String(username || '').trim()
+  if (!/^[A-Za-z0-9-]{1,39}$/.test(user)) throw new Error('GitHub 用户名格式不对（字母/数字/连字符，最长 39 位）')
+
+  const lines = existsSync(CRED_FILE) ? readFileSync(CRED_FILE, 'utf8').split(/\r?\n/).filter((l) => l.trim()) : []
+  const idx = lines.findIndex((l) => l.indexOf('@github.com') !== -1)
+  let hasToken = false
+  if (idx >= 0) {
+    const m = lines[idx].match(/^https:\/\/([^:]+):(.+)@github\.com$/)
+    if (m) {
+      hasToken = true
+      lines[idx] = `https://${user}:${m[2]}@github.com`
+      writeFileSync(CRED_FILE, lines.join('\n') + '\n', 'utf8')
+      try { chmodSync(CRED_FILE, 0o600) } catch { /* Windows 下权限位无意义，忽略 */ }
+    }
+  }
+  upsertFileLine('github.username', user)
+  return { username: user, hasToken }
+}
+
+/**
  * 保存 GitHub 推送凭证（PAT）：写入 ~/.git-credentials 并记录用户名
  * @param {string} token PAT（ghp_ / github_pat_ 等，禁止空格与 URL 特殊字符）
  * @param {string} [username] GitHub 账号名；缺省时从 origin 远程地址自动解析
