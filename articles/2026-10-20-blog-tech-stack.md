@@ -3,11 +3,14 @@ slug: blog-tech-stack
 title: 晚风吟博客技术栈总结
 excerpt: 这套博客的完整技术盘点：Vite 8 + Vue 3.5 + TS 6 的底座，Markdown 发文流水线，自研本机 CMS，构建期 SEO 预渲染，以及一套不依赖浏览器的冒烟测试。
 publishedAt: 2026-10-20
+publishedTime: 09:29
 tags: [Vue, Vite, 工具]
+category: 技术
 author: 周周
 status: published
 keywords: [vite, vue3, typescript, 静态博客, cms]
-category: 技术
+views: 0
+commentCount: 0
 ---
 
 博客重构完一直没正经写过复盘，这次把整套技术摊开讲一遍。选型的核心判断只有一条：**这是个人博客，不是平台**。能用构建期解决的不上服务端，能本机做的不上云。
@@ -58,5 +61,3 @@ category: 技术
 ## 小结
 
 整套东西没有一个服务端进程暴露在公网：静态构建产物 + 本机工具 + Git 推送触发 CI。个人博客的复杂度预算就该花在内容和构建流水线上，而不是运维上。
-
-后续文章会拆开讲几个值得单独成篇的点：设计令牌与夜间模式、预渲染细节、冒烟测试的写法。

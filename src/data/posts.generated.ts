@@ -12,7 +12,7 @@ export const generatedPosts: PostSummary[] = [
     "title": "晚风吟博客技术栈总结",
     "excerpt": "这套博客的完整技术盘点：Vite 8 + Vue 3.5 + TS 6 的底座，Markdown 发文流水线，自研本机 CMS，构建期 SEO 预渲染，以及一套不依赖浏览器的冒烟测试。",
     "cover": "",
-    "publishedTime": "",
+    "publishedTime": "09:29",
     "publishedAt": "2026-10-20",
     "views": 0,
     "commentCount": 0,
@@ -36,23 +36,24 @@ export const generatedPosts: PostSummary[] = [
     "readingMinutes": 4
   },
   {
-    "slug": "blog-launch",
-    "title": "博客开张",
-    "excerpt": "折腾两个周末，博客总算开张了。从选型到上线，把踩的坑和做的决定都记录下来。",
-    "cover": "/images/covers/blog-launch.jpg",
-    "publishedTime": "09:25",
-    "publishedAt": "2026-04-01",
-    "views": 2461,
-    "commentCount": 36,
+    "slug": "178885620641950",
+    "title": "阿里妈妈对公账户信息",
+    "excerpt": "阿里妈妈对公账户信息 公司名称：杭州阿里妈妈软件服务有限公司 税号：91330110311381883Y 地址：杭州市余杭区五常街道文一西路969号6幢2层201室",
+    "cover": "/images/covers/cover.png",
+    "publishedTime": "09:27",
+    "publishedAt": "2026-09-08",
+    "views": 0,
+    "commentCount": 0,
     "tags": [
-      "随笔"
+      "账户信息",
+      "阿里妈妈"
     ],
-    "featured": true,
+    "featured": false,
     "pinned": false,
-    "category": "",
-    "author": "晚风吟",
+    "category": "账户",
+    "author": "周周",
     "keywords": [],
     "seoDescription": "",
-    "readingMinutes": 5
+    "readingMinutes": 1
   }
 ]
