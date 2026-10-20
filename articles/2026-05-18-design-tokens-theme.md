@@ -7,7 +7,7 @@ publishedAt: 2026-05-18
 views: 1447
 commentCount: 13
 tags: [CSS]
-status: published
+status: offline
 featured: true
 ---
 

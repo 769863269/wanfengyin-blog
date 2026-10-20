@@ -7,7 +7,7 @@ views: 803
 commentCount: 5
 tags: [测试]
 featured: true
-status: published
+status: offline
 ---
 
 每次改完 UI 都手动点一遍？不现实。真浏览器自动化又太重。折中方案：jsdom 冒烟测试。

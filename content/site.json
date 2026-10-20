@@ -105,9 +105,10 @@
       5,
       10,
       20,
-      50
+      50,
+      100
     ],
-    "defaultSize": 5
+    "defaultSize": 10
   },
   "aboutPage": {
     "intro": "{{fullName}}，「{{tagline}}」——记录开发中的实战笔记、踩坑复盘与一些技术碎碎念。目前已有 {{count}} 篇文章，持续更新中。",

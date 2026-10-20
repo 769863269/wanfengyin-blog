@@ -7,7 +7,7 @@ views: 892
 commentCount: 6
 tags: [Vue, 性能优化]
 featured: true
-status: published
+status: offline
 ---
 
 列表页几十张封面图，一次性全加载等于自杀。原生 loading 属性只管 img 标签，背景图就得自己来。
