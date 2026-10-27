@@ -207,8 +207,42 @@ export function readGitConfigLive() {
 }
 
 /**
+ * git config 写入串行队列。
+ * .git/config 是独占锁文件（config.lock）：并发起多个 `git config` 子进程会偶发
+ * 锁竞争（fatal: unable to lock '.git/config': File exists）——这正是「保存 Git 配置
+ * 偶尔报错」的根因（原先 Promise.all 一次并发 4 个进程；双击保存概率翻倍）。
+ * 所有写入进同一条链排队；跨请求也生效（连续两次保存不会互相踩锁）。
+ */
+let configWriteChain = Promise.resolve()
+function enqueueConfigWrite(fn) {
+  const run = configWriteChain.then(fn, fn)
+  configWriteChain = run.then(
+    () => undefined,
+    () => undefined,
+  )
+  return run
+}
+
+/** 锁类错误识别：只对这类错误重试，别的错误原样抛出 */
+function isConfigLockError(e) {
+  const s = String((e && (e.stderr || '')) + (e && (e.stdout || '')) + (e && e.message))
+  return /unable to lock|config\.lock|File exists/i.test(s)
+}
+
+/** 单条 git config 写入；撞锁（含外部 git 进程持锁）时退避 400ms 重试一次 */
+async function gitConfigSet(key, value) {
+  try {
+    await git(['config', key, value], { timeout: 13_000 })
+  } catch (e) {
+    if (!isConfigLockError(e)) throw e
+    await new Promise((r) => setTimeout(r, 400))
+    await git(['config', key, value], { timeout: 13_000 })
+  }
+}
+
+/**
  * 保存配置：写入 git.config.local 并逐条应用到仓库 local config
- * 写盘后并发执行（异步，不阻塞事件循环），全部完成才返回。
+ * 写盘后串行应用到仓库 local config（异步，不阻塞事件循环），全部完成才返回。
  * @param {{[k: string]: string}} entries 键值对（只接受白名单 key）
  * @returns {Promise<{applied: string[]}>} 实际应用的 key 列表
  */
@@ -232,9 +266,14 @@ export async function saveGitConfig(entries) {
   const body = Object.entries(clean).map(([k, v]) => `${k}=${v}`)
   writeFileSync(CONFIG_FILE, [...FILE_HEADER, ...foreign, ...body, ''].join('\n'), 'utf8')
 
-  // 2) 并发应用到仓库 local config（保存即生效）；13 秒超时给足 git 启动慢的余量
-  const applied = Object.keys(clean)
-  await Promise.all(applied.map((k) => git(['config', k, clean[k]], { timeout: 13_000 })))
+  // 2) 应用到仓库 local config（保存即生效）。
+  //    只对「值真变了」的 key 起进程：重复保存时 0 个子进程秒回，锁竞争面也最小。
+  //    写 .git/config 要独占锁 → 一律排队串行，绝不能 Promise.all 并发起进程。
+  const live = readLiveFromFile()
+  const applied = Object.keys(clean).filter((k) => !live || (live[k] || '') !== clean[k])
+  for (const k of applied) {
+    await enqueueConfigWrite(() => gitConfigSet(k, clean[k]))
+  }
   invalidateLiveConfig() // 生效值已变，缓存作废
   return { applied }
 }

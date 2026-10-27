@@ -274,10 +274,15 @@ const siteFile = join(ROOT, 'content', 'site.json')
 const siteBackup = readFileSync(siteFile, 'utf8')
 try {
   const pg0 = getPagination()
+  // 只验结构合法性，不写死档位清单：用户在后台勾了「100 条/页」等自定义档位是合法操作，
+  // 写死 '5,10,20,50' 会让测试随用户配置误报（已实际发生）。
   assert(
     '分页配置结构可用',
-    pg0.sizes.join() === '5,10,20,50' && pg0.sizes.includes(pg0.defaultSize),
-    `defaultSize=${pg0.defaultSize}`,
+    Array.isArray(pg0.sizes) &&
+      pg0.sizes.length > 0 &&
+      pg0.sizes.every((n) => Number.isInteger(n) && n > 0) &&
+      pg0.sizes.includes(pg0.defaultSize),
+    `sizes=${pg0.sizes.join(',')} defaultSize=${pg0.defaultSize}`,
   )
   saveSiteConfig({ pagination: { sizes: [20, 10, 50, 5, 20], defaultSize: 20 } })
   const pg1 = getPagination()

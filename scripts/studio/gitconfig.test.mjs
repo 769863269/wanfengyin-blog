@@ -151,5 +151,19 @@ assert(
       'https://newuser:ghp_abcdefghijklmnopqrstuvwxyz0123456789@github.com',
 )
 
+console.log('\n[7] 保存契约：串行写 + 锁重试 + 只写变更项（保存偶发报错的修复）')
+// 背景：saveGitConfig 曾用 Promise.all 一次并发 4 个 `git config` 子进程。
+// .git/config 是独占锁（config.lock），进程到达锁点偶发重叠 →
+// 「fatal: unable to lock '.git/config'」→ 保存偶发报错；双击保存概率翻倍。
+// 修复三件套：串行队列、锁错误重试、值未变的 key 不起进程。这里锁死这三条。
+assert('存在串行队列（禁止改回 Promise.all 并发写 config）', gcCode.indexOf('configWriteChain') !== -1)
+assert(
+  'git config 写入已从 Promise.all 改为逐条排队',
+  !/Promise\.all\([^)]*git\(\['config'/.test(gcCode),
+)
+assert('锁错误识别函数存在', gcCode.indexOf('isConfigLockError') !== -1)
+assert('撞锁退避重试（setTimeout 后重写一次）', /isConfigLockError[\s\S]{0,200}setTimeout/.test(gcCode))
+assert('只对值变化的 key 起进程（live 对比过滤）', /filter\(\(k\)\s*=>\s*!live\s*\|\|\s*\(live\[k\]\s*\|\|\s*''\)\s*!==\s*clean\[k\]\)/.test(gcCode))
+
 console.log(failed ? `\n${failed} FAILED` : '\nALL PASS')
 process.exit(failed ? 1 : 0)

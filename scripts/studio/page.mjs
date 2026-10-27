@@ -2358,6 +2358,7 @@ onRoute('settings', function () {
         })
       })
       $('gitSave').addEventListener('click', function () {
+        var btn = $('gitSave')
         var name = $('gitName').value.trim()
         var email = $('gitEmail').value.trim()
         if (!name || !email) { toast('提交用户名和邮箱不能为空', true); return }
@@ -2377,6 +2378,10 @@ onRoute('settings', function () {
         if (token) body.githubToken = token
         // 账号名独立提交：只改用户名、不重填 Token 时也要生效（后端保留已存的 PAT）
         body.githubUsername = $('gitUser').value.trim()
+        // 防双击：保存期间禁用按钮，避免重复 POST（并发保存会互踩 .git/config 锁）
+        btn.disabled = true
+        btn.classList.add('opacity-70', 'cursor-not-allowed')
+        btn.innerHTML = '保存中…'
         api('/api/git-config', { method: 'POST', body: body }).then(function () {
           // Token 保护：成功即清空输入框，绝不留明文在页面里。
           // 延迟再清两次：部分浏览器密码管理器会在 autofill 时机（晚于 JS 清空）把 password 框重新填回来
@@ -2392,6 +2397,10 @@ onRoute('settings', function () {
         }).catch(function (e) {
           $('gitMsg').textContent = ''
           toast(e.message, true)
+        }).then(function () {
+          btn.disabled = false
+          btn.classList.remove('opacity-70', 'cursor-not-allowed')
+          btn.innerHTML = '保存 Git 配置'
         })
       })
     }
