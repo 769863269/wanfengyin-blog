@@ -55,5 +55,25 @@ export const generatedPosts: PostSummary[] = [
     "keywords": [],
     "seoDescription": "",
     "readingMinutes": 1
+  },
+  {
+    "slug": "blog-launch",
+    "title": "博客开张",
+    "excerpt": "折腾两个周末，博客总算开张了。从选型到上线，把踩的坑和做的决定都记录下来。",
+    "cover": "/images/covers/blog-launch.jpg",
+    "publishedTime": "09:25",
+    "publishedAt": "2026-04-01",
+    "views": 2461,
+    "commentCount": 36,
+    "tags": [
+      "随笔"
+    ],
+    "featured": true,
+    "pinned": false,
+    "category": "",
+    "author": "晚风吟",
+    "keywords": [],
+    "seoDescription": "",
+    "readingMinutes": 5
   }
 ]

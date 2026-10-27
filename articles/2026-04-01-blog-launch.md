@@ -6,7 +6,7 @@ publishedAt: 2026-04-01
 publishedTime: 09:25
 tags: [随笔]
 author: 晚风吟
-status: offline
+status: published
 featured: true
 cover: /images/covers/blog-launch.jpg
 views: 2461
