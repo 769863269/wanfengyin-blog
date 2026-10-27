@@ -2249,7 +2249,7 @@ onRoute('settings', function () {
               '<input id="gitUser" type="text" class="mt-1 w-full rounded-lg border border-[#d2d2d7] bg-white px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" placeholder="如 769863269"' + (myRole !== 'admin' ? ' disabled' : '') + ' />' +
             '</label>' +
             '<label class="block text-[12px] text-[#6e6e73]">Token（留空保持不变）' +
-              '<input id="gitToken" type="password" autocomplete="off" class="mt-1 w-full rounded-lg border border-[#d2d2d7] bg-white px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" placeholder="粘贴 PAT（ghp_ / github_pat_ 开头）"' + (myRole !== 'admin' ? ' disabled' : '') + ' />' +
+              '<input id="gitToken" type="password" autocomplete="new-password" class="mt-1 w-full rounded-lg border border-[#d2d2d7] bg-white px-2.5 py-2 text-[13.5px] outline-none focus:border-[#0071e3]" placeholder="粘贴 PAT（ghp_ / github_pat_ 开头）"' + (myRole !== 'admin' ? ' disabled' : '') + ' />' +
             '</label>' +
           '</div>' +
           (myRole !== 'admin' ? '' : '<style>@keyframes wfy-spin{to{transform:rotate(360deg)}}.wfy-spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(0,113,227,.25);border-top-color:#0071e3;border-radius:50%;animation:wfy-spin .7s linear infinite}@keyframes wfy-in{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}.wfy-in{animation:wfy-in .25s ease-out both}@keyframes wfy-shake{0%,100%{transform:none}20%{transform:translateX(-3px)}60%{transform:translateX(3px)}}.wfy-shake{animation:wfy-shake .3s ease-in-out}</style>' +
@@ -2378,7 +2378,10 @@ onRoute('settings', function () {
         // 账号名独立提交：只改用户名、不重填 Token 时也要生效（后端保留已存的 PAT）
         body.githubUsername = $('gitUser').value.trim()
         api('/api/git-config', { method: 'POST', body: body }).then(function () {
-          $('gitToken').value = ''
+          // Token 保护：成功即清空输入框，绝不留明文在页面里。
+          // 延迟再清两次：部分浏览器密码管理器会在 autofill 时机（晚于 JS 清空）把 password 框重新填回来
+          var killToken = function () { $('gitToken').value = '' }
+          killToken(); setTimeout(killToken, 120); setTimeout(killToken, 500)
           if (token) {
             renderCredBadge(true)
             $('gitToken').placeholder = '已配置，留空保持不变'
